@@ -437,46 +437,6 @@ async def update_version(instance_id: str, request: Request):
     return {"message": f"Versão atualizada para {new_version}", "instance_id": instance_id}
 
 
-@router.post("/instance/{instance_id}/sync-env", dependencies=[Depends(verify_token)])
-async def sync_env(instance_id: str):
-    """Recria container com env vars atuais do build_env(), preservando dados."""
-    try:
-        old = get_container(instance_id)
-    except docker.errors.NotFound:
-        raise HTTPException(404, "Instância não encontrada")
-
-    version = old.image.tags[0].split(":")[-1] if old.image.tags else "latest"
-
-    try:
-        _rebuild_container(instance_id, version)
-    except docker.errors.NotFound:
-        raise HTTPException(404, "Instância não encontrada")
-
-    return {"message": "Variáveis de ambiente sincronizadas", "instance_id": instance_id}
-
-
-@router.post("/sync-all-env", dependencies=[Depends(verify_token)])
-async def sync_all_env():
-    """Sincroniza env vars de TODAS as instâncias ativas com build_env() atual."""
-    containers = list_n8n_containers()
-    results = []
-
-    for c in containers:
-        name = c.get("instance_id", "")
-        version = c.get("version", "latest")
-        try:
-            _rebuild_container(name, version)
-            results.append({"instance": name, "status": "ok"})
-        except Exception as e:
-            results.append({"instance": name, "status": "error", "error": str(e)})
-
-    ok_count = len([r for r in results if r["status"] == "ok"])
-    return {
-        "message": f"{ok_count}/{len(results)} instâncias sincronizadas",
-        "results": results,
-    }
-
-
 @router.get("/instance/{instance_id}/logs", dependencies=[Depends(verify_token)])
 async def instance_logs(instance_id: str, tail: int = Query(50)):
     """Retorna as últimas linhas de log do container."""
