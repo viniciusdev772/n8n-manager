@@ -48,24 +48,33 @@ async def list_versions():
     """Busca as versões mais recentes do N8N diretamente do Docker Hub."""
     import httpx
 
+    import re
+
     try:
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(
                 "https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags",
-                params={"page_size": 20, "ordering": "last_updated"},
+                params={"page_size": 50, "ordering": "last_updated"},
             )
             if resp.status_code == 200:
                 data = resp.json()
                 versions = []
                 seen = set()
+                semver_re = re.compile(r"^\d+\.\d+\.\d+$")
                 for tag in data.get("results", []):
-                    name = tag.get("name", "")
-                    # Filtrar: apenas versões semver (X.Y.Z), sem -beta, -next, -rc
-                    if name and name[0].isdigit() and "-" not in name and name not in seen:
-                        seen.add(name)
-                        versions.append({"id": name, "name": name})
+                    tag_name = tag.get("name", "")
+                    # Apenas versões semver X.Y.Z (ex: 1.93.0, 2.6.4)
+                    if semver_re.match(tag_name) and tag_name not in seen:
+                        seen.add(tag_name)
+                        versions.append({"id": tag_name, "name": tag_name})
                     if len(versions) >= 8:
                         break
+
+                # Ordenar por versão decrescente
+                versions.sort(
+                    key=lambda v: [int(x) for x in v["id"].split(".")],
+                    reverse=True,
+                )
 
                 if versions:
                     return {"versions": versions}
