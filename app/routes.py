@@ -398,6 +398,23 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
     return {"instance_id": instance_id, "logs": logs}
 
 
+@router.post("/debug/fix-traefik-network", dependencies=[Depends(verify_token)])
+async def fix_traefik_network():
+    """Reconecta Traefik na rede n8n-public se necessário."""
+    client = get_client()
+    try:
+        traefik = client.containers.get("traefik")
+        traefik.reload()
+        networks = traefik.attrs.get("NetworkSettings", {}).get("Networks", {})
+        if DOCKER_NETWORK in networks:
+            return {"message": "Traefik já está na rede correta", "network": DOCKER_NETWORK}
+        network = client.networks.get(DOCKER_NETWORK)
+        network.connect(traefik)
+        return {"message": f"Traefik conectado à rede '{DOCKER_NETWORK}'", "fixed": True}
+    except Exception as e:
+        raise HTTPException(500, f"Erro: {e}")
+
+
 @router.get("/debug/infra-networks", dependencies=[Depends(verify_token)])
 async def debug_infra_networks():
     """Lista redes de todos os containers de infra para debug."""

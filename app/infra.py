@@ -56,8 +56,22 @@ def _test_port(host, port, timeout=3):
         return False
 
 
+def _ensure_container_on_network(container, network_name):
+    """Garante que um container esta conectado a uma rede Docker."""
+    container.reload()
+    networks = container.attrs.get("NetworkSettings", {}).get("Networks", {})
+    if network_name not in networks:
+        try:
+            client = get_client()
+            network = client.networks.get(network_name)
+            network.connect(container)
+            print(f"[INFRA] Container '{container.name}' conectado a rede '{network_name}'")
+        except Exception as e:
+            print(f"[INFRA] ERRO ao conectar '{container.name}' na rede '{network_name}': {e}")
+
+
 def ensure_traefik():
-    """Garante que o Traefik está rodando com SSL automático."""
+    """Garante que o Traefik está rodando com SSL automático na rede correta."""
     client = get_client()
     name = "traefik"
     required_ports = {80, 443, 8080}
@@ -65,9 +79,11 @@ def ensure_traefik():
     try:
         c = client.containers.get(name)
         if c.status == "running":
+            _ensure_container_on_network(c, DOCKER_NETWORK)
             return
         try:
             c.start()
+            _ensure_container_on_network(c, DOCKER_NETWORK)
             return
         except Exception:
             c.remove(force=True)
