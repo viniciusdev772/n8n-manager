@@ -43,6 +43,7 @@ async def health():
 
 
 @router.get("/versions", dependencies=[Depends(verify_token)])
+@router.get("/docker-versions", dependencies=[Depends(verify_token)])
 async def list_versions():
     return {
         "versions": [
@@ -55,6 +56,7 @@ async def list_versions():
 
 
 @router.get("/locations", dependencies=[Depends(verify_token)])
+@router.get("/server-locations", dependencies=[Depends(verify_token)])
 async def list_locations():
     return {
         "locations": [
@@ -224,6 +226,7 @@ async def delete_instance(instance_id: str):
 
 
 @router.get("/instance/{instance_id}/status", dependencies=[Depends(verify_token)])
+@router.get("/instance-status/{instance_id}", dependencies=[Depends(verify_token)])
 async def instance_status(instance_id: str):
     try:
         container = get_container(instance_id)
@@ -250,6 +253,7 @@ async def instance_status(instance_id: str):
 
 
 @router.post("/instance/{instance_id}/restart", dependencies=[Depends(verify_token)])
+@router.post("/restart-instance/{instance_id}", dependencies=[Depends(verify_token)])
 async def restart_instance(instance_id: str):
     try:
         container = get_container(instance_id)
@@ -260,6 +264,7 @@ async def restart_instance(instance_id: str):
 
 
 @router.post("/instance/{instance_id}/reset", dependencies=[Depends(verify_token)])
+@router.post("/reset-instance/{instance_id}", dependencies=[Depends(verify_token)])
 async def reset_instance(instance_id: str, request: Request):
     body = await request.json()
     version = body.get("version", "latest")
@@ -286,6 +291,7 @@ async def reset_instance(instance_id: str, request: Request):
 
 
 @router.post("/instance/{instance_id}/update-version", dependencies=[Depends(verify_token)])
+@router.post("/update-version/{instance_id}", dependencies=[Depends(verify_token)])
 async def update_version(instance_id: str, request: Request):
     body = await request.json()
     new_version = body.get("version", "latest")
