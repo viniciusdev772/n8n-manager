@@ -94,13 +94,17 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
 
-        # 4. Aguardar startup — HTTP check como estrategia principal
+        # 4. Aguardar startup — testa URL publica via Traefik
         import urllib.request
+        import ssl
 
         n8n_ready = False
-        internal_url = f"http://{container_name(name)}:5678/"
+        public_url = instance_url(name)  # https://name.n8n.marketcodebrasil.com.br
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
 
-        for i in range(150):  # 5 minutos (150 x 2s)
+        for i in range(90):  # 3 minutos (90 x 2s)
             time.sleep(2)
             ct.reload()
 
@@ -114,34 +118,20 @@ def _process_job(ch, method, properties, body):
             if ct.status != "running":
                 continue
 
-            # HTTP check direto no container (porta interna 5678)
+            # HTTP check na URL publica (via Traefik)
             try:
-                req = urllib.request.Request(internal_url, method="GET")
-                resp = urllib.request.urlopen(req, timeout=3)
+                req = urllib.request.Request(public_url, method="GET")
+                resp = urllib.request.urlopen(req, timeout=5, context=ssl_ctx)
                 if resp.status == 200:
                     n8n_ready = True
-                    push_event(job_id, {"status": "info", "message": "N8N respondendo!"})
+                    push_event(job_id, {"status": "info", "message": "N8N acessivel!"})
                     break
             except Exception:
                 pass
 
             # Feedback a cada 20s
             if i % 10 == 0:
-                push_event(job_id, {"status": "info", "message": f"Aguardando N8N iniciar ({i * 2}s)..."})
-
-        if not n8n_ready:
-            # Ultimo check: talvez o n8n esteja respondendo mas o healthz nao existe
-            ct.reload()
-            if ct.status == "running":
-                push_event(job_id, {"status": "info", "message": "Container rodando, marcando como pronto"})
-                n8n_ready = True
-
-        if not n8n_ready:
-            logs = ct.logs(tail=30).decode("utf-8", errors="replace")
-            push_event(job_id, {"status": "error", "message": f"N8N nao iniciou em 5 minutos.\n{logs}"})
-            set_state(job_id, "error")
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return
+                push_event(job_id, {"status": "info", "message": f"Aguardando N8N ({i * 2}s)..."})
 
         # 5. SSL via Traefik
         push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
