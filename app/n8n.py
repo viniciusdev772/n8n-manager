@@ -69,7 +69,7 @@ def build_env(name: str, encryption_key: str) -> dict:
         "N8N_VERSION_NOTIFICATIONS_ENABLED": "false",
         "N8N_PERSONALIZATION_ENABLED": "false",
         "N8N_HIRING_BANNER_ENABLED": "false",
-        "N8N_COMMUNITY_PACKAGES_ENABLED": "false",
+        "N8N_COMMUNITY_PACKAGES_ENABLED": "true",
     }
 
 

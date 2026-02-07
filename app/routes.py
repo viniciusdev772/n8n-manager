@@ -379,38 +379,42 @@ async def reset_instance(instance_id: str, request: Request):
     }
 
 
-@router.post("/instance/{instance_id}/update-version", dependencies=[Depends(verify_token)])
-@router.post("/update-version/{instance_id}", dependencies=[Depends(verify_token)])
-async def update_version(instance_id: str, request: Request):
-    body = await request.json()
-    new_version = body.get("version", "latest")
-
-    try:
-        old = get_container(instance_id)
-    except docker.errors.NotFound:
-        raise HTTPException(404, "Instância não encontrada")
-
-    # Preservar env vars e labels
-    old_env_list = old.attrs.get("Config", {}).get("Env", [])
-    old_env = {}
-    for e in old_env_list:
+def _extract_encryption_key(container) -> str:
+    """Extrai N8N_ENCRYPTION_KEY do container existente."""
+    for e in container.attrs.get("Config", {}).get("Env", []):
         k, _, v = e.partition("=")
-        old_env[k] = v
-    old_labels = old.labels
+        if k == "N8N_ENCRYPTION_KEY":
+            return v
+    return ""
 
+
+def _rebuild_container(instance_id: str, version: str):
+    """Recria container com env vars atuais, preservando encryption key e volume."""
+    old = get_container(instance_id)
+    encryption_key = _extract_encryption_key(old)
+    if not encryption_key:
+        raise HTTPException(500, "N8N_ENCRYPTION_KEY não encontrada no container")
+
+    old_labels = old.labels
     old.remove(force=True)  # Mantém volume
 
     client = get_client()
-    image_tag = f"{N8N_IMAGE}:{new_version}"
-    client.images.pull(N8N_IMAGE, tag=new_version)
+    image_tag = f"{N8N_IMAGE}:{version}"
+    client.images.pull(N8N_IMAGE, tag=version)
+
+    env = build_env(instance_id, encryption_key)
+    labels = build_traefik_labels(instance_id)
+    # Preservar created_at original se existir
+    if "app.created_at" in old_labels:
+        labels["app.created_at"] = old_labels["app.created_at"]
 
     client.containers.run(
         image=image_tag,
         name=container_name(instance_id),
         detach=True,
         restart_policy={"Name": "unless-stopped"},
-        environment=old_env,
-        labels=old_labels,
+        environment=env,
+        labels=labels,
         mem_limit=INSTANCE_MEM_LIMIT,
         mem_reservation=INSTANCE_MEM_RESERVATION,
         cpu_shares=INSTANCE_CPU_SHARES,
@@ -418,7 +422,59 @@ async def update_version(instance_id: str, request: Request):
         network=DOCKER_NETWORK,
     )
 
+
+@router.post("/instance/{instance_id}/update-version", dependencies=[Depends(verify_token)])
+@router.post("/update-version/{instance_id}", dependencies=[Depends(verify_token)])
+async def update_version(instance_id: str, request: Request):
+    body = await request.json()
+    new_version = body.get("version", "latest")
+
+    try:
+        _rebuild_container(instance_id, new_version)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
     return {"message": f"Versão atualizada para {new_version}", "instance_id": instance_id}
+
+
+@router.post("/instance/{instance_id}/sync-env", dependencies=[Depends(verify_token)])
+async def sync_env(instance_id: str):
+    """Recria container com env vars atuais do build_env(), preservando dados."""
+    try:
+        old = get_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
+    version = old.image.tags[0].split(":")[-1] if old.image.tags else "latest"
+
+    try:
+        _rebuild_container(instance_id, version)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
+    return {"message": "Variáveis de ambiente sincronizadas", "instance_id": instance_id}
+
+
+@router.post("/sync-all-env", dependencies=[Depends(verify_token)])
+async def sync_all_env():
+    """Sincroniza env vars de TODAS as instâncias ativas com build_env() atual."""
+    containers = list_n8n_containers()
+    results = []
+
+    for c in containers:
+        name = c.get("instance_id", "")
+        version = c.get("version", "latest")
+        try:
+            _rebuild_container(name, version)
+            results.append({"instance": name, "status": "ok"})
+        except Exception as e:
+            results.append({"instance": name, "status": "error", "error": str(e)})
+
+    ok_count = len([r for r in results if r["status"] == "ok"])
+    return {
+        "message": f"{ok_count}/{len(results)} instâncias sincronizadas",
+        "results": results,
+    }
 
 
 @router.get("/instance/{instance_id}/logs", dependencies=[Depends(verify_token)])
