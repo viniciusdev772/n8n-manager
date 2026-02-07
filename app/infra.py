@@ -20,14 +20,7 @@ from .config import (
 from .docker_client import get_client
 
 
-def ensure_network():
-    """Cria a rede Docker compartilhada se não existir."""
-    client = get_client()
-    try:
-        client.networks.get(DOCKER_NETWORK)
-    except Exception:
-        client.networks.create(DOCKER_NETWORK, driver="bridge")
-        print(f"[INFRA] Rede '{DOCKER_NETWORK}' criada")
+# ─── Helpers ──────────────────────────────────────────────
 
 
 def _kill_port_holders(client, ports):
@@ -58,21 +51,89 @@ def _test_port(host, port, timeout=3):
         return False
 
 
-def _container_on_network(container, network_name):
-    """Verifica se um container esta numa rede."""
+def _has_host_port(container, port):
+    """Verifica se um container expoe uma porta no host."""
+    try:
+        bindings = container.attrs.get("HostConfig", {}).get("PortBindings") or {}
+        for _, host_binds in bindings.items():
+            if not host_binds:
+                continue
+            for bind in host_binds:
+                if int(bind.get("HostPort", 0)) == port:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
+def _container_networks(container):
+    """Retorna set de nomes de redes do container."""
     container.reload()
-    networks = container.attrs.get("NetworkSettings", {}).get("Networks", {})
-    return network_name in networks
+    return set(container.attrs.get("NetworkSettings", {}).get("Networks", {}).keys())
 
 
-def _create_traefik(client, name):
-    """Cria container Traefik e conecta na rede n8n-public."""
-    # Criar SEM network (port bindings conflitam com network assign)
-    container = client.containers.run(
+def _connect_to_network(container, network_name):
+    """Conecta container a uma rede Docker se não estiver nela."""
+    if network_name in _container_networks(container):
+        return
+    client = get_client()
+    network = client.networks.get(network_name)
+    network.connect(container)
+    print(f"[INFRA] Container '{container.name}' conectado na rede '{network_name}'")
+
+
+# ─── Network ─────────────────────────────────────────────
+
+
+def ensure_network():
+    """Cria a rede Docker compartilhada se não existir."""
+    client = get_client()
+    try:
+        client.networks.get(DOCKER_NETWORK)
+    except Exception:
+        client.networks.create(DOCKER_NETWORK, driver="bridge")
+        print(f"[INFRA] Rede '{DOCKER_NETWORK}' criada")
+
+
+# ─── Traefik ─────────────────────────────────────────────
+
+
+def ensure_traefik():
+    """Garante que o Traefik está rodando na rede correta com SSL."""
+    client = get_client()
+    name = "traefik"
+
+    try:
+        c = client.containers.get(name)
+
+        if c.status == "running":
+            # Rodando: só garantir que está na rede
+            _connect_to_network(c, DOCKER_NETWORK)
+            return
+
+        # Existe mas não está rodando — tentar iniciar
+        try:
+            c.start()
+            _connect_to_network(c, DOCKER_NETWORK)
+            print("[INFRA] Traefik iniciado")
+            return
+        except Exception as e:
+            print(f"[INFRA] Traefik nao iniciou: {e}. Removendo...")
+            c.remove(force=True)
+            time.sleep(3)
+
+    except docker.errors.NotFound:
+        pass
+
+    # Criar do zero
+    _kill_port_holders(client, {80, 443, 8080})
+
+    client.containers.run(
         image="traefik:v3.3",
         name=name,
         detach=True,
         restart_policy={"Name": "unless-stopped"},
+        network=DOCKER_NETWORK,
         ports={"80/tcp": 80, "443/tcp": 443, "8080/tcp": 8080},
         volumes={
             "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "ro"},
@@ -94,78 +155,10 @@ def _create_traefik(client, name):
         ],
         labels={"app.managed": "true"},
     )
-    # Conectar na rede depois de iniciado
-    try:
-        network = client.networks.get(DOCKER_NETWORK)
-        network.connect(container)
-        print(f"[INFRA] Traefik conectado na rede '{DOCKER_NETWORK}'")
-    except Exception as e:
-        print(f"[INFRA] AVISO: Traefik criado mas falhou ao conectar na rede: {e}")
-    return container
+    print("[INFRA] Traefik criado e iniciado")
 
 
-def ensure_traefik():
-    """Garante que o Traefik está rodando com SSL automático na rede correta."""
-    client = get_client()
-    name = "traefik"
-    required_ports = {80, 443, 8080}
-
-    try:
-        c = client.containers.get(name)
-
-        # Se parado, tentar iniciar
-        if c.status != "running":
-            try:
-                c.start()
-                c.reload()
-                print(f"[INFRA] Traefik iniciado (estava '{c.status}')")
-            except Exception as e:
-                print(f"[INFRA] Traefik falhou ao iniciar: {e}. Removendo para recriar...")
-                c.remove(force=True)
-                time.sleep(3)
-                raise Exception("recreate")
-
-        # Se rodando mas fora da rede, conectar (SEM recriar)
-        if not _container_on_network(c, DOCKER_NETWORK):
-            try:
-                network = client.networks.get(DOCKER_NETWORK)
-                network.connect(c)
-                print(f"[INFRA] Traefik conectado na rede '{DOCKER_NETWORK}'")
-            except Exception as e:
-                print(f"[INFRA] AVISO: Traefik rodando mas falhou ao conectar na rede: {e}")
-        return
-
-    except docker.errors.NotFound:
-        pass
-    except Exception as e:
-        if "recreate" not in str(e):
-            print(f"[INFRA] Erro ao verificar Traefik: {e}")
-
-    # Criar do zero
-    _kill_port_holders(client, required_ports)
-    time.sleep(1)
-
-    for attempt in range(3):
-        try:
-            # Limpar fantasma
-            try:
-                client.containers.get(name).remove(force=True)
-                time.sleep(2)
-            except Exception:
-                pass
-
-            if attempt > 0:
-                time.sleep(5)
-                _kill_port_holders(client, required_ports)
-                time.sleep(1)
-
-            _create_traefik(client, name)
-            print("[INFRA] Traefik criado e iniciado")
-            return
-        except Exception as e:
-            print(f"[INFRA] Tentativa {attempt + 1}/3 para criar Traefik falhou: {e}")
-
-    print("[INFRA] AVISO: Nao foi possivel criar o Traefik apos 3 tentativas.")
+# ─── PostgreSQL ──────────────────────────────────────────
 
 
 def _test_pg_connection():
@@ -192,7 +185,6 @@ def ensure_postgres():
     """Garante que o PostgreSQL compartilhado está rodando com a senha correta."""
     client = get_client()
     name = "postgres"
-    created = False
 
     try:
         c = client.containers.get(name)
@@ -216,7 +208,7 @@ def ensure_postgres():
             except Exception:
                 pass
             c.remove(force=True)
-    except Exception:
+    except docker.errors.NotFound:
         pass
 
     _kill_port_holders(client, {5432})
@@ -236,7 +228,6 @@ def ensure_postgres():
         mem_limit="512m",
         network=DOCKER_NETWORK,
     )
-    created = True
     print("[INFRA] PostgreSQL criado e iniciado")
 
     for i in range(15):
@@ -244,23 +235,10 @@ def ensure_postgres():
         if _test_pg_connection():
             print("[INFRA] PostgreSQL: conexao verificada OK")
             return
-    if created:
-        print("[INFRA] AVISO: PostgreSQL criado mas conexao nao confirmada")
+    print("[INFRA] AVISO: PostgreSQL criado mas conexao nao confirmada")
 
 
-def _has_host_port(container, port):
-    """Verifica se um container expoe uma porta no host."""
-    try:
-        bindings = container.attrs.get("HostConfig", {}).get("PortBindings") or {}
-        for _, host_binds in bindings.items():
-            if not host_binds:
-                continue
-            for bind in host_binds:
-                if int(bind.get("HostPort", 0)) == port:
-                    return True
-    except Exception:
-        pass
-    return False
+# ─── Redis ───────────────────────────────────────────────
 
 
 def ensure_redis():
@@ -270,10 +248,8 @@ def ensure_redis():
     try:
         c = client.containers.get(name)
         if c.status == "running":
-            # Verificar se porta 6379 esta exposta no host
             if _has_host_port(c, REDIS_PORT):
                 return
-            # Container sem port mapping — recriar
             print("[INFRA] Redis: recriando com porta exposta no host...")
             c.remove(force=True)
         else:
@@ -284,7 +260,7 @@ def ensure_redis():
             except Exception:
                 pass
             c.remove(force=True)
-    except Exception:
+    except docker.errors.NotFound:
         pass
 
     _kill_port_holders(client, {REDIS_PORT})
@@ -303,6 +279,9 @@ def ensure_redis():
     print("[INFRA] Redis criado e iniciado")
 
 
+# ─── RabbitMQ ────────────────────────────────────────────
+
+
 def ensure_rabbitmq():
     """Garante que o RabbitMQ está rodando com management UI."""
     client = get_client()
@@ -316,7 +295,7 @@ def ensure_rabbitmq():
             return
         except Exception:
             c.remove(force=True)
-    except Exception:
+    except docker.errors.NotFound:
         pass
 
     _kill_port_holders(client, {RABBITMQ_PORT, 15672})
@@ -337,7 +316,6 @@ def ensure_rabbitmq():
     )
     print("[INFRA] RabbitMQ criado e iniciado")
 
-    # Aguardar RabbitMQ ficar pronto
     for i in range(15):
         time.sleep(2)
         if _test_port("127.0.0.1", RABBITMQ_PORT):
@@ -346,9 +324,12 @@ def ensure_rabbitmq():
     print("[INFRA] AVISO: RabbitMQ criado mas conexao nao confirmada")
 
 
+# ─── Bootstrap ───────────────────────────────────────────
+
+
 def bootstrap_infra():
-    """Provisiona toda a infraestrutura base. Nunca crashar — servidor sobe mesmo com falhas."""
-    for name, fn in [
+    """Provisiona toda a infraestrutura base."""
+    for label, fn in [
         ("network", ensure_network),
         ("traefik", ensure_traefik),
         ("postgres", ensure_postgres),
@@ -358,4 +339,4 @@ def bootstrap_infra():
         try:
             fn()
         except Exception as e:
-            print(f"[INFRA] ERRO em {name}: {e}. Continuando...")
+            print(f"[INFRA] ERRO em {label}: {e}. Continuando...")
