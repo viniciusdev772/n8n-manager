@@ -20,17 +20,46 @@ def ensure_network():
         print(f"[INFRA] Rede '{DOCKER_NETWORK}' criada")
 
 
+def _kill_port_holders(client, ports):
+    """Remove containers que estejam ocupando as portas necessarias."""
+    for container in client.containers.list(all=True):
+        try:
+            bindings = container.attrs.get("HostConfig", {}).get("PortBindings") or {}
+            for _, host_binds in bindings.items():
+                if not host_binds:
+                    continue
+                for bind in host_binds:
+                    host_port = int(bind.get("HostPort", 0))
+                    if host_port in ports:
+                        print(f"[INFRA] Removendo container '{container.name}' (ocupa porta {host_port})")
+                        container.remove(force=True)
+                        break
+        except Exception:
+            continue
+
+
 def ensure_traefik():
     """Garante que o Traefik está rodando com SSL automático."""
     client = get_client()
     name = "traefik"
+    required_ports = {80, 443, 8080}
+
     try:
         c = client.containers.get(name)
-        if c.status != "running":
+        if c.status == "running":
+            return
+        # Existe mas parado — tentar iniciar
+        try:
             c.start()
-        return
+            return
+        except Exception:
+            # Porta ocupada ou outro erro — remover e recriar
+            c.remove(force=True)
     except Exception:
         pass
+
+    # Limpar containers que ocupam as portas
+    _kill_port_holders(client, required_ports)
 
     client.containers.run(
         image="traefik:v3.3",
@@ -68,11 +97,17 @@ def ensure_postgres():
     name = "postgres"
     try:
         c = client.containers.get(name)
-        if c.status != "running":
+        if c.status == "running":
+            return
+        try:
             c.start()
-        return
+            return
+        except Exception:
+            c.remove(force=True)
     except Exception:
         pass
+
+    _kill_port_holders(client, {5432})
 
     client.containers.run(
         image="postgres:16-alpine",
@@ -84,6 +119,7 @@ def ensure_postgres():
             "POSTGRES_PASSWORD": PG_PASSWORD,
             "POSTGRES_DB": PG_ADMIN_DB,
         },
+        ports={"5432/tcp": 5432},
         volumes={"pg-data": {"bind": "/var/lib/postgresql/data", "mode": "rw"}},
         mem_limit="512m",
         network=DOCKER_NETWORK,
@@ -97,9 +133,13 @@ def ensure_redis():
     name = "redis"
     try:
         c = client.containers.get(name)
-        if c.status != "running":
+        if c.status == "running":
+            return
+        try:
             c.start()
-        return
+            return
+        except Exception:
+            c.remove(force=True)
     except Exception:
         pass
 
