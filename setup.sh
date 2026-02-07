@@ -386,25 +386,113 @@ systemctl daemon-reload
 systemctl enable n8n-manager > /dev/null 2>&1 || true
 log "Servico n8n-manager criado e habilitado no boot"
 
+# --- 11. Auto-start do servico ---
+
+info "Iniciando N8N Manager..."
+systemctl restart n8n-manager > /dev/null 2>&1 || true
+sleep 3
+
+# --- 12. Verificacao final de qualidade ---
+
+info "Executando verificacao final..."
+ERRORS=0
+
+# Docker
+if docker info > /dev/null 2>&1; then
+    log "Docker: funcionando"
+else
+    warn "Docker: FALHOU"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Python venv
+if [ -x "$PROJECT_DIR/venv/bin/python" ]; then
+    log "Python venv: OK ($($PROJECT_DIR/venv/bin/python --version 2>&1))"
+else
+    warn "Python venv: NAO ENCONTRADO"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Dependencias Python
+if $PROJECT_DIR/venv/bin/python -c "import fastapi, uvicorn, docker" 2>/dev/null; then
+    log "Dependencias Python: OK (fastapi, uvicorn, docker)"
+else
+    warn "Dependencias Python: FALTANDO"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# .env
+if [ -f "$PROJECT_DIR/.env" ]; then
+    log "Arquivo .env: presente"
+else
+    warn "Arquivo .env: AUSENTE (servico nao vai funcionar sem credenciais)"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Servico systemd
+if systemctl is-active --quiet n8n-manager 2>/dev/null; then
+    log "Servico n8n-manager: ATIVO"
+else
+    warn "Servico n8n-manager: INATIVO (verifique .env e logs)"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Health check na API
+sleep 2
+if curl -sf http://localhost:5050/health > /dev/null 2>&1; then
+    log "API health check: OK (porta 5050)"
+else
+    warn "API health check: SEM RESPOSTA (pode precisar configurar .env primeiro)"
+    ERRORS=$((ERRORS + 1))
+fi
+
+# Firewall
+if command -v ufw > /dev/null 2>&1 && ufw status | grep -q "Status: active" 2>/dev/null; then
+    log "Firewall UFW: ativo"
+elif command -v firewall-cmd > /dev/null 2>&1 && firewall-cmd --state 2>/dev/null | grep -q "running"; then
+    log "Firewall firewalld: ativo"
+else
+    warn "Firewall: nao detectado ou inativo"
+fi
+
+# Swap
+SWAP_FINAL=$(free -m | awk '/Swap:/ {print $2}')
+if [ "$SWAP_FINAL" -gt 0 ]; then
+    log "Swap: ${SWAP_FINAL}MB configurado"
+else
+    warn "Swap: nao configurado"
+fi
+
 # --- Resumo final ---
 
 echo ""
-echo -e "${GREEN}===============================================${NC}"
-echo -e "${GREEN}  Setup concluido com sucesso!${NC}"
-echo -e "${GREEN}===============================================${NC}"
+if [ "$ERRORS" -eq 0 ]; then
+    echo -e "${GREEN}===============================================${NC}"
+    echo -e "${GREEN}  Setup concluido - TUDO OK!${NC}"
+    echo -e "${GREEN}===============================================${NC}"
+else
+    echo -e "${YELLOW}===============================================${NC}"
+    echo -e "${YELLOW}  Setup concluido com $ERRORS aviso(s)${NC}"
+    echo -e "${YELLOW}===============================================${NC}"
+fi
 echo ""
 echo -e "  ${CYAN}Distro:${NC}       $DISTRO_NAME"
 echo -e "  ${CYAN}RAM:${NC}          ${TOTAL_RAM_MB}MB"
-echo -e "  ${CYAN}Swap:${NC}         $(free -m | awk '/Swap:/ {print $2}')MB"
+echo -e "  ${CYAN}Swap:${NC}         ${SWAP_FINAL}MB"
 echo -e "  ${CYAN}Docker:${NC}       $(docker --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' | head -1 || echo 'N/A')"
 echo -e "  ${CYAN}Python:${NC}       $(python3 --version 2>/dev/null | grep -oP '\d+\.\d+\.\d+' || echo 'N/A')"
 echo -e "  ${CYAN}Projeto:${NC}      $PROJECT_DIR"
+echo -e "  ${CYAN}Servico:${NC}      $(systemctl is-active n8n-manager 2>/dev/null || echo 'inativo')"
 echo ""
-echo -e "  ${YELLOW}Proximos passos:${NC}"
-echo -e "  1. Edite as credenciais:  ${CYAN}nano $PROJECT_DIR/.env${NC}"
-echo -e "  2. Inicie o servico:      ${CYAN}systemctl start n8n-manager${NC}"
-echo -e "  3. Veja os logs:          ${CYAN}journalctl -u n8n-manager -f${NC}"
-echo -e "  4. Teste:                 ${CYAN}curl http://localhost:5050/health${NC}"
+if [ "$ERRORS" -gt 0 ]; then
+    echo -e "  ${YELLOW}Acao necessaria:${NC}"
+    echo -e "  1. Edite as credenciais:  ${CYAN}nano $PROJECT_DIR/.env${NC}"
+    echo -e "  2. Reinicie o servico:    ${CYAN}systemctl restart n8n-manager${NC}"
+    echo -e "  3. Veja os logs:          ${CYAN}journalctl -u n8n-manager -f${NC}"
+else
+    echo -e "  ${GREEN}Servico rodando!${NC} Teste com: ${CYAN}curl http://localhost:5050/health${NC}"
+    echo -e "  Logs: ${CYAN}journalctl -u n8n-manager -f${NC}"
+fi
 echo ""
 echo -e "  ${YELLOW}Portas abertas:${NC} 22 (SSH), 80 (HTTP), 443 (HTTPS), 5050 (API), 8080 (Traefik)"
 echo ""
