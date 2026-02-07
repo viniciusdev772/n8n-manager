@@ -106,29 +106,51 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, iniciando N8N..."})
 
-        # 5. Aguardar startup
+        # 5. Aguardar startup (verifica logs + HTTP)
         push_event(job_id, {"status": "info", "message": "Aguardando instancia ficar disponivel..."})
-        for i in range(30):
+        n8n_ready = False
+        for i in range(60):
             time.sleep(2)
             ct.reload()
             if ct.status == "running":
-                push_event(job_id, {"status": "info", "message": f"Verificando N8N ({i + 1}/30)"})
+                push_event(job_id, {"status": "info", "message": f"Verificando N8N ({i + 1}/60)"})
                 try:
-                    logs = ct.logs(tail=5).decode("utf-8", errors="replace")
-                    if "Editor is now accessible" in logs or "Webhook listener" in logs:
+                    logs = ct.logs(tail=10).decode("utf-8", errors="replace")
+                    if "Editor is now accessible" in logs or "Webhook listener" in logs or "n8n ready" in logs.lower():
+                        n8n_ready = True
                         break
                 except Exception:
                     pass
+                # Fallback: verificar via HTTP interno
+                if i >= 15 and i % 5 == 0:
+                    try:
+                        import urllib.request
+                        url_check = f"http://{container_name(name)}:5678/healthz"
+                        req = urllib.request.Request(url_check, method="GET")
+                        resp = urllib.request.urlopen(req, timeout=3)
+                        if resp.status == 200:
+                            n8n_ready = True
+                            push_event(job_id, {"status": "info", "message": "N8N respondendo via HTTP"})
+                            break
+                    except Exception:
+                        pass
             elif ct.status == "exited":
-                logs = ct.logs(tail=20).decode("utf-8", errors="replace")
+                logs = ct.logs(tail=30).decode("utf-8", errors="replace")
                 push_event(job_id, {"status": "error", "message": f"Container parou.\n{logs}"})
                 set_state(job_id, "error")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 return
 
+        if not n8n_ready:
+            logs = ct.logs(tail=30).decode("utf-8", errors="replace")
+            push_event(job_id, {"status": "error", "message": f"N8N nao iniciou em 2 minutos.\n{logs}"})
+            set_state(job_id, "error")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+
         # 6. SSL via Traefik
         push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
-        time.sleep(3)
+        time.sleep(5)
 
         # 7. Sucesso
         push_event(job_id, {
