@@ -600,6 +600,18 @@ else
     ERRORS=$((ERRORS + 1))
 fi
 
+# PostgreSQL
+PG_PASS_ENV=$(grep -oP 'PG_PASSWORD=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+if [ -n "$PG_PASS_ENV" ] && command -v docker > /dev/null 2>&1; then
+    if docker exec postgres psql -U n8n -d postgres -c "SELECT 1" > /dev/null 2>&1; then
+        log "PostgreSQL: conectividade OK"
+    else
+        warn "PostgreSQL: senha pode estar dessincronizada. O servico vai corrigir no proximo restart."
+    fi
+else
+    warn "PostgreSQL: nao foi possivel verificar"
+fi
+
 # Health check na API
 sleep 2
 if curl -sf http://localhost:5050/health > /dev/null 2>&1; then

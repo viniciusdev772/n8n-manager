@@ -1,10 +1,13 @@
 """Provisionamento de infraestrutura: Traefik, PostgreSQL, Redis."""
 
+import time
+
 from .config import (
     ACME_EMAIL,
     DOCKER_NETWORK,
     PG_ADMIN_DB,
     PG_PASSWORD,
+    PG_PORT,
     PG_USER,
 )
 from .docker_client import get_client
@@ -91,18 +94,56 @@ def ensure_traefik():
     print("[INFRA] Traefik criado e iniciado")
 
 
+def _test_pg_connection():
+    """Testa conexao com PostgreSQL. Retorna True se OK."""
+    try:
+        import psycopg2
+
+        conn = psycopg2.connect(
+            host="127.0.0.1",
+            port=PG_PORT,
+            user=PG_USER,
+            password=PG_PASSWORD,
+            dbname=PG_ADMIN_DB,
+            connect_timeout=5,
+        )
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"[INFRA] PostgreSQL conexao falhou: {e}")
+        return False
+
+
 def ensure_postgres():
-    """Garante que o PostgreSQL compartilhado está rodando."""
+    """Garante que o PostgreSQL compartilhado está rodando com a senha correta."""
     client = get_client()
     name = "postgres"
+    created = False
+
     try:
         c = client.containers.get(name)
         if c.status == "running":
-            return
-        try:
-            c.start()
-            return
-        except Exception:
+            # Container rodando — verificar se a senha bate
+            time.sleep(1)
+            if _test_pg_connection():
+                return
+            # Senha incorreta — volume tem senha antiga, precisa resetar
+            print("[INFRA] PostgreSQL: senha do .env nao bate com o volume. Recriando...")
+            c.remove(force=True)
+            # Remover volume para forcar reinicializacao com nova senha
+            try:
+                client.volumes.get("pg-data").remove(force=True)
+                print("[INFRA] Volume pg-data removido para reset de senha")
+            except Exception:
+                pass
+        else:
+            try:
+                c.start()
+                time.sleep(2)
+                if _test_pg_connection():
+                    return
+            except Exception:
+                pass
             c.remove(force=True)
     except Exception:
         pass
@@ -124,7 +165,17 @@ def ensure_postgres():
         mem_limit="512m",
         network=DOCKER_NETWORK,
     )
+    created = True
     print("[INFRA] PostgreSQL criado e iniciado")
+
+    # Aguardar PostgreSQL ficar pronto
+    for i in range(15):
+        time.sleep(2)
+        if _test_pg_connection():
+            print("[INFRA] PostgreSQL: conexao verificada OK")
+            return
+    if created:
+        print("[INFRA] AVISO: PostgreSQL criado mas conexao nao confirmada")
 
 
 def ensure_redis():
