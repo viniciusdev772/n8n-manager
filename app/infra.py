@@ -3,6 +3,8 @@
 import socket
 import time
 
+import docker
+
 from .config import (
     ACME_EMAIL,
     DOCKER_NETWORK,
@@ -110,39 +112,60 @@ def ensure_traefik():
 
     try:
         c = client.containers.get(name)
-        if c.status == "running" and _container_on_network(c, DOCKER_NETWORK):
-            return  # Tudo ok
-        # Traefik existe mas fora da rede ou parado — recriar
-        print(f"[INFRA] Traefik status='{c.status}', redes={list(c.attrs.get('NetworkSettings', {}).get('Networks', {}).keys())}. Recriando...")
-        c.remove(force=True)
-        time.sleep(3)
-    except Exception:
-        pass
 
-    # Retry — portas podem levar segundos para liberar
-    for attempt in range(5):
-        try:
-            # Limpar container fantasma de tentativa anterior
+        # Se parado, tentar iniciar
+        if c.status != "running":
             try:
-                old = client.containers.get(name)
-                old.remove(force=True)
+                c.start()
+                c.reload()
+                print(f"[INFRA] Traefik iniciado (estava '{c.status}')")
+            except Exception as e:
+                print(f"[INFRA] Traefik falhou ao iniciar: {e}. Removendo para recriar...")
+                c.remove(force=True)
+                time.sleep(3)
+                raise Exception("recreate")
+
+        # Se rodando mas fora da rede, conectar (SEM recriar)
+        if not _container_on_network(c, DOCKER_NETWORK):
+            try:
+                network = client.networks.get(DOCKER_NETWORK)
+                network.connect(c)
+                print(f"[INFRA] Traefik conectado na rede '{DOCKER_NETWORK}'")
+            except Exception as e:
+                print(f"[INFRA] AVISO: Traefik rodando mas falhou ao conectar na rede: {e}")
+        return
+
+    except docker.errors.NotFound:
+        pass
+    except Exception as e:
+        if "recreate" not in str(e):
+            print(f"[INFRA] Erro ao verificar Traefik: {e}")
+
+    # Criar do zero
+    _kill_port_holders(client, required_ports)
+    time.sleep(1)
+
+    for attempt in range(3):
+        try:
+            # Limpar fantasma
+            try:
+                client.containers.get(name).remove(force=True)
                 time.sleep(2)
             except Exception:
                 pass
 
             if attempt > 0:
                 time.sleep(5)
-
-            _kill_port_holders(client, required_ports)
-            time.sleep(1)
+                _kill_port_holders(client, required_ports)
+                time.sleep(1)
 
             _create_traefik(client, name)
             print("[INFRA] Traefik criado e iniciado")
             return
         except Exception as e:
-            print(f"[INFRA] Tentativa {attempt + 1}/5 para criar Traefik falhou: {e}")
+            print(f"[INFRA] Tentativa {attempt + 1}/3 para criar Traefik falhou: {e}")
 
-    print("[INFRA] AVISO: Nao foi possivel criar o Traefik apos 5 tentativas. Servidor continua sem proxy reverso.")
+    print("[INFRA] AVISO: Nao foi possivel criar o Traefik apos 3 tentativas.")
 
 
 def _test_pg_connection():
