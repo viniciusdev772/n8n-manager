@@ -65,6 +65,36 @@
       background-size: 200px 200px;
     }
 
+    /* ── Light leak blobs ──────────────────────── */
+
+    .light-leak-tr {
+      position: fixed;
+      top: -15%;
+      right: -10%;
+      width: 55vw;
+      height: 55vh;
+      background: radial-gradient(ellipse at center, rgba(6,182,212,0.03) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .light-leak-bl {
+      position: fixed;
+      bottom: -20%;
+      left: -12%;
+      width: 50vw;
+      height: 50vh;
+      background: radial-gradient(ellipse at center, rgba(20,184,166,0.02) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* ── Vignette ──────────────────────────────── */
+
+    .vignette {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(2,3,8,0.45) 100%);
+    }
+
     /* ── Circuit board SVG ──────────────────────── */
 
     .circuit-layer {
@@ -103,7 +133,18 @@
       position: relative;
     }
 
-    /* Vertical accent line */
+    /* Crosshatch pattern overlay on left column */
+    .col-left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(45deg, transparent, transparent 11px, rgba(148,163,184,0.008) 11px, rgba(148,163,184,0.008) 12px),
+        repeating-linear-gradient(-45deg, transparent, transparent 11px, rgba(148,163,184,0.008) 11px, rgba(148,163,184,0.008) 12px);
+      pointer-events: none;
+    }
+
+    /* Vertical accent line on divider */
     .col-left::after {
       content: '';
       position: absolute;
@@ -114,11 +155,58 @@
       background: linear-gradient(180deg, transparent, rgba(6,182,212,0.08), rgba(244,63,94,0.06), transparent);
     }
 
+    /* ── Corner brackets — decorative ──────────── */
+
+    .corner-brackets {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    /* Top-left bracket */
+    .corner-brackets::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      width: 32px;
+      height: 32px;
+      border-top: 1px solid rgba(6,182,212,0.12);
+      border-left: 1px solid rgba(6,182,212,0.12);
+    }
+    /* Bottom-right bracket */
+    .corner-brackets::after {
+      content: '';
+      position: absolute;
+      bottom: 28px;
+      right: 29px;
+      width: 32px;
+      height: 32px;
+      border-bottom: 1px solid rgba(6,182,212,0.12);
+      border-right: 1px solid rgba(6,182,212,0.12);
+    }
+
+    /* ── Nebula glow behind icon ───────────────── */
+
+    .nebula-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -58%);
+      width: 320px;
+      height: 260px;
+      background: radial-gradient(ellipse 100% 90% at 50% 50%, rgba(244,63,94,0.04) 0%, rgba(244,63,94,0.015) 35%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
       margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
     }
     .brand-icon {
       width: 28px;
@@ -128,7 +216,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 16px rgba(6,182,212,0.15);
+      box-shadow:
+        0 0 16px rgba(6,182,212,0.15),
+        0 0 0 3px rgba(4,6,14,1),
+        0 0 0 4px rgba(6,182,212,0.12);
     }
     .brand-icon svg { width: 14px; height: 14px; color: #fff; }
     .brand-text {
@@ -154,6 +245,8 @@
       color: rgba(244,63,94,0.75);
       letter-spacing: 0.5px;
       text-transform: uppercase;
+      position: relative;
+      z-index: 1;
     }
     .status-badge::before {
       content: '';
@@ -169,6 +262,7 @@
       position: relative;
       display: inline-flex;
       margin-bottom: 24px;
+      z-index: 1;
     }
     .icon-ring-outer {
       position: absolute;
@@ -230,19 +324,40 @@
       color: #fff;
       margin-bottom: 8px;
       letter-spacing: -0.4px;
+      text-shadow: 0 0 30px rgba(244,63,94,0.08), 0 0 60px rgba(244,63,94,0.04);
+      position: relative;
+      z-index: 1;
     }
     .description {
       font-size: 14px;
       line-height: 1.65;
       color: var(--text-secondary);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       max-width: 400px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Gradient divider between description and info-box */
+
+    .divider {
+      width: 100%;
+      max-width: 400px;
+      height: 1px;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, transparent, rgba(100,116,139,0.12) 30%, rgba(6,182,212,0.08) 50%, rgba(100,116,139,0.12) 70%, transparent);
+      position: relative;
+      z-index: 1;
     }
 
     .info-box {
-      background: var(--bg-card-inner);
+      background: rgba(12, 17, 38, 0.5);
       border: 1px solid rgba(6,182,212,0.08);
+      border-left: 2px solid;
+      border-image: linear-gradient(180deg, rgba(6,182,212,0.3), rgba(6,182,212,0.03)) 1;
       border-radius: 12px;
+      /* border-image breaks border-radius on left, use clip workaround */
+      border-left-color: transparent;
       padding: 14px 16px;
       margin-bottom: 24px;
       display: flex;
@@ -252,6 +367,22 @@
       max-width: 400px;
       width: 100%;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.01) inset;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      position: relative;
+      z-index: 1;
+      overflow: hidden;
+    }
+    /* Left accent bar via pseudo-element (preserves border-radius) */
+    .info-box::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(6,182,212,0.35), rgba(6,182,212,0.04));
+      border-radius: 2px 0 0 2px;
     }
     .info-box svg {
       width: 16px;
@@ -278,7 +409,7 @@
       align-items: center;
       gap: 8px;
       padding: 12px 26px;
-      background: linear-gradient(135deg, #06b6d4, #0d9488);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 3px, transparent 3px), linear-gradient(135deg, #06b6d4, #0d9488);
       color: #fff;
       font-family: 'DM Sans', sans-serif;
       font-size: 13.5px;
@@ -288,9 +419,13 @@
       cursor: pointer;
       text-decoration: none;
       letter-spacing: 0.2px;
+      position: relative;
+      z-index: 1;
       box-shadow:
         0 0 0 1px rgba(255,255,255,0.08) inset,
         0 1px 0 rgba(255,255,255,0.1) inset,
+        0 0 0 3px rgba(4,6,14,0.8),
+        0 0 0 4px rgba(6,182,212,0.08),
         0 8px 32px -8px rgba(6,182,212,0.3),
         0 2px 8px rgba(0,0,0,0.2);
     }
@@ -303,6 +438,8 @@
       font-size: 10px;
       color: var(--text-muted);
       letter-spacing: 0.5px;
+      position: relative;
+      z-index: 1;
     }
 
     /* ── Right column — recommendations ─────────── */
@@ -322,8 +459,18 @@
       font-size: 17px;
       font-weight: 700;
       color: #fff;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
       letter-spacing: -0.3px;
+    }
+    /* Decorative gradient underline */
+    .tips-header h2::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 2px;
+      margin-top: 8px;
+      border-radius: 1px;
+      background: linear-gradient(90deg, rgba(6,182,212,0.5), rgba(20,184,166,0.15), transparent);
     }
     .tips-header p {
       font-size: 12.5px;
@@ -335,6 +482,25 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
+      position: relative;
+    }
+
+    /* Vertical dashed center line between card columns */
+    .tips-grid::before {
+      content: '';
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 50%;
+      width: 1px;
+      background: repeating-linear-gradient(180deg,
+        rgba(100,116,139,0.06) 0px,
+        rgba(100,116,139,0.06) 4px,
+        transparent 4px,
+        transparent 10px
+      );
+      pointer-events: none;
+      z-index: 0;
     }
 
     .tip-card {
@@ -348,6 +514,7 @@
       overflow: hidden;
       box-shadow:
         0 0 0 1px rgba(255,255,255,0.015) inset,
+        inset 0 -8px 16px -10px rgba(0,0,0,0.25),
         0 6px 24px -6px rgba(0,0,0,0.35);
     }
 
@@ -414,7 +581,25 @@
       margin-bottom: 6px;
       position: relative;
       z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
+    /* Colored dot pip next to title */
+    .tip-card h3::before {
+      content: '';
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tip-card[data-accent="cyan"] h3::before    { background: rgba(6,182,212,0.6);   box-shadow: 0 0 6px rgba(6,182,212,0.3); }
+    .tip-card[data-accent="teal"] h3::before    { background: rgba(20,184,166,0.6);  box-shadow: 0 0 6px rgba(20,184,166,0.3); }
+    .tip-card[data-accent="violet"] h3::before  { background: rgba(139,92,246,0.6);  box-shadow: 0 0 6px rgba(139,92,246,0.3); }
+    .tip-card[data-accent="amber"] h3::before   { background: rgba(245,158,11,0.6);  box-shadow: 0 0 6px rgba(245,158,11,0.3); }
+    .tip-card[data-accent="emerald"] h3::before { background: rgba(16,185,129,0.6);  box-shadow: 0 0 6px rgba(16,185,129,0.3); }
+    .tip-card[data-accent="pink"] h3::before    { background: rgba(236,72,153,0.6);  box-shadow: 0 0 6px rgba(236,72,153,0.3); }
+
     .tip-card p {
       font-size: 11.5px;
       line-height: 1.55;
@@ -460,6 +645,8 @@
         padding: 36px 24px 32px;
       }
       .col-left::after { display: none; }
+      .corner-brackets::before { top: 20px; left: 20px; width: 24px; height: 24px; }
+      .corner-brackets::after { bottom: 20px; right: 20px; width: 24px; height: 24px; }
       .col-right {
         padding: 32px 20px 40px;
       }
@@ -478,7 +665,11 @@
         grid-template-columns: 1fr;
         max-width: 360px;
       }
+      .tips-grid::before { display: none; }
       .tips-header h2 { font-size: 16px; }
+      .corner-brackets::before,
+      .corner-brackets::after { display: none; }
+      .nebula-glow { width: 240px; height: 200px; }
     }
 
     /* ── Tall desktop — shrink if viewport is short */
@@ -487,7 +678,8 @@
       .brand { margin-bottom: 20px; }
       .status-badge { margin-bottom: 16px; }
       .icon-wrapper { margin-bottom: 16px; }
-      .description { margin-bottom: 16px; }
+      .description { margin-bottom: 14px; }
+      .divider { margin-bottom: 14px; }
       .info-box { margin-bottom: 16px; padding: 10px 14px; }
       .footer-left { margin-top: 16px; }
       .col-right { padding: 24px 24px; }
@@ -495,6 +687,7 @@
       .tips-grid { gap: 8px; }
       .tip-card { padding: 14px 14px; }
       .tip-icon { margin-bottom: 8px; }
+      .nebula-glow { width: 260px; height: 200px; }
     }
   </style>
 </head>
@@ -504,6 +697,9 @@
   <div class="bg-dots"></div>
   <div class="bg-scanlines"></div>
   <div class="bg-noise"></div>
+  <div class="light-leak-tr"></div>
+  <div class="light-leak-bl"></div>
+  <div class="vignette"></div>
 
   <!-- Background circuit traces -->
   <div class="circuit-layer">
@@ -529,6 +725,9 @@
 
     <!-- LEFT: Instance removed message -->
     <div class="col-left">
+      <div class="corner-brackets"></div>
+      <div class="nebula-glow"></div>
+
       <div class="brand">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
@@ -557,6 +756,8 @@
         Esta instância N8N foi desativada e não está mais disponível.
         Instâncias de teste são removidas automaticamente após 5 dias.
       </p>
+
+      <div class="divider"></div>
 
       <div class="info-box">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
