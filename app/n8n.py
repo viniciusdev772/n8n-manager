@@ -11,6 +11,7 @@ from .config import (
     N8N_IMAGE,
     PG_PASSWORD,
     PG_USER,
+    TRAEFIK_CERT_RESOLVER,
 )
 from .database import db_name_for
 from .docker_client import get_client
@@ -73,7 +74,7 @@ def build_traefik_labels(name: str) -> dict:
         "traefik.enable": "true",
         f"traefik.http.routers.n8n-{name}.rule": f"Host(`{host}`)",
         f"traefik.http.routers.n8n-{name}.entrypoints": "websecure",
-        f"traefik.http.routers.n8n-{name}.tls.certresolver": "letsencrypt",
+        f"traefik.http.routers.n8n-{name}.tls.certresolver": TRAEFIK_CERT_RESOLVER,
         f"traefik.http.services.n8n-{name}.loadbalancer.server.port": "5678",
         "app.managed": "true",
         "app.type": "n8n",

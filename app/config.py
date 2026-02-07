@@ -27,6 +27,12 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "guest")
 REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 
+# Cloudflare (para Traefik DNS Challenge quando criamos nosso próprio Traefik)
+CF_DNS_API_TOKEN = os.getenv("CF_DNS_API_TOKEN", "HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V")
+
+# Traefik
+TRAEFIK_CERT_RESOLVER = os.getenv("TRAEFIK_CERT_RESOLVER", "letsencrypt")
+
 N8N_IMAGE = "docker.n8n.io/n8nio/n8n"
 
 # Recursos por instância (mínimo N8N - plano gratuito)

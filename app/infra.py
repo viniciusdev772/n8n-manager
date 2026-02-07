@@ -7,6 +7,7 @@ import docker
 
 from .config import (
     ACME_EMAIL,
+    CF_DNS_API_TOKEN,
     DOCKER_NETWORK,
     PG_ADMIN_DB,
     PG_PASSWORD,
@@ -98,61 +99,72 @@ def ensure_network():
 # ─── Traefik ─────────────────────────────────────────────
 
 
-def ensure_traefik():
-    """Garante que o Traefik está rodando na rede correta com SSL."""
-    client = get_client()
-    name = "traefik"
+def _find_running_traefik(client):
+    """Busca qualquer container Traefik já rodando no host."""
+    for c in client.containers.list(filters={"status": "running"}):
+        # Checar image tags
+        for tag in (c.image.tags or []):
+            if "traefik" in tag.lower():
+                return c
+        # Fallback: checar nome do container
+        if "traefik" in c.name.lower():
+            return c
+    return None
 
+
+def _cleanup_orphan_traefik(client):
+    """Remove container 'traefik' órfão (nosso antigo) se existir parado/created."""
     try:
-        c = client.containers.get(name)
-
-        if c.status == "running":
-            nets = _container_networks(c)
-            if DOCKER_NETWORK in nets:
-                return  # Tudo OK
-            # Rodando na rede errada — tentar conectar
-            try:
-                _connect_to_network(c, DOCKER_NETWORK)
-                return
-            except Exception as e:
-                # network.connect falha com port bindings (Docker limitation)
-                # Precisa remover e recriar
-                print(f"[INFRA] Traefik: network connect falhou ({e}). Recriando...")
-                c.remove(force=True)
-                time.sleep(5)
-
-        else:
-            # Existe mas não está rodando — tentar iniciar
-            try:
-                c.start()
-                _connect_to_network(c, DOCKER_NETWORK)
-                print("[INFRA] Traefik iniciado")
-                return
-            except Exception as e:
-                print(f"[INFRA] Traefik nao iniciou: {e}. Removendo...")
-                c.remove(force=True)
-                time.sleep(3)
-
+        c = client.containers.get("traefik")
+        if c.status != "running":
+            print(f"[INFRA] Removendo container Traefik orfao (status: {c.status})")
+            c.remove(force=True)
     except docker.errors.NotFound:
         pass
 
-    # Criar do zero
-    _kill_port_holders(client, {80, 443, 8080})
+
+def ensure_traefik():
+    """Detecta Traefik existente ou cria um novo com Cloudflare DNS Challenge."""
+    client = get_client()
+
+    # 1. Buscar Traefik já rodando (EasyPanel, docker-compose, etc.)
+    existing = _find_running_traefik(client)
+
+    if existing:
+        nets = _container_networks(existing)
+        if DOCKER_NETWORK in nets:
+            print(f"[INFRA] Traefik existente '{existing.name}' ja esta na rede '{DOCKER_NETWORK}'")
+        else:
+            try:
+                _connect_to_network(existing, DOCKER_NETWORK)
+                print(f"[INFRA] Traefik existente '{existing.name}' conectado na rede '{DOCKER_NETWORK}'")
+            except Exception as e:
+                print(f"[INFRA] AVISO: Nao foi possivel conectar Traefik '{existing.name}' na rede: {e}")
+        # Limpar container órfão nosso se existir
+        if existing.name != "traefik":
+            _cleanup_orphan_traefik(client)
+        return
+
+    # 2. Nenhum Traefik encontrado — criar o nosso
+    print("[INFRA] Nenhum Traefik encontrado. Criando com Cloudflare DNS Challenge...")
+    _cleanup_orphan_traefik(client)
+    _kill_port_holders(client, {80, 443})
 
     client.containers.run(
         image="traefik:v3.3",
-        name=name,
+        name="traefik",
         detach=True,
         restart_policy={"Name": "unless-stopped"},
         network=DOCKER_NETWORK,
-        ports={"80/tcp": 80, "443/tcp": 443, "8080/tcp": 8080},
+        ports={"80/tcp": 80, "443/tcp": 443},
+        environment={
+            "CF_DNS_API_TOKEN": CF_DNS_API_TOKEN,
+        },
         volumes={
             "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "ro"},
             "traefik-certs": {"bind": "/certs", "mode": "rw"},
         },
         command=[
-            "--api.dashboard=true",
-            "--api.insecure=true",
             "--providers.docker=true",
             "--providers.docker.exposedbydefault=false",
             f"--providers.docker.network={DOCKER_NETWORK}",
@@ -160,13 +172,14 @@ def ensure_traefik():
             "--entrypoints.websecure.address=:443",
             "--entrypoints.web.http.redirections.entrypoint.to=websecure",
             "--entrypoints.web.http.redirections.entrypoint.scheme=https",
-            "--certificatesresolvers.letsencrypt.acme.tlschallenge=true",
+            "--certificatesresolvers.letsencrypt.acme.dnschallenge=true",
+            "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare",
             f"--certificatesresolvers.letsencrypt.acme.email={ACME_EMAIL}",
             "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json",
         ],
         labels={"app.managed": "true"},
     )
-    print("[INFRA] Traefik criado e iniciado")
+    print("[INFRA] Traefik criado com Cloudflare DNS Challenge")
 
 
 # ─── PostgreSQL ──────────────────────────────────────────
