@@ -356,7 +356,6 @@ def bootstrap_infra():
     for label, fn in [
         ("network", ensure_network),
         ("traefik", ensure_traefik),
-        ("postgres", ensure_postgres),
         ("redis", ensure_redis),
         ("rabbitmq", ensure_rabbitmq),
     ]:

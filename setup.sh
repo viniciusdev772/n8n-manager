@@ -470,9 +470,8 @@ if [ ! -f "$PROJECT_DIR/.env" ]; then
         || curl -sf --max-time 5 https://icanhazip.com 2>/dev/null \
         || hostname -I | awk '{print $1}')
 
-    # Gerar senhas seguras
+    # Gerar token seguro
     GEN_API_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 64)
-    GEN_PG_PASSWORD=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
 
     cat > "$PROJECT_DIR/.env" << ENVFILE
 # === Auto-gerado pelo setup.sh em $(date '+%Y-%m-%d %H:%M:%S') ===
@@ -486,15 +485,21 @@ BASE_DOMAIN=n8n.marketcodebrasil.com.br
 # Email para certificados SSL (Let's Encrypt via Traefik)
 ACME_EMAIL=admin@marketcodebrasil.com.br
 
-# PostgreSQL compartilhado (container criado automaticamente)
-PG_HOST=postgres
-PG_PORT=5432
-PG_USER=n8n
-PG_PASSWORD=$GEN_PG_PASSWORD
-PG_ADMIN_DB=postgres
+# Cloudflare DNS API Token (para SSL wildcard via DNS Challenge)
+CF_DNS_API_TOKEN=HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V
 
 # Rede Docker para Traefik + instancias
 DOCKER_NETWORK=n8n-public
+
+# RabbitMQ (job queue para criacao de instancias)
+RABBITMQ_HOST=127.0.0.1
+RABBITMQ_PORT=5672
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+
+# Redis (status de jobs)
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
 
 # Porta do servidor FastAPI
 SERVER_PORT=5050
@@ -507,13 +512,6 @@ ENVFILE
     warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js (.env do n8n-vendas)"
     warn "  cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN"
 else
-    # Corrigir senhas placeholder se existirem
-    if grep -q "senha_segura_aqui" "$PROJECT_DIR/.env" 2>/dev/null; then
-        warn "Detectado PG_PASSWORD placeholder, gerando senha segura..."
-        GEN_PG_PASSWORD=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
-        sed -i "s/PG_PASSWORD=senha_segura_aqui/PG_PASSWORD=$GEN_PG_PASSWORD/" "$PROJECT_DIR/.env"
-        log "PG_PASSWORD atualizada automaticamente"
-    fi
     log "Arquivo .env ja existe (verificado)"
 fi
 
@@ -604,17 +602,17 @@ if ! docker inspect traefik > /dev/null 2>&1; then
 
     # Ler config do .env
     ACME_EMAIL_ENV=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
+    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
 
     docker run -d \
         --name traefik \
         --restart unless-stopped \
         --network "$DOCKER_NET" \
-        -p 80:80 -p 443:443 -p 8080:8080 \
+        -p 80:80 -p 443:443 \
+        -e CF_DNS_API_TOKEN="$CF_TOKEN_ENV" \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v traefik-certs:/certs \
         traefik:v3.3 \
-        --api.dashboard=true \
-        --api.insecure=true \
         --providers.docker=true \
         --providers.docker.exposedbydefault=false \
         --providers.docker.network="$DOCKER_NET" \
@@ -622,7 +620,8 @@ if ! docker inspect traefik > /dev/null 2>&1; then
         --entrypoints.websecure.address=:443 \
         --entrypoints.web.http.redirections.entrypoint.to=websecure \
         --entrypoints.web.http.redirections.entrypoint.scheme=https \
-        --certificatesresolvers.letsencrypt.acme.tlschallenge=true \
+        --certificatesresolvers.letsencrypt.acme.dnschallenge=true \
+        --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare \
         --certificatesresolvers.letsencrypt.acme.email="$ACME_EMAIL_ENV" \
         --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json \
         > /dev/null 2>&1
@@ -687,18 +686,6 @@ if systemctl is-active --quiet n8n-manager 2>/dev/null; then
 else
     warn "Servico n8n-manager: INATIVO (verifique .env e logs)"
     ERRORS=$((ERRORS + 1))
-fi
-
-# PostgreSQL
-PG_PASS_ENV=$(grep -oP 'PG_PASSWORD=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-if [ -n "$PG_PASS_ENV" ] && command -v docker > /dev/null 2>&1; then
-    if docker exec postgres psql -U n8n -d postgres -c "SELECT 1" > /dev/null 2>&1; then
-        log "PostgreSQL: conectividade OK"
-    else
-        warn "PostgreSQL: senha pode estar dessincronizada. O servico vai corrigir no proximo restart."
-    fi
-else
-    warn "PostgreSQL: nao foi possivel verificar"
 fi
 
 # Health check na API
