@@ -45,12 +45,37 @@ async def health():
 @router.get("/versions", dependencies=[Depends(verify_token)])
 @router.get("/docker-versions", dependencies=[Depends(verify_token)])
 async def list_versions():
+    """Busca as versões mais recentes do N8N diretamente do Docker Hub."""
+    import httpx
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                "https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags",
+                params={"page_size": 20, "ordering": "last_updated"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                versions = []
+                seen = set()
+                for tag in data.get("results", []):
+                    name = tag.get("name", "")
+                    # Filtrar: apenas versões semver (X.Y.Z), sem -beta, -next, -rc
+                    if name and name[0].isdigit() and "-" not in name and name not in seen:
+                        seen.add(name)
+                        versions.append({"id": name, "name": name})
+                    if len(versions) >= 8:
+                        break
+
+                if versions:
+                    return {"versions": versions}
+    except Exception as e:
+        print(f"[WARN] Falha ao buscar versoes do Docker Hub: {e}")
+
+    # Fallback: versão latest
     return {
         "versions": [
-            {"id": "1.76.1", "name": "1.76.1"},
-            {"id": "1.75.2", "name": "1.75.2"},
-            {"id": "1.74.4", "name": "1.74.4"},
-            {"id": "1.73.1", "name": "1.73.1"},
+            {"id": "latest", "name": "Última versão (latest)"},
         ]
     }
 
