@@ -64,8 +64,9 @@ def _container_on_network(container, network_name):
 
 
 def _create_traefik(client, name):
-    """Cria container Traefik na rede correta."""
-    return client.containers.run(
+    """Cria container Traefik e conecta na rede n8n-public."""
+    # Criar SEM network (port bindings conflitam com network assign)
+    container = client.containers.run(
         image="traefik:v3.3",
         name=name,
         detach=True,
@@ -90,8 +91,15 @@ def _create_traefik(client, name):
             "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json",
         ],
         labels={"app.managed": "true"},
-        network=DOCKER_NETWORK,
     )
+    # Conectar na rede depois de iniciado
+    try:
+        network = client.networks.get(DOCKER_NETWORK)
+        network.connect(container)
+        print(f"[INFRA] Traefik conectado na rede '{DOCKER_NETWORK}'")
+    except Exception as e:
+        print(f"[INFRA] AVISO: Traefik criado mas falhou ao conectar na rede: {e}")
+    return container
 
 
 def ensure_traefik():
