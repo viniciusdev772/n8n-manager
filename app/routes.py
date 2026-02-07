@@ -430,27 +430,40 @@ async def debug_container_logs(name: str, tail: int = Query(30)):
 
 @router.post("/debug/fix-traefik-network", dependencies=[Depends(verify_token)])
 async def fix_traefik_network():
-    """Conecta Traefik na rede n8n-public (network connect)."""
+    """Remove e recria Traefik na rede correta (one-time fix)."""
+    from .infra import ensure_traefik
     client = get_client()
     try:
+        # Verificar se já está correto
+        try:
+            traefik = client.containers.get("traefik")
+            traefik.reload()
+            networks = traefik.attrs.get("NetworkSettings", {}).get("Networks", {})
+            if DOCKER_NETWORK in networks and traefik.status == "running":
+                return {"message": "Traefik já está na rede correta", "status": "ok"}
+
+            # Remover Traefik que está na rede errada
+            traefik.remove(force=True)
+        except docker.errors.NotFound:
+            pass
+
+        # Aguardar portas liberarem
+        import time
+        time.sleep(5)
+
+        # Recriar via ensure_traefik (cria com network=DOCKER_NETWORK)
+        ensure_traefik()
+
+        # Verificar resultado
         traefik = client.containers.get("traefik")
         traefik.reload()
-        networks = traefik.attrs.get("NetworkSettings", {}).get("Networks", {})
-        if DOCKER_NETWORK in networks and traefik.status == "running":
-            return {"message": "Traefik já está na rede correta e rodando", "network": DOCKER_NETWORK}
-
-        # Se parado, iniciar primeiro
-        if traefik.status != "running":
-            traefik.start()
-            traefik.reload()
-
-        # Conectar na rede (sem recriar container)
-        network = client.networks.get(DOCKER_NETWORK)
-        network.connect(traefik)
-
-        traefik.reload()
-        new_nets = list(traefik.attrs.get("NetworkSettings", {}).get("Networks", {}).keys())
-        return {"message": f"Traefik conectado na rede '{DOCKER_NETWORK}'", "networks": new_nets, "fixed": True}
+        nets = list(traefik.attrs.get("NetworkSettings", {}).get("Networks", {}).keys())
+        return {
+            "message": "Traefik recriado na rede correta",
+            "status": traefik.status,
+            "networks": nets,
+            "fixed": True,
+        }
     except Exception as e:
         raise HTTPException(500, f"Erro: {e}")
 

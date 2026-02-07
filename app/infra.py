@@ -107,20 +107,31 @@ def ensure_traefik():
         c = client.containers.get(name)
 
         if c.status == "running":
-            # Rodando: só garantir que está na rede
-            _connect_to_network(c, DOCKER_NETWORK)
-            return
+            nets = _container_networks(c)
+            if DOCKER_NETWORK in nets:
+                return  # Tudo OK
+            # Rodando na rede errada — tentar conectar
+            try:
+                _connect_to_network(c, DOCKER_NETWORK)
+                return
+            except Exception as e:
+                # network.connect falha com port bindings (Docker limitation)
+                # Precisa remover e recriar
+                print(f"[INFRA] Traefik: network connect falhou ({e}). Recriando...")
+                c.remove(force=True)
+                time.sleep(5)
 
-        # Existe mas não está rodando — tentar iniciar
-        try:
-            c.start()
-            _connect_to_network(c, DOCKER_NETWORK)
-            print("[INFRA] Traefik iniciado")
-            return
-        except Exception as e:
-            print(f"[INFRA] Traefik nao iniciou: {e}. Removendo...")
-            c.remove(force=True)
-            time.sleep(3)
+        else:
+            # Existe mas não está rodando — tentar iniciar
+            try:
+                c.start()
+                _connect_to_network(c, DOCKER_NETWORK)
+                print("[INFRA] Traefik iniciado")
+                return
+            except Exception as e:
+                print(f"[INFRA] Traefik nao iniciou: {e}. Removendo...")
+                c.remove(force=True)
+                time.sleep(3)
 
     except docker.errors.NotFound:
         pass
