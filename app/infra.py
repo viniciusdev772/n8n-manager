@@ -84,34 +84,46 @@ def ensure_traefik():
 
     _kill_port_holders(client, required_ports)
 
-    client.containers.run(
-        image="traefik:v3.3",
-        name=name,
-        detach=True,
-        restart_policy={"Name": "unless-stopped"},
-        ports={"80/tcp": 80, "443/tcp": 443, "8080/tcp": 8080},
-        volumes={
-            "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "ro"},
-            "traefik-certs": {"bind": "/certs", "mode": "rw"},
-        },
-        command=[
-            "--api.dashboard=true",
-            "--api.insecure=true",
-            "--providers.docker=true",
-            "--providers.docker.exposedbydefault=false",
-            f"--providers.docker.network={DOCKER_NETWORK}",
-            "--entrypoints.web.address=:80",
-            "--entrypoints.websecure.address=:443",
-            "--entrypoints.web.http.redirections.entrypoint.to=websecure",
-            "--entrypoints.web.http.redirections.entrypoint.scheme=https",
-            "--certificatesresolvers.letsencrypt.acme.tlschallenge=true",
-            f"--certificatesresolvers.letsencrypt.acme.email={ACME_EMAIL}",
-            "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json",
-        ],
-        labels={"app.managed": "true"},
-        network=DOCKER_NETWORK,
-    )
-    print("[INFRA] Traefik criado e iniciado")
+    # Retry — portas podem levar segundos para liberar
+    for attempt in range(3):
+        try:
+            if attempt > 0:
+                time.sleep(5)
+                _kill_port_holders(client, required_ports)
+
+            client.containers.run(
+                image="traefik:v3.3",
+                name=name,
+                detach=True,
+                restart_policy={"Name": "unless-stopped"},
+                ports={"80/tcp": 80, "443/tcp": 443, "8080/tcp": 8080},
+                volumes={
+                    "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "ro"},
+                    "traefik-certs": {"bind": "/certs", "mode": "rw"},
+                },
+                command=[
+                    "--api.dashboard=true",
+                    "--api.insecure=true",
+                    "--providers.docker=true",
+                    "--providers.docker.exposedbydefault=false",
+                    f"--providers.docker.network={DOCKER_NETWORK}",
+                    "--entrypoints.web.address=:80",
+                    "--entrypoints.websecure.address=:443",
+                    "--entrypoints.web.http.redirections.entrypoint.to=websecure",
+                    "--entrypoints.web.http.redirections.entrypoint.scheme=https",
+                    "--certificatesresolvers.letsencrypt.acme.tlschallenge=true",
+                    f"--certificatesresolvers.letsencrypt.acme.email={ACME_EMAIL}",
+                    "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json",
+                ],
+                labels={"app.managed": "true"},
+                network=DOCKER_NETWORK,
+            )
+            print("[INFRA] Traefik criado e iniciado")
+            return
+        except Exception as e:
+            print(f"[INFRA] Tentativa {attempt + 1}/3 para criar Traefik falhou: {e}")
+
+    print("[INFRA] AVISO: Nao foi possivel criar o Traefik apos 3 tentativas")
 
 
 def _test_pg_connection():
