@@ -107,6 +107,52 @@ async def list_instances():
     return {"instances": list_n8n_containers()}
 
 
+# ─── Queue ────────────────────────────────────────────────
+
+
+@router.post("/enqueue-instance", dependencies=[Depends(verify_token)])
+async def enqueue_instance(request: Request):
+    """Enfileira criação de instância e retorna job_id imediatamente."""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    version = body.get("version", "latest").strip()
+    location = body.get("location", "vinhedo").strip()
+
+    if not name:
+        raise HTTPException(400, "Nome obrigatório")
+
+    try:
+        get_container(name)
+        raise HTTPException(400, f"Instância '{name}' já existe")
+    except docker.errors.NotFound:
+        pass
+
+    job_id = str(uuid.uuid4())
+    init_job(job_id)
+    publish_job(job_id, {
+        "job_id": job_id,
+        "name": name,
+        "version": version,
+        "location": location,
+    })
+
+    return {"job_id": job_id, "name": name}
+
+
+@router.get("/job/{job_id}/events", dependencies=[Depends(verify_token)])
+async def job_events(job_id: str, since: int = Query(0)):
+    """Retorna eventos de um job a partir de um índice."""
+    state = get_state(job_id)
+    if state == "unknown":
+        raise HTTPException(404, "Job não encontrado ou expirado")
+
+    events = get_events_since(job_id, since)
+    if state in ("complete", "error"):
+        cleanup_job(job_id)
+
+    return {"state": state, "events": events, "next_index": since + len(events)}
+
+
 # ─── CRUD ─────────────────────────────────────────────────
 
 
