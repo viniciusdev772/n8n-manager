@@ -612,7 +612,7 @@ if ! docker inspect traefik > /dev/null 2>&1; then
         -e CF_DNS_API_TOKEN="$CF_TOKEN_ENV" \
         -v /var/run/docker.sock:/var/run/docker.sock:ro \
         -v traefik-certs:/certs \
-        traefik:v3.3 \
+        traefik:v3.6 \
         --providers.docker=true \
         --providers.docker.exposedbydefault=false \
         --providers.docker.network="$DOCKER_NET" \

@@ -30,7 +30,7 @@ networks:
 
 services:
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.6
     container_name: traefik
     restart: unless-stopped
     ports:
@@ -84,7 +84,7 @@ Traefik rodando com Cloudflare DNS Challenge.
   Rede:     {network_name}
   Resolver: {resolver_name}
   Email:    {acme_email}
-  Imagem:   traefik:v3.3
+  Imagem:   traefik:v3.6
 
 Certificados preservados em {traefik_folder}/letsencrypt/
 """)
