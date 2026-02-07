@@ -1,4 +1,4 @@
-"""Provisionamento de infraestrutura: Traefik, Redis, RabbitMQ."""
+"""Provisionamento de infraestrutura: Traefik, Redis, RabbitMQ, Fallback."""
 
 import os
 import socket
@@ -8,11 +8,13 @@ import time
 import docker
 
 from .config import (
+    BASE_DOMAIN,
     DOCKER_NETWORK,
     RABBITMQ_PASSWORD,
     RABBITMQ_PORT,
     RABBITMQ_USER,
     REDIS_PORT,
+    TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
 
@@ -262,6 +264,70 @@ def ensure_rabbitmq():
     print("[INFRA] AVISO: RabbitMQ criado mas conexao nao confirmada")
 
 
+# ─── Fallback (página "instância removida") ─────────────
+
+
+def ensure_fallback():
+    """Garante que o container fallback está rodando para subdomínios sem instância."""
+    client = get_client()
+    name = "n8n-fallback"
+
+    # Caminho dos arquivos de fallback
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    fallback_dir = os.path.join(project_root, "fallback")
+    html_path = os.path.join(fallback_dir, "index.html")
+    nginx_conf_path = os.path.join(fallback_dir, "nginx.conf")
+
+    if not os.path.exists(html_path):
+        print(f"[INFRA] AVISO: {html_path} não encontrado, pulando fallback")
+        return
+
+    try:
+        c = client.containers.get(name)
+        if c.status == "running":
+            # Verificar se está na rede correta
+            if DOCKER_NETWORK not in _container_networks(c):
+                _connect_to_network(c, DOCKER_NETWORK)
+            print(f"[INFRA] Fallback '{name}' já está rodando")
+            return
+        # Parado — remover e recriar
+        c.remove(force=True)
+    except docker.errors.NotFound:
+        pass
+
+    # Labels Traefik: catchall para *.n8n.marketcodebrasil.com.br com prioridade baixa
+    # Traefik v3 usa regex puro (sem named groups do v2)
+    # Dots no domínio precisam ser escapados como \. para regex
+    escaped_domain = BASE_DOMAIN.replace(".", "\\.")
+    rule = f"HostRegexp(`[a-z0-9-]+\\.{escaped_domain}`)"
+    labels = {
+        "traefik.enable": "true",
+        f"traefik.http.routers.{name}.rule": rule,
+        f"traefik.http.routers.{name}.entrypoints": "websecure",
+        f"traefik.http.routers.{name}.tls.certresolver": TRAEFIK_CERT_RESOLVER,
+        f"traefik.http.routers.{name}.priority": "1",
+        f"traefik.http.services.{name}.loadbalancer.server.port": "80",
+        "app.managed": "true",
+        "app.type": "fallback",
+    }
+
+    client.containers.run(
+        image="nginx:alpine",
+        name=name,
+        detach=True,
+        restart_policy={"Name": "unless-stopped"},
+        labels=labels,
+        volumes={
+            html_path: {"bind": "/usr/share/nginx/html/index.html", "mode": "ro"},
+            nginx_conf_path: {"bind": "/etc/nginx/conf.d/default.conf", "mode": "ro"},
+        },
+        mem_limit="32m",
+        cpu_shares=128,
+        network=DOCKER_NETWORK,
+    )
+    print(f"[INFRA] Fallback '{name}' criado (catchall para subdomínios sem instância)")
+
+
 # ─── Pre-pull ───────────────────────────────────────────
 
 
@@ -286,6 +352,7 @@ def bootstrap_infra():
         ("traefik", ensure_traefik),
         ("redis", ensure_redis),
         ("rabbitmq", ensure_rabbitmq),
+        ("fallback", ensure_fallback),
         ("image-pull", _pre_pull_n8n_image),
     ]:
         try:
