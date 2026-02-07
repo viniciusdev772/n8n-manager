@@ -398,6 +398,26 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
     return {"instance_id": instance_id, "logs": logs}
 
 
+@router.get("/debug/infra-networks", dependencies=[Depends(verify_token)])
+async def debug_infra_networks():
+    """Lista redes de todos os containers de infra para debug."""
+    client = get_client()
+    infra_names = ["traefik", "postgres", "redis", "rabbitmq"]
+    result = {}
+    for name in infra_names:
+        try:
+            c = client.containers.get(name)
+            c.reload()
+            networks = c.attrs.get("NetworkSettings", {}).get("Networks", {})
+            net_info = {}
+            for net_name, net_data in networks.items():
+                net_info[net_name] = net_data.get("IPAddress", "")
+            result[name] = {"status": c.status, "networks": net_info}
+        except Exception:
+            result[name] = {"status": "not_found", "networks": {}}
+    return result
+
+
 @router.get("/instance/{instance_id}/network", dependencies=[Depends(verify_token)])
 async def instance_network(instance_id: str):
     """Retorna info de rede do container para debug."""
