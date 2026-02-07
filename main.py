@@ -10,6 +10,7 @@ from app.cleanup import start_cleanup, stop_cleanup
 from app.config import SERVER_PORT
 from app.docker_client import close_client
 from app.infra import bootstrap_infra
+from app.n8n import sync_instance_env_vars
 from app.queue import close_rabbitmq
 from app.routes import router
 from app.worker import start_worker, stop_worker
@@ -18,6 +19,7 @@ from app.worker import start_worker, stop_worker
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     bootstrap_infra()
+    sync_instance_env_vars()
     start_worker()
     start_cleanup()
     yield

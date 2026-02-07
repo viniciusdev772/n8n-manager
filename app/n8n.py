@@ -182,6 +182,102 @@ def list_n8n_containers() -> list:
     return result
 
 
+def extract_encryption_key(container) -> str:
+    """Extrai N8N_ENCRYPTION_KEY do container existente."""
+    for e in container.attrs.get("Config", {}).get("Env", []):
+        k, _, v = e.partition("=")
+        if k == "N8N_ENCRYPTION_KEY":
+            return v
+    return ""
+
+
+def _get_container_env(container) -> dict:
+    """Retorna dict de env vars do container."""
+    env = {}
+    for e in container.attrs.get("Config", {}).get("Env", []):
+        k, _, v = e.partition("=")
+        env[k] = v
+    return env
+
+
+def rebuild_container(instance_id: str, version: str):
+    """Recria container com env vars atuais, preservando encryption key e volume."""
+    old = get_container(instance_id)
+    encryption_key = extract_encryption_key(old)
+    if not encryption_key:
+        raise RuntimeError(f"N8N_ENCRYPTION_KEY não encontrada no container {instance_id}")
+
+    old_labels = old.labels
+    old.remove(force=True)  # Mantém volume
+
+    client = get_client()
+    image_tag = f"{N8N_IMAGE}:{version}"
+    client.images.pull(N8N_IMAGE, tag=version)
+
+    env = build_env(instance_id, encryption_key)
+    labels = build_traefik_labels(instance_id)
+    if "app.created_at" in old_labels:
+        labels["app.created_at"] = old_labels["app.created_at"]
+
+    client.containers.run(
+        image=image_tag,
+        name=container_name(instance_id),
+        detach=True,
+        restart_policy={"Name": "unless-stopped"},
+        environment=env,
+        labels=labels,
+        mem_limit=INSTANCE_MEM_LIMIT,
+        mem_reservation=INSTANCE_MEM_RESERVATION,
+        cpu_shares=INSTANCE_CPU_SHARES,
+        volumes={f"n8n-data-{instance_id}": {"bind": "/home/node/.n8n", "mode": "rw"}},
+        network=DOCKER_NETWORK,
+    )
+
+
+def sync_instance_env_vars():
+    """Verifica todas instâncias e recria as que têm env vars desatualizadas."""
+    client = get_client()
+    containers = client.containers.list(
+        all=True, filters={"label": "app.type=n8n"}
+    )
+
+    synced = 0
+    for c in containers:
+        inst = c.labels.get("app.instance", "")
+        if not inst:
+            continue
+
+        try:
+            encryption_key = extract_encryption_key(c)
+            if not encryption_key:
+                print(f"[SYNC] {inst}: sem encryption key, pulando")
+                continue
+
+            expected_env = build_env(inst, encryption_key)
+            current_env = _get_container_env(c)
+
+            # Comparar apenas as chaves que build_env define
+            needs_rebuild = False
+            for key, expected_val in expected_env.items():
+                if current_env.get(key) != expected_val:
+                    print(f"[SYNC] {inst}: env '{key}' diverge (atual='{current_env.get(key)}' esperado='{expected_val}')")
+                    needs_rebuild = True
+                    break
+
+            if needs_rebuild:
+                version = c.image.tags[0].split(":")[-1] if c.image.tags else "latest"
+                print(f"[SYNC] Recriando container {inst} (versão {version})...")
+                rebuild_container(inst, version)
+                synced += 1
+                print(f"[SYNC] {inst} recriado com env vars atualizadas")
+            else:
+                print(f"[SYNC] {inst}: env vars OK")
+        except Exception as e:
+            print(f"[SYNC] ERRO em {inst}: {e}. Continuando...")
+
+    print(f"[SYNC] Concluído: {synced} instância(s) recriada(s)")
+
+
 def calculate_max_instances() -> dict:
     """Calcula o número máximo de instâncias com base na RAM da VPS.
 

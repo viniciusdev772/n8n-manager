@@ -14,25 +14,19 @@ from .config import BASE_DOMAIN, DEFAULT_N8N_VERSION
 from .docker_client import get_client
 from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
-    build_env,
-    build_traefik_labels,
     calculate_max_instances,
     container_name,
     create_container,
+    extract_encryption_key,
     generate_encryption_key,
     get_container,
     instance_url,
     list_n8n_containers,
+    rebuild_container,
     remove_container,
 )
 from .queue import publish_job
-from .config import (
-    DOCKER_NETWORK,
-    INSTANCE_CPU_SHARES,
-    INSTANCE_MEM_LIMIT,
-    INSTANCE_MEM_RESERVATION,
-    N8N_IMAGE,
-)
+from .config import DOCKER_NETWORK, N8N_IMAGE
 
 router = APIRouter()
 
@@ -379,50 +373,6 @@ async def reset_instance(instance_id: str, request: Request):
     }
 
 
-def _extract_encryption_key(container) -> str:
-    """Extrai N8N_ENCRYPTION_KEY do container existente."""
-    for e in container.attrs.get("Config", {}).get("Env", []):
-        k, _, v = e.partition("=")
-        if k == "N8N_ENCRYPTION_KEY":
-            return v
-    return ""
-
-
-def _rebuild_container(instance_id: str, version: str):
-    """Recria container com env vars atuais, preservando encryption key e volume."""
-    old = get_container(instance_id)
-    encryption_key = _extract_encryption_key(old)
-    if not encryption_key:
-        raise HTTPException(500, "N8N_ENCRYPTION_KEY não encontrada no container")
-
-    old_labels = old.labels
-    old.remove(force=True)  # Mantém volume
-
-    client = get_client()
-    image_tag = f"{N8N_IMAGE}:{version}"
-    client.images.pull(N8N_IMAGE, tag=version)
-
-    env = build_env(instance_id, encryption_key)
-    labels = build_traefik_labels(instance_id)
-    # Preservar created_at original se existir
-    if "app.created_at" in old_labels:
-        labels["app.created_at"] = old_labels["app.created_at"]
-
-    client.containers.run(
-        image=image_tag,
-        name=container_name(instance_id),
-        detach=True,
-        restart_policy={"Name": "unless-stopped"},
-        environment=env,
-        labels=labels,
-        mem_limit=INSTANCE_MEM_LIMIT,
-        mem_reservation=INSTANCE_MEM_RESERVATION,
-        cpu_shares=INSTANCE_CPU_SHARES,
-        volumes={f"n8n-data-{instance_id}": {"bind": "/home/node/.n8n", "mode": "rw"}},
-        network=DOCKER_NETWORK,
-    )
-
-
 @router.post("/instance/{instance_id}/update-version", dependencies=[Depends(verify_token)])
 @router.post("/update-version/{instance_id}", dependencies=[Depends(verify_token)])
 async def update_version(instance_id: str, request: Request):
@@ -430,7 +380,7 @@ async def update_version(instance_id: str, request: Request):
     new_version = body.get("version", "latest")
 
     try:
-        _rebuild_container(instance_id, new_version)
+        rebuild_container(instance_id, new_version)
     except docker.errors.NotFound:
         raise HTTPException(404, "Instância não encontrada")
 
