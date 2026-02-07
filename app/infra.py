@@ -1,13 +1,13 @@
 """Provisionamento de infraestrutura: Traefik, PostgreSQL, Redis, RabbitMQ."""
 
+import os
 import socket
+import subprocess
 import time
 
 import docker
 
 from .config import (
-    ACME_EMAIL,
-    CF_DNS_API_TOKEN,
     DOCKER_NETWORK,
     PG_ADMIN_DB,
     PG_PASSWORD,
@@ -123,8 +123,35 @@ def _cleanup_orphan_traefik(client):
         pass
 
 
+def _run_config_traefik():
+    """Executa config_traefik.py para criar/atualizar Traefik via docker compose."""
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    script = os.path.join(project_root, "config_traefik.py")
+
+    if not os.path.exists(script):
+        print(f"[INFRA] AVISO: {script} nao encontrado, pulando config_traefik")
+        return False
+
+    try:
+        result = subprocess.run(
+            ["python3", script],
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print(f"[INFRA] config_traefik.py stderr: {result.stderr}")
+            return False
+        return True
+    except Exception as e:
+        print(f"[INFRA] Erro ao executar config_traefik.py: {e}")
+        return False
+
+
 def ensure_traefik():
-    """Detecta Traefik existente ou cria um novo com Cloudflare DNS Challenge."""
+    """Detecta Traefik existente ou cria um novo via docker compose."""
     client = get_client()
 
     # 1. Buscar Traefik já rodando (EasyPanel, docker-compose, etc.)
@@ -145,40 +172,11 @@ def ensure_traefik():
             _cleanup_orphan_traefik(client)
         return
 
-    # 2. Nenhum Traefik encontrado — criar o nosso
-    print("[INFRA] Nenhum Traefik encontrado. Criando com Cloudflare DNS Challenge...")
+    # 2. Nenhum Traefik encontrado — criar via config_traefik.py (docker compose)
+    print("[INFRA] Nenhum Traefik encontrado. Criando via docker compose...")
     _cleanup_orphan_traefik(client)
     _kill_port_holders(client, {80, 443})
-
-    client.containers.run(
-        image="traefik:v3.3",
-        name="traefik",
-        detach=True,
-        restart_policy={"Name": "unless-stopped"},
-        network=DOCKER_NETWORK,
-        ports={"80/tcp": 80, "443/tcp": 443},
-        environment={
-            "CF_DNS_API_TOKEN": CF_DNS_API_TOKEN,
-        },
-        volumes={
-            "/var/run/docker.sock": {"bind": "/var/run/docker.sock", "mode": "ro"},
-            "traefik-certs": {"bind": "/certs", "mode": "rw"},
-        },
-        command=[
-            "--providers.docker=true",
-            "--providers.docker.exposedbydefault=false",
-            f"--providers.docker.network={DOCKER_NETWORK}",
-            "--entrypoints.web.address=:80",
-            "--entrypoints.websecure.address=:443",
-            "--entrypoints.web.http.redirections.entrypoint.to=websecure",
-            "--entrypoints.web.http.redirections.entrypoint.scheme=https",
-            "--certificatesresolvers.letsencrypt.acme.dnschallenge=true",
-            "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare",
-            f"--certificatesresolvers.letsencrypt.acme.email={ACME_EMAIL}",
-            "--certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json",
-        ],
-        labels={"app.managed": "true"},
-    )
+    _run_config_traefik()
     print("[INFRA] Traefik criado com Cloudflare DNS Challenge")
 
 
