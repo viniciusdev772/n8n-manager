@@ -18,7 +18,6 @@ from .config import (
     RABBITMQ_PORT,
     RABBITMQ_USER,
 )
-from .database import create_tenant_db
 from .docker_client import get_client
 from .job_status import push_event, set_state
 from .n8n import (
@@ -57,18 +56,7 @@ def _process_job(ch, method, properties, body):
 
         encryption_key = generate_encryption_key()
 
-        # 2. Criar banco de dados
-        push_event(job_id, {"status": "info", "message": "Criando banco de dados..."})
-        try:
-            create_tenant_db(name)
-        except Exception as e:
-            push_event(job_id, {"status": "error", "message": f"Erro ao criar banco: {e}"})
-            set_state(job_id, "error")
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return
-        push_event(job_id, {"status": "info", "message": "Banco criado com sucesso"})
-
-        # 3. Baixar imagem Docker
+        # 2. Baixar imagem Docker
         image_tag = f"{N8N_IMAGE}:{version}"
         push_event(job_id, {"status": "info", "message": f"Baixando imagem {image_tag}..."})
         try:
@@ -80,7 +68,7 @@ def _process_job(ch, method, properties, body):
             return
         push_event(job_id, {"status": "info", "message": "Imagem pronta"})
 
-        # 4. Criar container
+        # 3. Criar container
         push_event(job_id, {"status": "info", "message": "Criando container N8N..."})
         try:
             env = build_env(name, encryption_key)
@@ -106,7 +94,7 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, iniciando N8N..."})
 
-        # 5. Aguardar startup (verifica logs + HTTP)
+        # 4. Aguardar startup (verifica logs + HTTP)
         push_event(job_id, {"status": "info", "message": "Aguardando instancia ficar disponivel..."})
         n8n_ready = False
         for i in range(60):
@@ -148,11 +136,11 @@ def _process_job(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
 
-        # 6. SSL via Traefik
+        # 5. SSL via Traefik
         push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
         time.sleep(5)
 
-        # 7. Sucesso
+        # 6. Sucesso
         push_event(job_id, {
             "status": "complete",
             "message": "Instancia N8N criada com sucesso!",

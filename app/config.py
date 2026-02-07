@@ -34,6 +34,7 @@ CF_DNS_API_TOKEN = os.getenv("CF_DNS_API_TOKEN", "HwJjOXXzv59DSvXPcJ794Ml894d7yP
 TRAEFIK_CERT_RESOLVER = os.getenv("TRAEFIK_CERT_RESOLVER", "letsencrypt")
 
 N8N_IMAGE = "docker.n8n.io/n8nio/n8n"
+DEFAULT_N8N_VERSION = "1.123.20"
 
 # Recursos por instância (mínimo N8N - plano gratuito)
 INSTANCE_MEM_LIMIT = "512m"

@@ -9,11 +9,8 @@ from .config import (
     INSTANCE_CPU_QUOTA,
     INSTANCE_MEM_LIMIT,
     N8N_IMAGE,
-    PG_PASSWORD,
-    PG_USER,
     TRAEFIK_CERT_RESOLVER,
 )
-from .database import db_name_for
 from .docker_client import get_client
 
 
@@ -30,43 +27,31 @@ def generate_encryption_key() -> str:
 
 
 def build_env(name: str, encryption_key: str) -> dict:
-    """Variáveis de ambiente otimizadas para instância gratuita."""
-    db = db_name_for(name)
+    """Variáveis de ambiente para instância N8N (SQLite embutido)."""
     host = f"{name}.{BASE_DOMAIN}"
 
     return {
-        # Geral
+        "N8N_HOST": "0.0.0.0",
         "N8N_PORT": "5678",
         "N8N_PROTOCOL": "https",
-        "N8N_HOST": host,
+        "N8N_EDITOR_BASE_URL": f"https://{host}/",
         "N8N_ENCRYPTION_KEY": encryption_key,
         "WEBHOOK_URL": f"https://{host}/",
-        "N8N_PROXY_HOPS": "1",
         "GENERIC_TIMEZONE": "America/Sao_Paulo",
+        "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
+        "N8N_SECURE_COOKIE": "false",
         "N8N_LOG_LEVEL": "warn",
-        # Banco
-        "DB_TYPE": "postgresdb",
-        "DB_POSTGRESDB_HOST": "postgres",
-        "DB_POSTGRESDB_PORT": "5432",
-        "DB_POSTGRESDB_DATABASE": db,
-        "DB_POSTGRESDB_USER": PG_USER,
-        "DB_POSTGRESDB_PASSWORD": PG_PASSWORD,
-        "DB_POSTGRESDB_SCHEMA": "public",
-        # Economia agressiva
+        # Economia de execuções
         "EXECUTIONS_DATA_SAVE_ON_ERROR": "all",
         "EXECUTIONS_DATA_SAVE_ON_SUCCESS": "none",
         "EXECUTIONS_DATA_SAVE_ON_PROGRESS": "false",
         "EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS": "false",
-        # Pruning
         "EXECUTIONS_DATA_PRUNE": "true",
         "EXECUTIONS_DATA_MAX_AGE": "72",
         "EXECUTIONS_DATA_PRUNE_MAX_COUNT": "500",
         # Performance
         "N8N_CONCURRENCY_PRODUCTION_LIMIT": "5",
         "NODE_OPTIONS": "--max-old-space-size=384",
-        # Desabilita task runners (Python não disponível na imagem)
-        "N8N_RUNNERS_ENABLED": "false",
-        "N8N_PYTHON_ENABLED": "false",
     }
 
 

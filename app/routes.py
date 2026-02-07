@@ -10,8 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from .auth import verify_token
-from .config import BASE_DOMAIN
-from .database import create_tenant_db, drop_tenant_db
+from .config import BASE_DOMAIN, DEFAULT_N8N_VERSION
 from .docker_client import get_client
 from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
@@ -63,10 +62,10 @@ async def list_versions():
                 data = resp.json()
                 versions = []
                 seen = set()
-                semver_re = re.compile(r"^\d+\.\d+\.\d+$")
+                semver_re = re.compile(r"^1\.\d+\.\d+$")
                 for tag in data.get("results", []):
                     tag_name = tag.get("name", "")
-                    # Apenas versões semver X.Y.Z (ex: 1.93.0, 2.6.4)
+                    # Apenas versões semver 1.X.Y (sem task runners)
                     if semver_re.match(tag_name) and tag_name not in seen:
                         seen.add(tag_name)
                         versions.append({"id": tag_name, "name": tag_name})
@@ -115,7 +114,7 @@ async def enqueue_instance(request: Request):
     """Enfileira criação de instância e retorna job_id imediatamente."""
     body = await request.json()
     name = body.get("name", "").strip()
-    version = body.get("version", "latest").strip()
+    version = body.get("version", DEFAULT_N8N_VERSION).strip()
     location = body.get("location", "vinhedo").strip()
 
     if not name:
@@ -161,7 +160,7 @@ async def create_instance(request: Request):
     """Cria instância N8N (resposta simples)."""
     body = await request.json()
     name = body.get("name", "").strip()
-    version = body.get("version", "latest").strip()
+    version = body.get("version", DEFAULT_N8N_VERSION).strip()
 
     if not name:
         raise HTTPException(400, "Nome obrigatório")
@@ -173,7 +172,6 @@ async def create_instance(request: Request):
         pass
 
     encryption_key = generate_encryption_key()
-    create_tenant_db(name)
 
     container = create_container(name, version, encryption_key)
 
@@ -189,7 +187,7 @@ async def create_instance(request: Request):
 @router.get("/create-instance-stream", dependencies=[Depends(verify_token)])
 async def create_instance_stream(
     name: str = Query(...),
-    version: str = Query("latest"),
+    version: str = Query(DEFAULT_N8N_VERSION),
     location: str = Query("vinhedo"),
 ):
     """Cria instância N8N via fila RabbitMQ com streaming SSE de progresso."""
@@ -268,11 +266,6 @@ async def delete_instance(instance_id: str):
     except docker.errors.NotFound:
         raise HTTPException(404, f"Instância '{instance_id}' não encontrada")
 
-    try:
-        drop_tenant_db(instance_id)
-    except Exception as e:
-        print(f"[WARN] Erro ao remover banco: {e}")
-
     return {"message": "Instância excluída com sucesso", "instance_id": instance_id}
 
 
@@ -327,12 +320,6 @@ async def reset_instance(instance_id: str, request: Request):
         remove_container(instance_id)
     except docker.errors.NotFound:
         raise HTTPException(404, "Instância não encontrada")
-
-    try:
-        drop_tenant_db(instance_id)
-    except Exception:
-        pass
-    create_tenant_db(instance_id)
 
     encryption_key = generate_encryption_key()
     create_container(instance_id, version, encryption_key)
