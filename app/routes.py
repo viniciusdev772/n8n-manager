@@ -468,6 +468,31 @@ async def fix_traefik_network():
         raise HTTPException(500, f"Erro: {e}")
 
 
+@router.get("/debug/all-containers", dependencies=[Depends(verify_token)])
+async def debug_all_containers():
+    """Lista TODOS os containers Docker (não só n8n)."""
+    client = get_client()
+    containers = client.containers.list(all=True)
+    result = []
+    for c in containers:
+        c.reload()
+        ports = c.attrs.get("HostConfig", {}).get("PortBindings") or {}
+        port_list = []
+        for cp, binds in ports.items():
+            if binds:
+                for b in binds:
+                    port_list.append(f"{b.get('HostPort', '?')}->{cp}")
+        nets = list(c.attrs.get("NetworkSettings", {}).get("Networks", {}).keys())
+        result.append({
+            "name": c.name,
+            "image": c.image.tags[0] if c.image.tags else c.attrs.get("Config", {}).get("Image", "?"),
+            "status": c.status,
+            "ports": port_list,
+            "networks": nets,
+        })
+    return {"containers": result}
+
+
 @router.get("/debug/infra-networks", dependencies=[Depends(verify_token)])
 async def debug_infra_networks():
     """Lista redes de todos os containers de infra para debug."""
