@@ -246,15 +246,9 @@ else
     $PKG_INSTALL docker-compose-plugin > /dev/null 2>&1 || true
 fi
 
-# --- 5. Hardening Docker ---
+# --- 5. Hardening Docker + Auto-repair ---
 
-info "Aplicando hardening no Docker..."
-
-mkdir -p /etc/docker
-
-if [ ! -f /etc/docker/daemon.json ] || [ ! -s /etc/docker/daemon.json ]; then
-    cat > /etc/docker/daemon.json << 'DAEMON_JSON'
-{
+SAFE_DAEMON_JSON='{
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "10m",
@@ -273,29 +267,75 @@ if [ ! -f /etc/docker/daemon.json ] || [ ! -s /etc/docker/daemon.json ]; then
     }
   },
   "live-restore": true
-}
-DAEMON_JSON
+}'
 
-    info "Reiniciando Docker com nova configuracao..."
-    systemctl restart docker > /dev/null 2>&1 || true
-    for i in $(seq 1 30); do
+# Funcao: esperar Docker ficar saudavel
+wait_docker() {
+    local max_wait=${1:-30}
+    for i in $(seq 1 "$max_wait"); do
         if docker info > /dev/null 2>&1; then
-            break
+            return 0
         fi
         sleep 1
     done
+    return 1
+}
 
-    if docker info > /dev/null 2>&1; then
+mkdir -p /etc/docker
+
+# Verificar se Docker esta saudavel AGORA
+if ! docker info > /dev/null 2>&1; then
+    warn "Docker nao esta respondendo! Iniciando auto-repair..."
+
+    # Tentar iniciar normalmente
+    systemctl reset-failed docker > /dev/null 2>&1 || true
+    systemctl start docker > /dev/null 2>&1 || true
+
+    if ! wait_docker 10; then
+        # Docker nao sobe — daemon.json pode ser o problema
+        if [ -f /etc/docker/daemon.json ]; then
+            warn "Removendo daemon.json potencialmente corrompido..."
+            cp /etc/docker/daemon.json /etc/docker/daemon.json.broken.$(date +%s) 2>/dev/null || true
+            rm -f /etc/docker/daemon.json
+            systemctl reset-failed docker > /dev/null 2>&1 || true
+            systemctl restart docker > /dev/null 2>&1 || true
+
+            if wait_docker 15; then
+                log "Docker reparado (daemon.json removido)"
+            else
+                err "Docker nao consegue iniciar. Verifique: journalctl -u docker --no-pager -n 30"
+            fi
+        else
+            # Sem daemon.json — problema e outro
+            systemctl restart docker > /dev/null 2>&1 || true
+            if ! wait_docker 15; then
+                err "Docker nao consegue iniciar. Verifique: journalctl -u docker --no-pager -n 30"
+            fi
+        fi
+    fi
+fi
+
+log "Docker saudavel e respondendo"
+
+# Aplicar hardening seguro (se ainda nao tem daemon.json)
+if [ ! -f /etc/docker/daemon.json ] || [ ! -s /etc/docker/daemon.json ]; then
+    info "Aplicando hardening seguro no Docker..."
+    echo "$SAFE_DAEMON_JSON" > /etc/docker/daemon.json
+    systemctl restart docker > /dev/null 2>&1 || true
+
+    if wait_docker 30; then
         log "Docker hardening aplicado (log rotation, ulimits, live-restore)"
     else
-        warn "Docker nao reiniciou com daemon.json, revertendo..."
+        warn "Docker nao reiniciou com hardening, revertendo..."
         rm -f /etc/docker/daemon.json
+        systemctl reset-failed docker > /dev/null 2>&1 || true
         systemctl restart docker > /dev/null 2>&1 || true
-        sleep 5
-        log "Docker restaurado sem hardening customizado"
+        wait_docker 15
+        log "Docker restaurado (sem hardening customizado)"
     fi
 else
-    log "Docker daemon.json ja existe (mantido sem alteracao)"
+    # daemon.json existe e Docker esta saudavel — nao mexer
+    log "Docker hardening ja configurado (mantido)"
 fi
 
 # --- 6. Instalar Python 3 + venv ---
@@ -505,18 +545,10 @@ log "Servico n8n-manager criado e habilitado no boot"
 # --- 11. Auto-start do servico ---
 
 info "Garantindo Docker ativo antes de iniciar..."
-systemctl start docker > /dev/null 2>&1 || true
-for i in $(seq 1 20); do
-    if docker info > /dev/null 2>&1; then
-        break
-    fi
-    sleep 1
-done
-
 if ! docker info > /dev/null 2>&1; then
-    warn "Docker nao respondeu em 20s, tentando reiniciar..."
-    systemctl restart docker > /dev/null 2>&1 || true
-    sleep 5
+    systemctl reset-failed docker > /dev/null 2>&1 || true
+    systemctl start docker > /dev/null 2>&1 || true
+    wait_docker 15 || warn "Docker pode nao estar respondendo"
 fi
 
 info "Iniciando N8N Manager..."
