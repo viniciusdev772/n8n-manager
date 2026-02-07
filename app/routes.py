@@ -16,6 +16,7 @@ from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
     build_env,
     build_traefik_labels,
+    calculate_max_instances,
     container_name,
     create_container,
     generate_encryption_key,
@@ -106,6 +107,27 @@ async def list_instances():
     return {"instances": list_n8n_containers()}
 
 
+@router.get("/capacity", dependencies=[Depends(verify_token)])
+async def get_capacity():
+    """Retorna capacidade da VPS e instâncias ativas."""
+    return calculate_max_instances()
+
+
+@router.get("/cleanup-preview", dependencies=[Depends(verify_token)])
+async def cleanup_preview():
+    """Mostra instâncias que serão removidas pelo auto-cleanup (5+ dias)."""
+    containers = list_n8n_containers()
+    preview = []
+    for c in containers:
+        age = c.get("age_days")
+        preview.append({
+            **c,
+            "will_be_deleted": age is not None and age >= 5,
+            "days_remaining": max(0, 5 - age) if age is not None else None,
+        })
+    return {"instances": preview}
+
+
 # ─── Queue ────────────────────────────────────────────────
 
 
@@ -119,6 +141,14 @@ async def enqueue_instance(request: Request):
 
     if not name:
         raise HTTPException(400, "Nome obrigatório")
+
+    # Checar capacidade da VPS
+    cap = calculate_max_instances()
+    if not cap["can_create"]:
+        raise HTTPException(
+            409,
+            f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias ativas.",
+        )
 
     try:
         get_container(name)
@@ -165,6 +195,14 @@ async def create_instance(request: Request):
     if not name:
         raise HTTPException(400, "Nome obrigatório")
 
+    # Checar capacidade da VPS
+    cap = calculate_max_instances()
+    if not cap["can_create"]:
+        raise HTTPException(
+            409,
+            f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias ativas.",
+        )
+
     try:
         get_container(name)
         raise HTTPException(400, f"Instância '{name}' já existe")
@@ -191,6 +229,16 @@ async def create_instance_stream(
     location: str = Query("vinhedo"),
 ):
     """Cria instância N8N via fila RabbitMQ com streaming SSE de progresso."""
+
+    # Fast-fail: verificar capacidade da VPS
+    cap = calculate_max_instances()
+    if not cap["can_create"]:
+        async def cap_error_gen():
+            yield json.dumps({
+                "status": "error",
+                "message": f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias ativas.",
+            })
+        return EventSourceResponse(cap_error_gen())
 
     # Fast-fail: verificar duplicata antes de enfileirar
     try:

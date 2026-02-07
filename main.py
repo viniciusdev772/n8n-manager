@@ -6,6 +6,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.cleanup import start_cleanup, stop_cleanup
 from app.config import SERVER_PORT
 from app.docker_client import close_client
 from app.infra import bootstrap_infra
@@ -18,7 +19,9 @@ from app.worker import start_worker, stop_worker
 async def lifespan(app: FastAPI):
     bootstrap_infra()
     start_worker()
+    start_cleanup()
     yield
+    stop_cleanup()
     stop_worker()
     close_rabbitmq()
     close_client()

@@ -1,6 +1,7 @@
 """Lógica de criação e configuração de containers N8N."""
 
 import secrets
+from datetime import datetime, timezone
 
 from .config import (
     BASE_DOMAIN,
@@ -12,6 +13,12 @@ from .config import (
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
+
+# Recursos reservados para infra (Traefik, Redis, RabbitMQ, OS)
+RESERVED_RAM_MB = 1536  # 1.5 GB
+RESERVED_CPUS = 1
+PER_INSTANCE_RAM_MB = 512
+PER_INSTANCE_CPUS = 1
 
 
 def container_name(instance_name: str) -> str:
@@ -74,6 +81,7 @@ def build_traefik_labels(name: str) -> dict:
         "app.managed": "true",
         "app.type": "n8n",
         "app.instance": name,
+        "app.created_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -127,10 +135,35 @@ def list_n8n_containers() -> list:
     containers = client.containers.list(
         all=True, filters={"label": "app.type=n8n"}
     )
+    now = datetime.now(timezone.utc)
     result = []
     for c in containers:
         labels = c.labels
         inst = labels.get("app.instance", "")
+
+        # Idade da instância via label ou fallback para Docker Created
+        created_at_str = labels.get("app.created_at", "")
+        created_at = None
+        age_days = None
+        if created_at_str:
+            try:
+                created_at = datetime.fromisoformat(created_at_str)
+                if created_at.tzinfo is None:
+                    created_at = created_at.replace(tzinfo=timezone.utc)
+                age_days = (now - created_at).days
+            except Exception:
+                pass
+
+        # Fallback: usar Docker Created timestamp
+        if created_at is None:
+            try:
+                docker_created = c.attrs.get("Created", "")
+                if docker_created:
+                    created_at = datetime.fromisoformat(docker_created.replace("Z", "+00:00"))
+                    age_days = (now - created_at).days
+            except Exception:
+                pass
+
         result.append({
             "instance_id": inst,
             "name": inst,
@@ -139,5 +172,39 @@ def list_n8n_containers() -> list:
             "location": "vinhedo",
             "version": c.image.tags[0].split(":")[-1] if c.image.tags else "unknown",
             "container_id": c.short_id,
+            "created_at": created_at.isoformat() if created_at else None,
+            "age_days": age_days,
         })
     return result
+
+
+def calculate_max_instances() -> dict:
+    """Calcula o número máximo de instâncias com base nos recursos da VPS."""
+    client = get_client()
+    info = client.info()
+
+    total_ram_mb = info["MemTotal"] / (1024 * 1024)
+    total_cpus = info["NCPU"]
+
+    available_ram = total_ram_mb - RESERVED_RAM_MB
+    available_cpus = total_cpus - RESERVED_CPUS
+
+    max_by_ram = int(available_ram / PER_INSTANCE_RAM_MB)
+    max_by_cpu = int(available_cpus / PER_INSTANCE_CPUS)
+    max_instances = max(1, min(max_by_ram, max_by_cpu))
+
+    current = list_n8n_containers()
+    active_count = len([c for c in current if c["status"] == "running"])
+
+    return {
+        "max_instances": max_instances,
+        "active_instances": active_count,
+        "can_create": active_count < max_instances,
+        "instances": current,
+        "vps": {
+            "total_ram_mb": round(total_ram_mb),
+            "total_cpus": total_cpus,
+            "reserved_ram_mb": RESERVED_RAM_MB,
+            "per_instance_ram_mb": PER_INSTANCE_RAM_MB,
+        },
+    }
