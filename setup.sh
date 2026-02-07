@@ -224,6 +224,13 @@ cat > /etc/docker/daemon.json << 'DAEMON_JSON'
 DAEMON_JSON
 
 systemctl restart docker > /dev/null 2>&1 || true
+info "Aguardando Docker reiniciar..."
+for i in $(seq 1 15); do
+    if docker info > /dev/null 2>&1; then
+        break
+    fi
+    sleep 1
+done
 log "Docker hardening aplicado (log rotation, ulimits, no-new-privileges)"
 
 # --- 6. Instalar Python 3 + venv ---
@@ -348,15 +355,54 @@ deactivate
 
 log "Dependencias Python instaladas em venv"
 
-# Criar .env se nao existir
+# Auto-configurar .env (gera senhas seguras automaticamente)
 if [ ! -f "$PROJECT_DIR/.env" ]; then
-    if [ -f "$PROJECT_DIR/.env.example" ]; then
-        cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
-        warn "Arquivo .env criado a partir do .env.example - EDITE COM SUAS CREDENCIAIS!"
-    else
-        warn "Arquivo .env.example nao encontrado - crie manualmente: $PROJECT_DIR/.env"
-    fi
-    warn "  nano $PROJECT_DIR/.env"
+    info "Gerando configuracao automatica (.env)..."
+
+    # Detectar IP publico do servidor
+    SERVER_IP=$(curl -sf --max-time 5 https://ifconfig.me 2>/dev/null \
+        || curl -sf --max-time 5 https://api.ipify.org 2>/dev/null \
+        || curl -sf --max-time 5 https://icanhazip.com 2>/dev/null \
+        || hostname -I | awk '{print $1}')
+
+    # Gerar senhas seguras
+    GEN_API_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 64)
+    GEN_PG_PASSWORD=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
+
+    cat > "$PROJECT_DIR/.env" << ENVFILE
+# === Auto-gerado pelo setup.sh em $(date '+%Y-%m-%d %H:%M:%S') ===
+
+# Token de autenticacao da API (use este mesmo token no Next.js)
+API_AUTH_TOKEN=$GEN_API_TOKEN
+
+# Dominio base para instancias (ex: nome.BASE_DOMAIN)
+BASE_DOMAIN=n8n.marketcodebrasil.com.br
+
+# Email para certificados SSL (Let's Encrypt via Traefik)
+ACME_EMAIL=admin@marketcodebrasil.com.br
+
+# PostgreSQL compartilhado (container criado automaticamente)
+PG_HOST=postgres
+PG_PORT=5432
+PG_USER=n8n
+PG_PASSWORD=$GEN_PG_PASSWORD
+PG_ADMIN_DB=postgres
+
+# Rede Docker para Traefik + instancias
+DOCKER_NETWORK=n8n-public
+
+# Porta do servidor FastAPI
+SERVER_PORT=5050
+ENVFILE
+
+    log "Arquivo .env gerado automaticamente"
+    info "IP do servidor: $SERVER_IP"
+    info "API Token: ${GEN_API_TOKEN:0:12}... (salvo no .env)"
+    info "PG Password: gerada automaticamente"
+    warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js (.env do n8n-vendas)"
+    warn "  cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN"
+else
+    log "Arquivo .env ja existe (mantido sem alteracao)"
 fi
 
 # --- 10. Criar servico systemd ---
