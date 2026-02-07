@@ -1,4 +1,4 @@
-"""Provisionamento de infraestrutura: Traefik, PostgreSQL, Redis, RabbitMQ."""
+"""Provisionamento de infraestrutura: Traefik, Redis, RabbitMQ."""
 
 import os
 import socket
@@ -9,10 +9,6 @@ import docker
 
 from .config import (
     DOCKER_NETWORK,
-    PG_ADMIN_DB,
-    PG_PASSWORD,
-    PG_PORT,
-    PG_USER,
     RABBITMQ_PASSWORD,
     RABBITMQ_PORT,
     RABBITMQ_USER,
@@ -180,86 +176,6 @@ def ensure_traefik():
     print("[INFRA] Traefik criado com Cloudflare DNS Challenge")
 
 
-# ─── PostgreSQL ──────────────────────────────────────────
-
-
-def _test_pg_connection():
-    """Testa conexao com PostgreSQL. Retorna True se OK."""
-    try:
-        import psycopg2
-
-        conn = psycopg2.connect(
-            host="127.0.0.1",
-            port=PG_PORT,
-            user=PG_USER,
-            password=PG_PASSWORD,
-            dbname=PG_ADMIN_DB,
-            connect_timeout=5,
-        )
-        conn.close()
-        return True
-    except Exception as e:
-        print(f"[INFRA] PostgreSQL conexao falhou: {e}")
-        return False
-
-
-def ensure_postgres():
-    """Garante que o PostgreSQL compartilhado está rodando com a senha correta."""
-    client = get_client()
-    name = "postgres"
-
-    try:
-        c = client.containers.get(name)
-        if c.status == "running":
-            time.sleep(1)
-            if _test_pg_connection():
-                return
-            print("[INFRA] PostgreSQL: senha do .env nao bate com o volume. Recriando...")
-            c.remove(force=True)
-            try:
-                client.volumes.get("pg-data").remove(force=True)
-                print("[INFRA] Volume pg-data removido para reset de senha")
-            except Exception:
-                pass
-        else:
-            try:
-                c.start()
-                time.sleep(2)
-                if _test_pg_connection():
-                    return
-            except Exception:
-                pass
-            c.remove(force=True)
-    except docker.errors.NotFound:
-        pass
-
-    _kill_port_holders(client, {5432})
-
-    client.containers.run(
-        image="postgres:16-alpine",
-        name=name,
-        detach=True,
-        restart_policy={"Name": "unless-stopped"},
-        environment={
-            "POSTGRES_USER": PG_USER,
-            "POSTGRES_PASSWORD": PG_PASSWORD,
-            "POSTGRES_DB": PG_ADMIN_DB,
-        },
-        ports={"5432/tcp": 5432},
-        volumes={"pg-data": {"bind": "/var/lib/postgresql/data", "mode": "rw"}},
-        mem_limit="512m",
-        network=DOCKER_NETWORK,
-    )
-    print("[INFRA] PostgreSQL criado e iniciado")
-
-    for i in range(15):
-        time.sleep(2)
-        if _test_pg_connection():
-            print("[INFRA] PostgreSQL: conexao verificada OK")
-            return
-    print("[INFRA] AVISO: PostgreSQL criado mas conexao nao confirmada")
-
-
 # ─── Redis ───────────────────────────────────────────────
 
 
@@ -346,6 +262,20 @@ def ensure_rabbitmq():
     print("[INFRA] AVISO: RabbitMQ criado mas conexao nao confirmada")
 
 
+# ─── Pre-pull ───────────────────────────────────────────
+
+
+def _pre_pull_n8n_image():
+    """Pré-baixa a imagem N8N para acelerar criação de instâncias."""
+    from .config import DEFAULT_N8N_VERSION, N8N_IMAGE
+
+    client = get_client()
+    image_tag = f"{N8N_IMAGE}:{DEFAULT_N8N_VERSION}"
+    print(f"[INFRA] Pre-pull da imagem {image_tag}...")
+    client.images.pull(N8N_IMAGE, tag=DEFAULT_N8N_VERSION)
+    print(f"[INFRA] Imagem {image_tag} pronta")
+
+
 # ─── Bootstrap ───────────────────────────────────────────
 
 
@@ -356,6 +286,7 @@ def bootstrap_infra():
         ("traefik", ensure_traefik),
         ("redis", ensure_redis),
         ("rabbitmq", ensure_rabbitmq),
+        ("image-pull", _pre_pull_n8n_image),
     ]:
         try:
             fn()

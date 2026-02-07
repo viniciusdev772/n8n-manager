@@ -6,19 +6,17 @@ from datetime import datetime, timezone
 from .config import (
     BASE_DOMAIN,
     DOCKER_NETWORK,
-    INSTANCE_CPU_PERIOD,
-    INSTANCE_CPU_QUOTA,
+    INSTANCE_CPU_SHARES,
     INSTANCE_MEM_LIMIT,
+    INSTANCE_MEM_RESERVATION,
     N8N_IMAGE,
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
 
-# Recursos reservados para infra (Traefik, Redis, RabbitMQ, OS)
-RESERVED_RAM_MB = 1536  # 1.5 GB
-RESERVED_CPUS = 1
-PER_INSTANCE_RAM_MB = 512
-PER_INSTANCE_CPUS = 1
+# Recursos reservados para infra (Traefik ~50 + Redis ~100 + RabbitMQ ~150 + OS ~200 + margem)
+RESERVED_RAM_MB = 768
+PER_INSTANCE_RAM_MB = 384
 
 
 def container_name(instance_name: str) -> str:
@@ -61,11 +59,17 @@ def build_env(name: str, encryption_key: str) -> dict:
         "EXECUTIONS_DATA_SAVE_ON_PROGRESS": "false",
         "EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS": "false",
         "EXECUTIONS_DATA_PRUNE": "true",
-        "EXECUTIONS_DATA_MAX_AGE": "72",
-        "EXECUTIONS_DATA_PRUNE_MAX_COUNT": "500",
+        "EXECUTIONS_DATA_MAX_AGE": "24",
+        "EXECUTIONS_DATA_PRUNE_MAX_COUNT": "100",
         # Performance
-        "N8N_CONCURRENCY_PRODUCTION_LIMIT": "5",
-        "NODE_OPTIONS": "--max-old-space-size=384",
+        "N8N_CONCURRENCY_PRODUCTION_LIMIT": "3",
+        "NODE_OPTIONS": "--max-old-space-size=256",
+        # Desabilitar features desnecessárias (economia de memória + segurança)
+        "N8N_TEMPLATES_ENABLED": "false",
+        "N8N_VERSION_NOTIFICATIONS_ENABLED": "false",
+        "N8N_PERSONALIZATION_ENABLED": "false",
+        "N8N_HIRING_BANNER_ENABLED": "false",
+        "N8N_COMMUNITY_PACKAGES_ENABLED": "false",
     }
 
 
@@ -103,8 +107,8 @@ def create_container(name: str, version: str, encryption_key: str):
         environment=env,
         labels=labels,
         mem_limit=INSTANCE_MEM_LIMIT,
-        cpu_period=INSTANCE_CPU_PERIOD,
-        cpu_quota=INSTANCE_CPU_QUOTA,
+        mem_reservation=INSTANCE_MEM_RESERVATION,
+        cpu_shares=INSTANCE_CPU_SHARES,
         volumes={f"n8n-data-{name}": {"bind": "/home/node/.n8n", "mode": "rw"}},
         network=DOCKER_NETWORK,
     )
@@ -179,7 +183,10 @@ def list_n8n_containers() -> list:
 
 
 def calculate_max_instances() -> dict:
-    """Calcula o número máximo de instâncias com base nos recursos da VPS."""
+    """Calcula o número máximo de instâncias com base na RAM da VPS.
+
+    Com cpu_shares (peso relativo), CPU não é gargalo — capacidade é só por RAM.
+    """
     client = get_client()
     info = client.info()
 
@@ -187,11 +194,7 @@ def calculate_max_instances() -> dict:
     total_cpus = info["NCPU"]
 
     available_ram = total_ram_mb - RESERVED_RAM_MB
-    available_cpus = total_cpus - RESERVED_CPUS
-
-    max_by_ram = int(available_ram / PER_INSTANCE_RAM_MB)
-    max_by_cpu = int(available_cpus / PER_INSTANCE_CPUS)
-    max_instances = max(1, min(max_by_ram, max_by_cpu))
+    max_instances = max(1, int(available_ram / PER_INSTANCE_RAM_MB))
 
     current = list_n8n_containers()
     active_count = len([c for c in current if c["status"] == "running"])

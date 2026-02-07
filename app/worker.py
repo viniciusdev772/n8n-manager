@@ -9,9 +9,9 @@ import pika
 
 from .config import (
     DOCKER_NETWORK,
-    INSTANCE_CPU_PERIOD,
-    INSTANCE_CPU_QUOTA,
+    INSTANCE_CPU_SHARES,
     INSTANCE_MEM_LIMIT,
+    INSTANCE_MEM_RESERVATION,
     N8N_IMAGE,
     RABBITMQ_HOST,
     RABBITMQ_PASSWORD,
@@ -81,8 +81,8 @@ def _process_job(ch, method, properties, body):
                 environment=env,
                 labels=labels,
                 mem_limit=INSTANCE_MEM_LIMIT,
-                cpu_period=INSTANCE_CPU_PERIOD,
-                cpu_quota=INSTANCE_CPU_QUOTA,
+                mem_reservation=INSTANCE_MEM_RESERVATION,
+                cpu_shares=INSTANCE_CPU_SHARES,
                 volumes={f"n8n-data-{name}": {"bind": "/home/node/.n8n", "mode": "rw"}},
                 network=DOCKER_NETWORK,
             )

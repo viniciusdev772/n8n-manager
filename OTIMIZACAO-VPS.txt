@@ -1,0 +1,88 @@
+OTIMIZACAO VPS - N8N INSTANCE MANAGER
+======================================
+
+VPS: 5 vCPU / 8 GB RAM
+Data: 07/02/2026
+
+RESULTADO PRINCIPAL
+-------------------
+Antes: maximo 4 instancias
+Depois: maximo 19 instancias (+375%)
+
+
+O QUE MUDOU
+-----------
+
+1) CPU - De reserva fixa para peso relativo
+
+Antes: cada instancia reservava 1 vCPU inteiro (hard cap)
+Com 4 CPUs disponiveis = maximo 4 instancias
+
+Depois: cpu_shares (peso relativo entre containers)
+Se so 1 container esta ativo, ele usa toda CPU disponivel
+Se 10 containers competem, cada um recebe sua fatia proporcional
+CPU deixou de ser gargalo
+
+2) RAM - Hard limit menor + soft limit
+
+Antes: 512MB hard limit por container (N8N idle usa so 100MB)
+Depois: 384MB hard limit + 192MB soft limit
+O Docker so intervem quando ha pressao real de memoria
+Como a maioria fica idle, permite rodar muito mais containers
+
+3) Heap V8 do Node.js
+
+Antes: 384MB
+Depois: 256MB
+Garbage collector roda mais cedo, memoria mais enxuta
+
+4) Features desnecessarias desabilitadas
+
+- Templates (galeria de modelos)
+- Checagem de novas versoes
+- Survey de personalizacao
+- Banner de contratacao do n8n
+- Community nodes (tambem por seguranca - houve ataque supply chain em jan/2026)
+
+5) PostgreSQL removido (era codigo morto)
+
+O postgres era provisionado mas NENHUMA instancia usava
+Todas usam SQLite embutido
+Removido: container postgres, codigo de gerenciamento, dependencia psycopg2
+Liberou ~50MB de RAM e 512MB de limite reservado
+
+6) Pre-pull da imagem no boot
+
+A imagem do N8N 1.123.20 agora e baixada quando o manager inicia
+Criacao de instancias fica ~30s mais rapida (nao precisa baixar na hora)
+
+7) Pruning mais agressivo
+
+Antes: execucoes salvas por 72h, maximo 500
+Depois: execucoes salvas por 24h, maximo 100
+Instancias de teste vivem 5 dias, nao precisam de 3 dias de historico
+
+8) Reserva de infra reduzida
+
+Antes: 1.5GB reservado para Traefik/Redis/RabbitMQ/OS
+Depois: 768MB (o uso real e ~175MB, 1.5GB era excessivo)
+
+
+CALCULO
+-------
+Antes:  RAM (8192-1536)/512 = 12   CPU (5-1)/1 = 4   min = 4
+Depois: RAM (8192-768)/384  = 19   CPU = sem limite   resultado = 19
+
+
+ARQUIVOS ALTERADOS
+------------------
+- app/config.py (novos limites)
+- app/n8n.py (env vars, container creation, calculo capacidade)
+- app/worker.py (container creation)
+- app/routes.py (container creation no update_version)
+- app/infra.py (removido postgres, adicionado pre-pull)
+- app/database.py (deletado - codigo morto)
+- requirements.txt (removido psycopg2-binary)
+
+
+VERSAO N8N: 1.123.20 (nao foi alterada)

@@ -28,9 +28,9 @@ from .n8n import (
 from .queue import publish_job
 from .config import (
     DOCKER_NETWORK,
-    INSTANCE_CPU_PERIOD,
-    INSTANCE_CPU_QUOTA,
+    INSTANCE_CPU_SHARES,
     INSTANCE_MEM_LIMIT,
+    INSTANCE_MEM_RESERVATION,
     N8N_IMAGE,
 )
 
@@ -412,8 +412,8 @@ async def update_version(instance_id: str, request: Request):
         environment=old_env,
         labels=old_labels,
         mem_limit=INSTANCE_MEM_LIMIT,
-        cpu_period=INSTANCE_CPU_PERIOD,
-        cpu_quota=INSTANCE_CPU_QUOTA,
+        mem_reservation=INSTANCE_MEM_RESERVATION,
+        cpu_shares=INSTANCE_CPU_SHARES,
         volumes={f"n8n-data-{instance_id}": {"bind": "/home/node/.n8n", "mode": "rw"}},
         network=DOCKER_NETWORK,
     )
