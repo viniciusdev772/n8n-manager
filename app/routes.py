@@ -384,3 +384,39 @@ async def update_version(instance_id: str, request: Request):
     )
 
     return {"message": f"Versão atualizada para {new_version}", "instance_id": instance_id}
+
+
+@router.get("/instance/{instance_id}/logs", dependencies=[Depends(verify_token)])
+async def instance_logs(instance_id: str, tail: int = Query(50)):
+    """Retorna as últimas linhas de log do container."""
+    try:
+        container = get_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
+    logs = container.logs(tail=min(tail, 200)).decode("utf-8", errors="replace")
+    return {"instance_id": instance_id, "logs": logs}
+
+
+@router.get("/instance/{instance_id}/network", dependencies=[Depends(verify_token)])
+async def instance_network(instance_id: str):
+    """Retorna info de rede do container para debug."""
+    try:
+        container = get_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
+    container.reload()
+    networks = container.attrs.get("NetworkSettings", {}).get("Networks", {})
+    net_info = {}
+    for net_name, net_data in networks.items():
+        net_info[net_name] = {
+            "ip": net_data.get("IPAddress", ""),
+            "gateway": net_data.get("Gateway", ""),
+        }
+
+    return {
+        "instance_id": instance_id,
+        "networks": net_info,
+        "expected_network": DOCKER_NETWORK,
+    }
