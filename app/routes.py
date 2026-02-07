@@ -400,7 +400,8 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
 
 @router.post("/debug/fix-traefik-network", dependencies=[Depends(verify_token)])
 async def fix_traefik_network():
-    """Reconecta Traefik na rede n8n-public se necessário."""
+    """Recria Traefik na rede correta se necessário."""
+    from .infra import ensure_traefik
     client = get_client()
     try:
         traefik = client.containers.get("traefik")
@@ -408,9 +409,10 @@ async def fix_traefik_network():
         networks = traefik.attrs.get("NetworkSettings", {}).get("Networks", {})
         if DOCKER_NETWORK in networks:
             return {"message": "Traefik já está na rede correta", "network": DOCKER_NETWORK}
-        network = client.networks.get(DOCKER_NETWORK)
-        network.connect(traefik)
-        return {"message": f"Traefik conectado à rede '{DOCKER_NETWORK}'", "fixed": True}
+        # Precisa recriar — port bindings impedem connect simples
+        traefik.remove(force=True)
+        ensure_traefik()
+        return {"message": f"Traefik recriado na rede '{DOCKER_NETWORK}'", "fixed": True}
     except Exception as e:
         raise HTTPException(500, f"Erro: {e}")
 

@@ -56,18 +56,11 @@ def _test_port(host, port, timeout=3):
         return False
 
 
-def _ensure_container_on_network(container, network_name):
-    """Garante que um container esta conectado a uma rede Docker."""
+def _container_on_network(container, network_name):
+    """Verifica se um container esta numa rede."""
     container.reload()
     networks = container.attrs.get("NetworkSettings", {}).get("Networks", {})
-    if network_name not in networks:
-        try:
-            client = get_client()
-            network = client.networks.get(network_name)
-            network.connect(container)
-            print(f"[INFRA] Container '{container.name}' conectado a rede '{network_name}'")
-        except Exception as e:
-            print(f"[INFRA] ERRO ao conectar '{container.name}' na rede '{network_name}': {e}")
+    return network_name in networks
 
 
 def ensure_traefik():
@@ -79,13 +72,12 @@ def ensure_traefik():
     try:
         c = client.containers.get(name)
         if c.status == "running":
-            _ensure_container_on_network(c, DOCKER_NETWORK)
-            return
-        try:
-            c.start()
-            _ensure_container_on_network(c, DOCKER_NETWORK)
-            return
-        except Exception:
+            if _container_on_network(c, DOCKER_NETWORK):
+                return
+            # Traefik rodando mas fora da rede — recriar
+            print(f"[INFRA] Traefik fora da rede '{DOCKER_NETWORK}', recriando...")
+            c.remove(force=True)
+        else:
             c.remove(force=True)
     except Exception:
         pass
