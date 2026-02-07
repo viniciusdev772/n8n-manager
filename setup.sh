@@ -568,29 +568,53 @@ else
     log "Rede '$DOCKER_NET' existe"
 fi
 
-# Verificar Traefik
-TRAEFIK_NET=$(docker inspect traefik --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null || echo "")
-
-if docker inspect traefik > /dev/null 2>&1; then
-    if echo "$TRAEFIK_NET" | grep -q "$DOCKER_NET"; then
-        TRAEFIK_STATUS=$(docker inspect traefik --format '{{.State.Status}}' 2>/dev/null)
-        if [ "$TRAEFIK_STATUS" = "running" ]; then
-            log "Traefik: rodando na rede '$DOCKER_NET'"
-        else
-            info "Traefik existe mas nao esta rodando (status: $TRAEFIK_STATUS). Removendo para recriar..."
-            docker rm -f traefik > /dev/null 2>&1 || true
-            sleep 3
-        fi
-    else
-        warn "Traefik esta na rede errada (redes: ${TRAEFIK_NET:-nenhuma}). Recriando..."
-        docker rm -f traefik > /dev/null 2>&1 || true
-        sleep 5
+# Detectar qualquer container Traefik rodando (EasyPanel usa nomes como traefik.1.xxx)
+TRAEFIK_CONTAINER=""
+for cname in $(docker ps --format '{{.Names}}' 2>/dev/null); do
+    if echo "$cname" | grep -qi "traefik"; then
+        TRAEFIK_CONTAINER="$cname"
+        break
     fi
-fi
+done
 
-# Se Traefik nao existe, recriar — o bootstrap_infra vai cuidar no proximo restart
-if ! docker inspect traefik > /dev/null 2>&1; then
-    info "Recriando Traefik na rede '$DOCKER_NET'..."
+if [ -n "$TRAEFIK_CONTAINER" ]; then
+    info "Traefik encontrado: $TRAEFIK_CONTAINER"
+    TRAEFIK_IMAGE=$(docker inspect "$TRAEFIK_CONTAINER" --format '{{.Config.Image}}' 2>/dev/null || echo "unknown")
+    info "Imagem atual: $TRAEFIK_IMAGE"
+
+    # Verificar se Traefik e um servico Swarm (EasyPanel)
+    IS_SWARM_SERVICE=$(docker service ls --format '{{.Name}}' 2>/dev/null | grep -i traefik || echo "")
+
+    if [ -n "$IS_SWARM_SERVICE" ]; then
+        info "Traefik e um servico Swarm (EasyPanel). Atualizando imagem para v3.6..."
+        docker service update --image traefik:v3.6 "$IS_SWARM_SERVICE" > /dev/null 2>&1 || warn "Falha ao atualizar servico Swarm"
+        sleep 5
+
+        # Re-detectar container apos update
+        TRAEFIK_CONTAINER=""
+        for cname in $(docker ps --format '{{.Names}}' 2>/dev/null); do
+            if echo "$cname" | grep -qi "traefik"; then
+                TRAEFIK_CONTAINER="$cname"
+                break
+            fi
+        done
+        [ -n "$TRAEFIK_CONTAINER" ] && log "Traefik Swarm atualizado para v3.6: $TRAEFIK_CONTAINER"
+    fi
+
+    # Conectar na rede n8n-public se nao estiver
+    if [ -n "$TRAEFIK_CONTAINER" ]; then
+        TRAEFIK_NETS=$(docker inspect "$TRAEFIK_CONTAINER" --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null || echo "")
+        if echo "$TRAEFIK_NETS" | grep -q "$DOCKER_NET"; then
+            log "Traefik ja esta na rede '$DOCKER_NET'"
+        else
+            info "Conectando Traefik na rede '$DOCKER_NET'..."
+            docker network connect "$DOCKER_NET" "$TRAEFIK_CONTAINER" > /dev/null 2>&1 || warn "Falha ao conectar Traefik na rede"
+            log "Traefik conectado na rede '$DOCKER_NET'"
+        fi
+    fi
+else
+    # Nenhum Traefik encontrado — criar o nosso
+    info "Nenhum Traefik encontrado. Criando com Cloudflare DNS Challenge..."
 
     # Aguardar portas liberarem
     for i in $(seq 1 10); do
@@ -600,9 +624,7 @@ if ! docker inspect traefik > /dev/null 2>&1; then
         sleep 1
     done
 
-    # Ler config do .env
-    ACME_EMAIL_ENV=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
-    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V")
 
     docker run -d \
         --name traefik \
@@ -622,17 +644,12 @@ if ! docker inspect traefik > /dev/null 2>&1; then
         --entrypoints.web.http.redirections.entrypoint.scheme=https \
         --certificatesresolvers.letsencrypt.acme.dnschallenge=true \
         --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare \
-        --certificatesresolvers.letsencrypt.acme.email="$ACME_EMAIL_ENV" \
+        --certificatesresolvers.letsencrypt.acme.email=lojasketchware@gmail.com \
         --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json \
         > /dev/null 2>&1
 
-    if docker inspect traefik > /dev/null 2>&1; then
-        TRAEFIK_STATE=$(docker inspect traefik --format '{{.State.Status}}' 2>/dev/null)
-        if [ "$TRAEFIK_STATE" = "running" ]; then
-            log "Traefik recriado e rodando na rede '$DOCKER_NET'"
-        else
-            warn "Traefik criado mas status: $TRAEFIK_STATE"
-        fi
+    if docker ps --format '{{.Names}}' | grep -q "^traefik$"; then
+        log "Traefik criado e rodando na rede '$DOCKER_NET'"
     else
         warn "Falha ao criar Traefik (portas podem estar ocupadas)"
     fi
