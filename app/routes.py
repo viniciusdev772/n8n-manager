@@ -455,6 +455,45 @@ async def fix_traefik_network():
         raise HTTPException(500, f"Erro: {e}")
 
 
+@router.post("/debug/recreate-traefik", dependencies=[Depends(verify_token)])
+async def recreate_traefik():
+    """Forca remocao e recriacao do Traefik (usa config_traefik.py)."""
+    from .infra import _run_config_traefik, ensure_network
+    import time as _time
+
+    client = get_client()
+
+    # Remover todos containers traefik
+    removed = []
+    for c in client.containers.list(all=True):
+        if "traefik" in c.name.lower():
+            try:
+                c.remove(force=True)
+                removed.append(c.name)
+            except Exception:
+                pass
+
+    _time.sleep(3)
+    ensure_network()
+    ok = _run_config_traefik()
+
+    # Verificar resultado
+    try:
+        traefik = client.containers.get("traefik")
+        traefik.reload()
+        image = traefik.image.tags[0] if traefik.image.tags else "unknown"
+        nets = list(traefik.attrs.get("NetworkSettings", {}).get("Networks", {}).keys())
+        return {
+            "removed": removed,
+            "status": traefik.status,
+            "image": image,
+            "networks": nets,
+            "config_traefik_ok": ok,
+        }
+    except docker.errors.NotFound:
+        raise HTTPException(500, "Traefik nao foi criado")
+
+
 @router.get("/debug/all-containers", dependencies=[Depends(verify_token)])
 async def debug_all_containers():
     """Lista TODOS os containers Docker (não só n8n)."""
