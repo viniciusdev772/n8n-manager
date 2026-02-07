@@ -64,6 +64,9 @@ def build_env(name: str, encryption_key: str) -> dict:
         # Performance
         "N8N_CONCURRENCY_PRODUCTION_LIMIT": "5",
         "NODE_OPTIONS": "--max-old-space-size=384",
+        # Desabilita task runners (Python não disponível na imagem)
+        "N8N_RUNNERS_ENABLED": "false",
+        "N8N_PYTHON_ENABLED": "false",
     }
 
 
