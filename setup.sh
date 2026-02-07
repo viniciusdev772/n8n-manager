@@ -252,7 +252,8 @@ info "Aplicando hardening no Docker..."
 
 mkdir -p /etc/docker
 
-cat > /etc/docker/daemon.json << 'DAEMON_JSON'
+if [ ! -f /etc/docker/daemon.json ] || [ ! -s /etc/docker/daemon.json ]; then
+    cat > /etc/docker/daemon.json << 'DAEMON_JSON'
 {
   "log-driver": "json-file",
   "log-opts": {
@@ -271,22 +272,31 @@ cat > /etc/docker/daemon.json << 'DAEMON_JSON'
       "Soft": 2048
     }
   },
-  "no-new-privileges": true,
-  "live-restore": true,
-  "userland-proxy": false,
-  "storage-driver": "overlay2"
+  "live-restore": true
 }
 DAEMON_JSON
 
-systemctl restart docker > /dev/null 2>&1 || true
-info "Aguardando Docker reiniciar..."
-for i in $(seq 1 15); do
+    info "Reiniciando Docker com nova configuracao..."
+    systemctl restart docker > /dev/null 2>&1 || true
+    for i in $(seq 1 30); do
+        if docker info > /dev/null 2>&1; then
+            break
+        fi
+        sleep 1
+    done
+
     if docker info > /dev/null 2>&1; then
-        break
+        log "Docker hardening aplicado (log rotation, ulimits, live-restore)"
+    else
+        warn "Docker nao reiniciou com daemon.json, revertendo..."
+        rm -f /etc/docker/daemon.json
+        systemctl restart docker > /dev/null 2>&1 || true
+        sleep 5
+        log "Docker restaurado sem hardening customizado"
     fi
-    sleep 1
-done
-log "Docker hardening aplicado (log rotation, ulimits, no-new-privileges)"
+else
+    log "Docker daemon.json ja existe (mantido sem alteracao)"
+fi
 
 # --- 6. Instalar Python 3 + venv ---
 
