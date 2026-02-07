@@ -557,7 +557,94 @@ info "Iniciando N8N Manager..."
 systemctl restart n8n-manager > /dev/null 2>&1 || true
 sleep 5
 
-# --- 12. Verificacao final de qualidade ---
+# --- 12. Garantir Traefik na rede correta ---
+
+DOCKER_NET="n8n-public"
+info "Verificando rede Docker '${DOCKER_NET}'..."
+
+# Criar rede se nao existir
+if ! docker network inspect "$DOCKER_NET" > /dev/null 2>&1; then
+    docker network create "$DOCKER_NET" > /dev/null 2>&1
+    log "Rede '$DOCKER_NET' criada"
+else
+    log "Rede '$DOCKER_NET' existe"
+fi
+
+# Verificar Traefik
+TRAEFIK_NET=$(docker inspect traefik --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null || echo "")
+
+if docker inspect traefik > /dev/null 2>&1; then
+    if echo "$TRAEFIK_NET" | grep -q "$DOCKER_NET"; then
+        TRAEFIK_STATUS=$(docker inspect traefik --format '{{.State.Status}}' 2>/dev/null)
+        if [ "$TRAEFIK_STATUS" = "running" ]; then
+            log "Traefik: rodando na rede '$DOCKER_NET'"
+        else
+            info "Traefik existe mas nao esta rodando (status: $TRAEFIK_STATUS). Removendo para recriar..."
+            docker rm -f traefik > /dev/null 2>&1 || true
+            sleep 3
+        fi
+    else
+        warn "Traefik esta na rede errada (redes: ${TRAEFIK_NET:-nenhuma}). Recriando..."
+        docker rm -f traefik > /dev/null 2>&1 || true
+        sleep 5
+    fi
+fi
+
+# Se Traefik nao existe, recriar — o bootstrap_infra vai cuidar no proximo restart
+if ! docker inspect traefik > /dev/null 2>&1; then
+    info "Recriando Traefik na rede '$DOCKER_NET'..."
+
+    # Aguardar portas liberarem
+    for i in $(seq 1 10); do
+        if ! ss -tlnp | grep -qE ':80\s|:443\s'; then
+            break
+        fi
+        sleep 1
+    done
+
+    # Ler config do .env
+    ACME_EMAIL_ENV=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
+
+    docker run -d \
+        --name traefik \
+        --restart unless-stopped \
+        --network "$DOCKER_NET" \
+        -p 80:80 -p 443:443 -p 8080:8080 \
+        -v /var/run/docker.sock:/var/run/docker.sock:ro \
+        -v traefik-certs:/certs \
+        traefik:v3.3 \
+        --api.dashboard=true \
+        --api.insecure=true \
+        --providers.docker=true \
+        --providers.docker.exposedbydefault=false \
+        --providers.docker.network="$DOCKER_NET" \
+        --entrypoints.web.address=:80 \
+        --entrypoints.websecure.address=:443 \
+        --entrypoints.web.http.redirections.entrypoint.to=websecure \
+        --entrypoints.web.http.redirections.entrypoint.scheme=https \
+        --certificatesresolvers.letsencrypt.acme.tlschallenge=true \
+        --certificatesresolvers.letsencrypt.acme.email="$ACME_EMAIL_ENV" \
+        --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json \
+        > /dev/null 2>&1
+
+    if docker inspect traefik > /dev/null 2>&1; then
+        TRAEFIK_STATE=$(docker inspect traefik --format '{{.State.Status}}' 2>/dev/null)
+        if [ "$TRAEFIK_STATE" = "running" ]; then
+            log "Traefik recriado e rodando na rede '$DOCKER_NET'"
+        else
+            warn "Traefik criado mas status: $TRAEFIK_STATE"
+        fi
+    else
+        warn "Falha ao criar Traefik (portas podem estar ocupadas)"
+    fi
+fi
+
+# Reiniciar servico apos garantir Traefik correto
+info "Reiniciando N8N Manager apos fix do Traefik..."
+systemctl restart n8n-manager > /dev/null 2>&1 || true
+sleep 5
+
+# --- 13. Verificacao final de qualidade ---
 
 info "Executando verificacao final..."
 ERRORS=0

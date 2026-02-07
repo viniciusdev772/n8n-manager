@@ -51,10 +51,6 @@ def build_env(name: str, encryption_key: str) -> dict:
         "DB_POSTGRESDB_USER": PG_USER,
         "DB_POSTGRESDB_PASSWORD": PG_PASSWORD,
         "DB_POSTGRESDB_SCHEMA": "public",
-        # Task runners (v2+: desabilitar Python runner)
-        "N8N_RUNNERS_ENABLED": "true",
-        "N8N_RUNNERS_MODE": "internal",
-        "N8N_NATIVE_PYTHON_RUNNER": "false",
         # Economia agressiva
         "EXECUTIONS_DATA_SAVE_ON_ERROR": "all",
         "EXECUTIONS_DATA_SAVE_ON_SUCCESS": "none",
