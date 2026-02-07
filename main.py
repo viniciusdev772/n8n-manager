@@ -9,13 +9,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import SERVER_PORT
 from app.docker_client import close_client
 from app.infra import bootstrap_infra
+from app.queue import close_rabbitmq
 from app.routes import router
+from app.worker import start_worker, stop_worker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     bootstrap_infra()
+    start_worker()
     yield
+    stop_worker()
+    close_rabbitmq()
     close_client()
 
 

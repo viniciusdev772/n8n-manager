@@ -1,5 +1,6 @@
-"""Provisionamento de infraestrutura: Traefik, PostgreSQL, Redis."""
+"""Provisionamento de infraestrutura: Traefik, PostgreSQL, Redis, RabbitMQ."""
 
+import socket
 import time
 
 from .config import (
@@ -9,6 +10,10 @@ from .config import (
     PG_PASSWORD,
     PG_PORT,
     PG_USER,
+    RABBITMQ_PASSWORD,
+    RABBITMQ_PORT,
+    RABBITMQ_USER,
+    REDIS_PORT,
 )
 from .docker_client import get_client
 
@@ -41,6 +46,16 @@ def _kill_port_holders(client, ports):
             continue
 
 
+def _test_port(host, port, timeout=3):
+    """Testa se uma porta TCP esta acessivel."""
+    try:
+        s = socket.create_connection((host, port), timeout=timeout)
+        s.close()
+        return True
+    except Exception:
+        return False
+
+
 def ensure_traefik():
     """Garante que o Traefik está rodando com SSL automático."""
     client = get_client()
@@ -51,17 +66,14 @@ def ensure_traefik():
         c = client.containers.get(name)
         if c.status == "running":
             return
-        # Existe mas parado — tentar iniciar
         try:
             c.start()
             return
         except Exception:
-            # Porta ocupada ou outro erro — remover e recriar
             c.remove(force=True)
     except Exception:
         pass
 
-    # Limpar containers que ocupam as portas
     _kill_port_holders(client, required_ports)
 
     client.containers.run(
@@ -123,14 +135,11 @@ def ensure_postgres():
     try:
         c = client.containers.get(name)
         if c.status == "running":
-            # Container rodando — verificar se a senha bate
             time.sleep(1)
             if _test_pg_connection():
                 return
-            # Senha incorreta — volume tem senha antiga, precisa resetar
             print("[INFRA] PostgreSQL: senha do .env nao bate com o volume. Recriando...")
             c.remove(force=True)
-            # Remover volume para forcar reinicializacao com nova senha
             try:
                 client.volumes.get("pg-data").remove(force=True)
                 print("[INFRA] Volume pg-data removido para reset de senha")
@@ -168,7 +177,6 @@ def ensure_postgres():
     created = True
     print("[INFRA] PostgreSQL criado e iniciado")
 
-    # Aguardar PostgreSQL ficar pronto
     for i in range(15):
         time.sleep(2)
         if _test_pg_connection():
@@ -178,10 +186,65 @@ def ensure_postgres():
         print("[INFRA] AVISO: PostgreSQL criado mas conexao nao confirmada")
 
 
+def _has_host_port(container, port):
+    """Verifica se um container expoe uma porta no host."""
+    try:
+        bindings = container.attrs.get("HostConfig", {}).get("PortBindings") or {}
+        for _, host_binds in bindings.items():
+            if not host_binds:
+                continue
+            for bind in host_binds:
+                if int(bind.get("HostPort", 0)) == port:
+                    return True
+    except Exception:
+        pass
+    return False
+
+
 def ensure_redis():
-    """Garante que o Redis compartilhado está rodando."""
+    """Garante que o Redis compartilhado está rodando com porta exposta."""
     client = get_client()
     name = "redis"
+    try:
+        c = client.containers.get(name)
+        if c.status == "running":
+            # Verificar se porta 6379 esta exposta no host
+            if _has_host_port(c, REDIS_PORT):
+                return
+            # Container sem port mapping — recriar
+            print("[INFRA] Redis: recriando com porta exposta no host...")
+            c.remove(force=True)
+        else:
+            try:
+                c.start()
+                if _has_host_port(c, REDIS_PORT):
+                    return
+            except Exception:
+                pass
+            c.remove(force=True)
+    except Exception:
+        pass
+
+    _kill_port_holders(client, {REDIS_PORT})
+
+    client.containers.run(
+        image="redis:7-alpine",
+        name=name,
+        detach=True,
+        restart_policy={"Name": "unless-stopped"},
+        command="redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru",
+        ports={"6379/tcp": REDIS_PORT},
+        volumes={"redis-data": {"bind": "/data", "mode": "rw"}},
+        mem_limit="128m",
+        network=DOCKER_NETWORK,
+    )
+    print("[INFRA] Redis criado e iniciado")
+
+
+def ensure_rabbitmq():
+    """Garante que o RabbitMQ está rodando com management UI."""
+    client = get_client()
+    name = "rabbitmq"
     try:
         c = client.containers.get(name)
         if c.status == "running":
@@ -194,17 +257,31 @@ def ensure_redis():
     except Exception:
         pass
 
+    _kill_port_holders(client, {RABBITMQ_PORT, 15672})
+
     client.containers.run(
-        image="redis:7-alpine",
+        image="rabbitmq:3-management-alpine",
         name=name,
         detach=True,
         restart_policy={"Name": "unless-stopped"},
-        command="redis-server --maxmemory 100mb --maxmemory-policy allkeys-lru",
-        volumes={"redis-data": {"bind": "/data", "mode": "rw"}},
-        mem_limit="128m",
+        ports={"5672/tcp": RABBITMQ_PORT, "15672/tcp": 15672},
+        environment={
+            "RABBITMQ_DEFAULT_USER": RABBITMQ_USER,
+            "RABBITMQ_DEFAULT_PASS": RABBITMQ_PASSWORD,
+        },
+        volumes={"rabbitmq-data": {"bind": "/var/lib/rabbitmq", "mode": "rw"}},
+        mem_limit="256m",
         network=DOCKER_NETWORK,
     )
-    print("[INFRA] Redis criado e iniciado")
+    print("[INFRA] RabbitMQ criado e iniciado")
+
+    # Aguardar RabbitMQ ficar pronto
+    for i in range(15):
+        time.sleep(2)
+        if _test_port("127.0.0.1", RABBITMQ_PORT):
+            print("[INFRA] RabbitMQ: conexao verificada OK")
+            return
+    print("[INFRA] AVISO: RabbitMQ criado mas conexao nao confirmada")
 
 
 def bootstrap_infra():
@@ -213,3 +290,4 @@ def bootstrap_infra():
     ensure_traefik()
     ensure_postgres()
     ensure_redis()
+    ensure_rabbitmq()

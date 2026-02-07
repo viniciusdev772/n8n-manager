@@ -3,6 +3,7 @@
 import asyncio
 import json
 import time
+import uuid
 
 import docker
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
@@ -12,6 +13,7 @@ from .auth import verify_token
 from .config import BASE_DOMAIN
 from .database import create_tenant_db, drop_tenant_db
 from .docker_client import get_client
+from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
     build_env,
     build_traefik_labels,
@@ -23,6 +25,7 @@ from .n8n import (
     list_n8n_containers,
     remove_container,
 )
+from .queue import publish_job
 from .config import (
     DOCKER_NETWORK,
     INSTANCE_CPU_PERIOD,
@@ -143,100 +146,71 @@ async def create_instance_stream(
     version: str = Query("latest"),
     location: str = Query("vinhedo"),
 ):
-    """Cria instância N8N com streaming SSE de progresso."""
+    """Cria instância N8N via fila RabbitMQ com streaming SSE de progresso."""
+
+    # Fast-fail: verificar duplicata antes de enfileirar
+    try:
+        get_container(name)
+
+        async def error_gen():
+            yield json.dumps({"status": "error", "message": f"Instância '{name}' já existe"})
+
+        return EventSourceResponse(error_gen())
+    except docker.errors.NotFound:
+        pass
+
+    # Criar job e publicar na fila
+    job_id = str(uuid.uuid4())
+    init_job(job_id)
+
+    try:
+        publish_job(job_id, {
+            "job_id": job_id,
+            "name": name,
+            "version": version,
+            "location": location,
+        })
+    except Exception as e:
+        async def queue_error_gen():
+            yield json.dumps({"status": "error", "message": f"Erro ao enfileirar job: {e}"})
+
+        return EventSourceResponse(queue_error_gen())
 
     async def event_generator():
+        """Poll Redis por eventos do worker e yield como SSE."""
+        event_index = 0
+        start_time = time.time()
+        max_duration = 300  # 5 minutos
+
         try:
-            # Verificar duplicata
-            try:
-                get_container(name)
-                yield json.dumps({"status": "error", "message": f"Instância '{name}' já existe"})
-                return
-            except docker.errors.NotFound:
-                pass
+            while True:
+                # Buscar novos eventos desde o ultimo indice
+                events = get_events_since(job_id, event_index)
+                for ev in events:
+                    yield json.dumps(ev)
+                    event_index += 1
 
-            encryption_key = generate_encryption_key()
+                    if ev.get("status") in ("complete", "error"):
+                        cleanup_job(job_id)
+                        return
 
-            # 1. Banco
-            yield json.dumps({"status": "info", "message": "Criando banco de dados..."})
-            await asyncio.sleep(0.3)
-            try:
-                create_tenant_db(name)
-            except Exception as e:
-                yield json.dumps({"status": "error", "message": f"Erro ao criar banco: {e}"})
-                return
-            yield json.dumps({"status": "info", "message": "Banco criado com sucesso"})
-
-            # 2. Imagem
-            image_tag = f"{N8N_IMAGE}:{version}"
-            yield json.dumps({"status": "info", "message": f"Baixando imagem {image_tag}..."})
-            await asyncio.sleep(0.3)
-            try:
-                get_client().images.pull(N8N_IMAGE, tag=version)
-            except Exception as e:
-                yield json.dumps({"status": "error", "message": f"Erro ao baixar imagem: {e}"})
-                return
-            yield json.dumps({"status": "info", "message": "Imagem pronta"})
-
-            # 3. Container
-            yield json.dumps({"status": "info", "message": "Criando container N8N..."})
-            await asyncio.sleep(0.3)
-            try:
-                env = build_env(name, encryption_key)
-                labels = build_traefik_labels(name)
-
-                container = get_client().containers.run(
-                    image=image_tag,
-                    name=container_name(name),
-                    detach=True,
-                    restart_policy={"Name": "unless-stopped"},
-                    environment=env,
-                    labels=labels,
-                    mem_limit=INSTANCE_MEM_LIMIT,
-                    cpu_period=INSTANCE_CPU_PERIOD,
-                    cpu_quota=INSTANCE_CPU_QUOTA,
-                    volumes={f"n8n-data-{name}": {"bind": "/home/node/.n8n", "mode": "rw"}},
-                    network=DOCKER_NETWORK,
-                )
-            except Exception as e:
-                yield json.dumps({"status": "error", "message": f"Erro ao criar container: {e}"})
-                return
-
-            yield json.dumps({"status": "info", "message": "Container criado, iniciando N8N..."})
-
-            # 4. Aguardar startup
-            yield json.dumps({"status": "info", "message": "Aguardando instância ficar disponível..."})
-            for i in range(30):
-                await asyncio.sleep(2)
-                container.reload()
-                if container.status == "running":
-                    yield json.dumps({"status": "info", "message": f"Verificando N8N ({i + 1}/30)"})
-                    try:
-                        logs = container.logs(tail=5).decode("utf-8", errors="replace")
-                        if "Editor is now accessible" in logs or "Webhook listener" in logs:
-                            break
-                    except Exception:
-                        pass
-                elif container.status == "exited":
-                    logs = container.logs(tail=20).decode("utf-8", errors="replace")
-                    yield json.dumps({"status": "error", "message": f"Container parou.\n{logs}"})
+                # Timeout de seguranca
+                if time.time() - start_time > max_duration:
+                    yield json.dumps({"status": "error", "message": "Timeout: criacao demorou mais de 5 minutos"})
+                    cleanup_job(job_id)
                     return
 
-            yield json.dumps({"status": "info", "message": "Configurando SSL via Traefik..."})
-            await asyncio.sleep(3)
+                # Verificar se job ainda existe
+                state = get_state(job_id)
+                if state == "unknown":
+                    yield json.dumps({"status": "error", "message": "Job perdido ou expirado"})
+                    return
 
-            # 5. Sucesso
-            yield json.dumps({
-                "status": "complete",
-                "message": "Instância N8N criada com sucesso!",
-                "instance_id": name,
-                "url": instance_url(name),
-                "location": "vinhedo",
-                "container_status": "running",
-            })
+                await asyncio.sleep(0.5)
 
-        except Exception as e:
-            yield json.dumps({"status": "error", "message": f"Erro inesperado: {e}"})
+        except asyncio.CancelledError:
+            cleanup_job(job_id)
+            raise
 
     return EventSourceResponse(event_generator())
 

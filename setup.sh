@@ -375,6 +375,7 @@ if [ "$FIREWALL_CMD" = "ufw" ]; then
         ufw allow 443/tcp comment "HTTPS" > /dev/null 2>&1 || true
         ufw allow 5050/tcp comment "N8N Manager API" > /dev/null 2>&1 || true
         ufw allow 8080/tcp comment "Traefik Dashboard" > /dev/null 2>&1 || true
+        ufw allow 15672/tcp comment "RabbitMQ Management" > /dev/null 2>&1 || true
         ufw --force enable > /dev/null 2>&1 || true
         log "UFW configurado (SSH, HTTP, HTTPS, API, Traefik)"
     else
@@ -389,6 +390,7 @@ elif [ "$FIREWALL_CMD" = "firewalld" ]; then
         firewall-cmd --permanent --add-service=https > /dev/null 2>&1 || true
         firewall-cmd --permanent --add-port=5050/tcp > /dev/null 2>&1 || true
         firewall-cmd --permanent --add-port=8080/tcp > /dev/null 2>&1 || true
+        firewall-cmd --permanent --add-port=15672/tcp > /dev/null 2>&1 || true
         firewall-cmd --reload > /dev/null 2>&1 || true
         log "Firewalld configurado (SSH, HTTP, HTTPS, API, Traefik)"
     else

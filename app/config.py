@@ -17,6 +17,16 @@ PG_ADMIN_DB = os.getenv("PG_ADMIN_DB", "postgres")
 DOCKER_NETWORK = os.getenv("DOCKER_NETWORK", "n8n-public")
 SERVER_PORT = int(os.getenv("SERVER_PORT", "5050"))
 
+# RabbitMQ
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "127.0.0.1")
+RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", "5672"))
+RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
+RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "guest")
+
+# Redis
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+
 N8N_IMAGE = "docker.n8n.io/n8nio/n8n"
 
 # Recursos por instância (mínimo N8N - plano gratuito)
