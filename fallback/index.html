@@ -4,173 +4,458 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Instância Removida — MarketCode Brasil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #04060e;
+      --bg-card: rgba(8, 12, 28, 0.88);
+      --bg-card-inner: rgba(12, 17, 38, 0.6);
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(6, 182, 212, 0.12);
+      --teal: #14b8a6;
+      --teal-dim: rgba(20, 184, 166, 0.08);
+      --rose: #f43f5e;
+      --rose-dim: rgba(244, 63, 94, 0.12);
+      --slate-dim: rgba(100, 116, 139, 0.12);
+      --text-primary: #f1f5f9;
+      --text-secondary: rgba(148, 163, 184, 0.82);
+      --text-muted: rgba(100, 116, 139, 0.55);
+      --border: rgba(100, 116, 139, 0.1);
+    }
 
     body {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #060610;
-      color: #e2e8f0;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
       overflow: hidden;
       position: relative;
     }
 
-    /* Background glows */
-    .glow-1 {
+    /* ── Layered background system ────────────────── */
+
+    /* Base gradient mesh */
+    .bg-mesh {
       position: fixed;
-      top: -200px;
-      left: -150px;
-      width: 600px;
-      height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .glow-2 {
-      position: fixed;
-      bottom: -180px;
-      right: -120px;
-      width: 500px;
-      height: 500px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(20,184,166,0.08) 0%, transparent 70%);
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 15% 20%, rgba(6,182,212,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 85% 75%, rgba(20,184,166,0.05) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 50% at 50% 10%, rgba(244,63,94,0.03) 0%, transparent 50%),
+        radial-gradient(ellipse 120% 100% at 50% 100%, rgba(6,12,30,1) 0%, transparent 70%);
       pointer-events: none;
     }
 
-    /* Grid pattern */
-    .grid-bg {
+    /* Dot matrix pattern */
+    .bg-dots {
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
-      background-size: 60px 60px;
+      background-image: radial-gradient(circle, rgba(148,163,184,0.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
+    }
+
+    /* Scanline overlay */
+    .bg-scanlines {
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+    }
+
+    /* Noise/grain texture via SVG data URI */
+    .bg-noise {
+      position: fixed;
+      inset: 0;
+      opacity: 0.28;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+
+    /* Diagonal hash accent — top-right corner */
+    .bg-hash {
+      position: fixed;
+      top: -60px;
+      right: -60px;
+      width: 320px;
+      height: 320px;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 8px,
+        rgba(6,182,212,0.018) 8px,
+        rgba(6,182,212,0.018) 9px
+      );
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* ── Circuit board SVG illustration ──────────── */
+
+    .circuit-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .circuit-layer svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── Chromatic aberration glow behind card ───── */
+
+    .chromatic-shift {
+      position: absolute;
+      inset: -2px;
+      border-radius: 28px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .chromatic-shift::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow:
+        -3px -1px 0 rgba(6,182,212,0.06),
+         3px  1px 0 rgba(244,63,94,0.04);
+      border: 1px solid rgba(100,116,139,0.06);
+    }
+
+    /* ── Main card — triple glass layer ─────────── */
+
+    .card-outer {
+      position: relative;
+      max-width: 540px;
+      width: 92%;
+      z-index: 1;
+    }
+
+    /* Faint outer "ghost" panel offset behind */
+    .card-outer::before {
+      content: '';
+      position: absolute;
+      inset: 8px -6px -8px 6px;
+      background: rgba(6,182,212,0.015);
+      border: 1px solid rgba(6,182,212,0.04);
+      border-radius: 26px;
       pointer-events: none;
     }
 
     .card {
       position: relative;
-      max-width: 520px;
-      width: 90%;
-      padding: 48px 40px;
-      background: rgba(14, 19, 40, 0.85);
-      border: 1px solid rgba(100, 116, 139, 0.15);
+      padding: 44px 38px 40px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
       border-radius: 24px;
-      backdrop-filter: blur(20px);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       text-align: center;
-      animation: fadeUp 0.6s ease-out;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.02) inset,
+        0 1px 0 rgba(255,255,255,0.03) inset,
+        0 -1px 0 rgba(0,0,0,0.2) inset,
+        0 24px 80px -12px rgba(0,0,0,0.6),
+        0 8px 24px -4px rgba(0,0,0,0.3),
+        0 0 120px -40px rgba(6,182,212,0.06);
+      overflow: hidden;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to { opacity: 1; transform: translateY(0); }
+    /* Inner card grain/noise layer */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.35'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+      opacity: 0.12;
+      pointer-events: none;
     }
 
-    /* Icon container */
+    /* Top highlight edge */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent);
+      pointer-events: none;
+    }
+
+    /* ── Decorative broken circuit traces inside card ── */
+
+    .card-circuits {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Left trace (broken) */
+    .card-circuits::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 35%;
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(6,182,212,0.08), rgba(6,182,212,0.02) 70%, transparent);
+    }
+
+    /* Right trace (broken) */
+    .card-circuits::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 62%;
+      width: 45px;
+      height: 1px;
+      background: linear-gradient(-90deg, rgba(244,63,94,0.06), rgba(244,63,94,0.015) 70%, transparent);
+    }
+
+    /* ── Content elements ────────────────────────── */
+
+    .card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Brand */
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 34px;
+    }
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #06b6d4, #14b8a6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(6,182,212,0.15);
+    }
+    .brand-icon svg {
+      width: 16px;
+      height: 16px;
+      color: #fff;
+    }
+    .brand-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.8px;
+    }
+    .brand-text span {
+      color: var(--cyan);
+    }
+
+    /* Status badge */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 14px;
+      margin-bottom: 28px;
+      background: rgba(244,63,94,0.06);
+      border: 1px solid rgba(244,63,94,0.12);
+      border-radius: 100px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(244,63,94,0.75);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .status-badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--rose);
+      opacity: 0.6;
+      box-shadow: 0 0 8px rgba(244,63,94,0.4);
+    }
+
+    /* Icon — disconnected node concept */
     .icon-wrapper {
       position: relative;
       display: inline-flex;
       margin-bottom: 28px;
     }
+
+    /* Static outer ring with "break" gap */
     .icon-ring-outer {
       position: absolute;
-      inset: -16px;
+      inset: -18px;
       border-radius: 50%;
-      border: 1px dashed rgba(100, 116, 139, 0.2);
-      animation: spin 25s linear infinite;
+      border: 1.5px solid rgba(100,116,139,0.1);
+      /* Gap at top — a visible "disconnection" */
+      clip-path: polygon(0% 0%, 40% 0%, 40% 4%, 0% 4%, 0% 100%, 100% 100%, 100% 4%, 60% 4%, 60% 0%, 100% 0%);
     }
     .icon-ring-inner {
       position: absolute;
-      inset: -8px;
+      inset: -9px;
       border-radius: 50%;
-      border: 1px solid rgba(100, 116, 139, 0.1);
-      animation: spin 18s linear infinite reverse;
+      border: 1px solid rgba(100,116,139,0.06);
     }
+
+    /* Node dots — disconnected endpoints */
     .icon-dot-1 {
       position: absolute;
-      top: -6px;
-      right: -10px;
-      width: 8px;
-      height: 8px;
+      top: -14px;
+      left: calc(50% - 16px);
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: rgba(6, 182, 212, 0.25);
-      border: 1px solid rgba(6, 182, 212, 0.35);
-      animation: pulse 2s ease-in-out infinite;
+      background: rgba(244,63,94,0.2);
+      border: 1px solid rgba(244,63,94,0.35);
+      box-shadow: 0 0 10px rgba(244,63,94,0.15);
     }
     .icon-dot-2 {
       position: absolute;
-      bottom: -4px;
-      left: -12px;
-      width: 6px;
-      height: 6px;
+      top: -14px;
+      left: calc(50% + 9px);
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: rgba(20, 184, 166, 0.2);
-      border: 1px solid rgba(20, 184, 166, 0.3);
-      animation: pulse 2s ease-in-out infinite 1s;
+      background: rgba(244,63,94,0.2);
+      border: 1px solid rgba(244,63,94,0.35);
+      box-shadow: 0 0 10px rgba(244,63,94,0.15);
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Broken trace lines from dots */
+    .trace-left, .trace-right {
+      position: absolute;
+      top: -11px;
+      height: 1px;
+      pointer-events: none;
+    }
+    .trace-left {
+      right: calc(50% + 20px);
+      width: 28px;
+      background: linear-gradient(-90deg, rgba(244,63,94,0.18), transparent);
+    }
+    .trace-right {
+      left: calc(50% + 20px);
+      width: 28px;
+      background: linear-gradient(90deg, rgba(244,63,94,0.18), transparent);
+    }
 
     .icon-box {
       width: 72px;
       height: 72px;
       border-radius: 20px;
-      background: linear-gradient(135deg, rgba(244,63,94,0.15), rgba(239,68,68,0.1));
-      border: 1px solid rgba(244, 63, 94, 0.25);
+      background:
+        linear-gradient(135deg, rgba(244,63,94,0.1), rgba(239,68,68,0.06));
+      border: 1px solid rgba(244,63,94,0.18);
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow:
+        0 0 0 1px rgba(244,63,94,0.03) inset,
+        0 0 40px -8px rgba(244,63,94,0.08);
     }
     .icon-box svg {
-      width: 36px;
-      height: 36px;
-      color: #f43f5e;
+      width: 34px;
+      height: 34px;
+      color: var(--rose);
+      opacity: 0.85;
     }
 
     h1 {
-      font-size: 22px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 23px;
       font-weight: 700;
       color: #fff;
-      margin-bottom: 12px;
-      letter-spacing: -0.3px;
+      margin-bottom: 10px;
+      letter-spacing: -0.4px;
     }
 
     .description {
-      font-size: 15px;
-      line-height: 1.65;
-      color: rgba(148, 163, 184, 0.85);
-      margin-bottom: 32px;
+      font-size: 14.5px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 30px;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Separator — dashed circuit trace */
+    .separator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 26px;
+    }
+    .sep-line {
+      flex: 1;
+      max-width: 80px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+    .sep-node {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      border: 1px solid rgba(100,116,139,0.2);
+      background: rgba(100,116,139,0.06);
     }
 
     .info-box {
-      background: rgba(6, 182, 212, 0.05);
-      border: 1px solid rgba(6, 182, 212, 0.12);
+      background: var(--bg-card-inner);
+      border: 1px solid rgba(6,182,212,0.08);
       border-radius: 14px;
-      padding: 16px 20px;
+      padding: 16px 18px;
       margin-bottom: 28px;
       display: flex;
       align-items: flex-start;
       gap: 12px;
       text-align: left;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.01) inset;
     }
     .info-box svg {
-      width: 18px;
-      height: 18px;
-      color: #22d3ee;
+      width: 17px;
+      height: 17px;
+      color: var(--cyan);
       flex-shrink: 0;
       margin-top: 2px;
+      opacity: 0.7;
     }
     .info-box p {
-      font-size: 13px;
-      line-height: 1.6;
-      color: rgba(148, 163, 184, 0.75);
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: rgba(148,163,184,0.7);
     }
     .info-box a {
-      color: #22d3ee;
+      color: var(--cyan);
       text-decoration: none;
       font-weight: 500;
     }
@@ -182,116 +467,264 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 12px 28px;
-      background: linear-gradient(135deg, #06b6d4, #14b8a6);
+      padding: 13px 30px;
+      background: linear-gradient(135deg, #06b6d4, #0d9488);
       color: #fff;
-      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13.5px;
       font-weight: 600;
       border: none;
       border-radius: 12px;
       cursor: pointer;
       text-decoration: none;
-      transition: all 0.2s;
       letter-spacing: 0.2px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.08) inset,
+        0 1px 0 rgba(255,255,255,0.1) inset,
+        0 8px 32px -8px rgba(6,182,212,0.3),
+        0 2px 8px rgba(0,0,0,0.2);
     }
     .btn-primary:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25);
+      filter: brightness(1.08);
     }
     .btn-primary svg {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
+      opacity: 0.9;
     }
 
     .footer-text {
-      margin-top: 24px;
-      font-size: 12px;
-      color: rgba(100, 116, 139, 0.5);
+      margin-top: 28px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 32px;
+    /* ── Decorative corner accents on card ────────── */
+
+    .corner-accent {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      z-index: 2;
     }
-    .brand-icon {
-      width: 32px;
-      height: 32px;
-      border-radius: 9px;
-      background: linear-gradient(135deg, #06b6d4, #14b8a6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .corner-accent--tl {
+      top: -1px;
+      left: -1px;
+      border-top: 1px solid rgba(6,182,212,0.15);
+      border-left: 1px solid rgba(6,182,212,0.15);
+      border-top-left-radius: 24px;
     }
-    .brand-icon svg {
-      width: 18px;
-      height: 18px;
-      color: #fff;
+    .corner-accent--br {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 1px solid rgba(20,184,166,0.1);
+      border-right: 1px solid rgba(20,184,166,0.1);
+      border-bottom-right-radius: 24px;
     }
-    .brand-text {
-      font-size: 16px;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -0.3px;
+
+    /* ── Floating geometric shapes ────────────────── */
+
+    .geo {
+      position: fixed;
+      pointer-events: none;
     }
-    .brand-text span {
-      color: #22d3ee;
+
+    /* Hexagon — top right */
+    .geo-hex {
+      top: 12%;
+      right: 8%;
+      width: 48px;
+      height: 48px;
+      opacity: 0.04;
+    }
+
+    /* Diamond — bottom left */
+    .geo-diamond {
+      bottom: 18%;
+      left: 6%;
+      width: 24px;
+      height: 24px;
+      border: 1px solid rgba(6,182,212,0.08);
+      transform: rotate(45deg);
+    }
+
+    /* Small cross — top left area */
+    .geo-cross {
+      top: 22%;
+      left: 14%;
+      width: 12px;
+      height: 12px;
+      opacity: 0.06;
+    }
+    .geo-cross::before, .geo-cross::after {
+      content: '';
+      position: absolute;
+      background: rgba(148,163,184,0.5);
+    }
+    .geo-cross::before {
+      top: 5px;
+      left: 0;
+      width: 12px;
+      height: 1px;
+    }
+    .geo-cross::after {
+      top: 0;
+      left: 5px;
+      width: 1px;
+      height: 12px;
+    }
+
+    /* Tiny circle cluster — right side */
+    .geo-circles {
+      top: 55%;
+      right: 5%;
+    }
+    .geo-circles span {
+      display: block;
+      border-radius: 50%;
+      border: 1px solid rgba(20,184,166,0.06);
+    }
+    .geo-circles span:nth-child(1) { width: 18px; height: 18px; }
+    .geo-circles span:nth-child(2) { width: 10px; height: 10px; margin-top: 6px; margin-left: 12px; }
+
+    /* ── Responsive ──────────────────────────────── */
+
+    @media (max-width: 580px) {
+      .card {
+        padding: 36px 24px 32px;
+        border-radius: 20px;
+      }
+      .card-outer::before { display: none; }
+      h1 { font-size: 20px; }
+      .description { font-size: 13.5px; }
+      .info-box { padding: 14px 14px; }
+      .info-box p { font-size: 12px; }
+      .btn-primary { padding: 12px 24px; font-size: 13px; }
+      .geo-hex, .geo-circles { display: none; }
+      .bg-hash { width: 200px; height: 200px; }
     }
   </style>
 </head>
 <body>
-  <div class="glow-1"></div>
-  <div class="glow-2"></div>
-  <div class="grid-bg"></div>
+  <!-- Background layers -->
+  <div class="bg-mesh"></div>
+  <div class="bg-dots"></div>
+  <div class="bg-scanlines"></div>
+  <div class="bg-noise"></div>
+  <div class="bg-hash"></div>
 
-  <div class="card">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+  <!-- Background circuit traces -->
+  <div class="circuit-layer">
+    <svg viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <!-- Horizontal broken trace — left side -->
+      <line x1="0" y1="340" x2="380" y2="340" stroke="rgba(6,182,212,0.03)" stroke-width="1"/>
+      <line x1="420" y1="340" x2="480" y2="340" stroke="rgba(6,182,212,0.015)" stroke-width="1" stroke-dasharray="4 6"/>
+      <!-- Junction node -->
+      <circle cx="380" cy="340" r="3" fill="rgba(6,182,212,0.06)" stroke="rgba(6,182,212,0.08)" stroke-width="0.5"/>
+      <circle cx="420" cy="340" r="2" fill="rgba(244,63,94,0.05)" stroke="rgba(244,63,94,0.08)" stroke-width="0.5"/>
+
+      <!-- Vertical trace — right side -->
+      <line x1="1100" y1="0" x2="1100" y2="280" stroke="rgba(20,184,166,0.025)" stroke-width="1"/>
+      <line x1="1100" y1="320" x2="1100" y2="360" stroke="rgba(244,63,94,0.02)" stroke-width="1" stroke-dasharray="3 5"/>
+      <line x1="1100" y1="400" x2="1100" y2="900" stroke="rgba(20,184,166,0.02)" stroke-width="1"/>
+      <!-- Break nodes -->
+      <circle cx="1100" cy="280" r="2.5" fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.06)" stroke-width="0.5"/>
+      <circle cx="1100" cy="400" r="2.5" fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.06)" stroke-width="0.5"/>
+
+      <!-- Diagonal trace — bottom left -->
+      <line x1="0" y1="700" x2="260" y2="580" stroke="rgba(100,116,139,0.02)" stroke-width="1"/>
+      <circle cx="260" cy="580" r="2" fill="rgba(100,116,139,0.03)" stroke="rgba(100,116,139,0.05)" stroke-width="0.5"/>
+
+      <!-- Short horizontal — top right -->
+      <line x1="1200" y1="180" x2="1440" y2="180" stroke="rgba(6,182,212,0.02)" stroke-width="1"/>
+      <circle cx="1200" cy="180" r="2" fill="rgba(6,182,212,0.03)" stroke="rgba(6,182,212,0.05)" stroke-width="0.5"/>
+
+      <!-- Elbow trace — bottom right (broken at corner) -->
+      <line x1="1300" y1="900" x2="1300" y2="720" stroke="rgba(100,116,139,0.02)" stroke-width="1"/>
+      <line x1="1300" y1="720" x2="1440" y2="720" stroke="rgba(100,116,139,0.015)" stroke-width="1"/>
+      <rect x="1296" y="716" width="8" height="8" rx="2" fill="none" stroke="rgba(100,116,139,0.04)" stroke-width="0.5"/>
+    </svg>
+  </div>
+
+  <!-- Floating geometric shapes -->
+  <div class="geo geo-hex">
+    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="24,2 44,14 44,34 24,46 4,34 4,14" stroke="rgba(148,163,184,0.4)" stroke-width="0.8" fill="none"/>
+    </svg>
+  </div>
+  <div class="geo geo-diamond"></div>
+  <div class="geo geo-cross"></div>
+  <div class="geo geo-circles">
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Card -->
+  <div class="card-outer">
+    <div class="card">
+      <div class="chromatic-shift"></div>
+      <div class="card-circuits"></div>
+      <div class="corner-accent corner-accent--tl"></div>
+      <div class="corner-accent corner-accent--br"></div>
+
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+        </div>
+        <div class="brand-text">MARKET<span>CODE</span></div>
       </div>
-      <div class="brand-text">MARKET<span>CODE</span></div>
-    </div>
 
-    <div class="icon-wrapper">
-      <div class="icon-ring-outer"></div>
-      <div class="icon-ring-inner"></div>
-      <div class="icon-dot-1"></div>
-      <div class="icon-dot-2"></div>
-      <div class="icon-box">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
-        </svg>
+      <div class="status-badge">Offline</div>
+
+      <div class="icon-wrapper">
+        <div class="icon-ring-outer"></div>
+        <div class="icon-ring-inner"></div>
+        <div class="icon-dot-1"></div>
+        <div class="icon-dot-2"></div>
+        <div class="trace-left"></div>
+        <div class="trace-right"></div>
+        <div class="icon-box">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
+          </svg>
+        </div>
       </div>
-    </div>
 
-    <h1>Instância Removida</h1>
-    <p class="description">
-      Esta instância N8N foi desativada e não está mais disponível.
-      Instâncias de teste são removidas automaticamente após 5 dias.
-    </p>
-
-    <div class="info-box">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
-      </svg>
-      <p>
-        Você pode criar uma nova instância gratuita a qualquer momento no seu
-        <a href="https://marketcodebrasil.com.br/dashboard?tab=instancia">painel de controle</a>.
-        Seus workflows comprados continuam disponíveis na sua conta.
+      <h1>Instância Removida</h1>
+      <p class="description">
+        Esta instância N8N foi desativada e não está mais disponível.
+        Instâncias de teste são removidas automaticamente após 5 dias.
       </p>
+
+      <div class="separator">
+        <div class="sep-line"></div>
+        <div class="sep-node"></div>
+        <div class="sep-line"></div>
+      </div>
+
+      <div class="info-box">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+        </svg>
+        <p>
+          Você pode criar uma nova instância gratuita a qualquer momento no seu
+          <a href="https://marketcodebrasil.com.br/dashboard?tab=instancia">painel de controle</a>.
+          Seus workflows comprados continuam disponíveis na sua conta.
+        </p>
+      </div>
+
+      <a href="https://marketcodebrasil.com.br/dashboard?tab=instancia" class="btn-primary">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Criar Nova Instância
+      </a>
+
+      <p class="footer-text">marketcodebrasil.com.br</p>
     </div>
-
-    <a href="https://marketcodebrasil.com.br/dashboard?tab=instancia" class="btn-primary">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-      </svg>
-      Criar Nova Instância
-    </a>
-
-    <p class="footer-text">marketcodebrasil.com.br</p>
   </div>
 </body>
 </html>
