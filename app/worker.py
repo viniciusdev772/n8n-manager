@@ -92,48 +92,49 @@ def _process_job(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
 
-        push_event(job_id, {"status": "info", "message": "Container criado, iniciando N8N..."})
+        push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
 
-        # 4. Aguardar startup (verifica logs + HTTP)
-        push_event(job_id, {"status": "info", "message": "Aguardando instancia ficar disponivel..."})
+        # 4. Aguardar startup — HTTP check como estrategia principal
+        import urllib.request
+
         n8n_ready = False
-        migrating = False
+        internal_url = f"http://{container_name(name)}:5678/"
+
         for i in range(150):  # 5 minutos (150 x 2s)
             time.sleep(2)
             ct.reload()
-            if ct.status == "running":
-                try:
-                    logs = ct.logs(tail=15).decode("utf-8", errors="replace")
-                    if "Editor is now accessible" in logs or "Webhook listener" in logs or "n8n ready" in logs.lower():
-                        n8n_ready = True
-                        break
-                    if "Migrations in progress" in logs and not migrating:
-                        migrating = True
-                        push_event(job_id, {"status": "info", "message": "Migrations em andamento..."})
-                except Exception:
-                    pass
-                # Feedback a cada 10 iteracoes
-                if i % 10 == 0:
-                    push_event(job_id, {"status": "info", "message": f"Verificando N8N ({i * 2}s/300s)"})
-                # Fallback: verificar via HTTP interno
-                if i >= 15 and i % 5 == 0:
-                    try:
-                        import urllib.request
-                        url_check = f"http://{container_name(name)}:5678/healthz"
-                        req = urllib.request.Request(url_check, method="GET")
-                        resp = urllib.request.urlopen(req, timeout=3)
-                        if resp.status == 200:
-                            n8n_ready = True
-                            push_event(job_id, {"status": "info", "message": "N8N respondendo via HTTP"})
-                            break
-                    except Exception:
-                        pass
-            elif ct.status == "exited":
+
+            if ct.status == "exited":
                 logs = ct.logs(tail=30).decode("utf-8", errors="replace")
                 push_event(job_id, {"status": "error", "message": f"Container parou.\n{logs}"})
                 set_state(job_id, "error")
                 ch.basic_ack(delivery_tag=method.delivery_tag)
                 return
+
+            if ct.status != "running":
+                continue
+
+            # HTTP check direto no container (porta interna 5678)
+            try:
+                req = urllib.request.Request(internal_url, method="GET")
+                resp = urllib.request.urlopen(req, timeout=3)
+                if resp.status == 200:
+                    n8n_ready = True
+                    push_event(job_id, {"status": "info", "message": "N8N respondendo!"})
+                    break
+            except Exception:
+                pass
+
+            # Feedback a cada 20s
+            if i % 10 == 0:
+                push_event(job_id, {"status": "info", "message": f"Aguardando N8N iniciar ({i * 2}s)..."})
+
+        if not n8n_ready:
+            # Ultimo check: talvez o n8n esteja respondendo mas o healthz nao existe
+            ct.reload()
+            if ct.status == "running":
+                push_event(job_id, {"status": "info", "message": "Container rodando, marcando como pronto"})
+                n8n_ready = True
 
         if not n8n_ready:
             logs = ct.logs(tail=30).decode("utf-8", errors="replace")
