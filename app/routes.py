@@ -398,6 +398,24 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
     return {"instance_id": instance_id, "logs": logs}
 
 
+@router.post("/debug/start-container/{name}", dependencies=[Depends(verify_token)])
+async def debug_start_container(name: str):
+    """Tenta iniciar um container e retorna erro exato se falhar."""
+    client = get_client()
+    try:
+        c = client.containers.get(name)
+        if c.status == "running":
+            return {"name": name, "status": "already_running"}
+        try:
+            c.start()
+            c.reload()
+            return {"name": name, "status": c.status, "started": True}
+        except Exception as start_err:
+            return {"name": name, "status": c.status, "error": str(start_err)}
+    except docker.errors.NotFound:
+        raise HTTPException(404, f"Container '{name}' não encontrado")
+
+
 @router.get("/debug/container-logs/{name}", dependencies=[Depends(verify_token)])
 async def debug_container_logs(name: str, tail: int = Query(30)):
     """Logs de qualquer container para debug."""
