@@ -14,12 +14,8 @@
       --bg-card: rgba(8, 12, 28, 0.88);
       --bg-card-inner: rgba(12, 17, 38, 0.6);
       --cyan: #22d3ee;
-      --cyan-dim: rgba(6, 182, 212, 0.12);
       --teal: #14b8a6;
-      --teal-dim: rgba(20, 184, 166, 0.08);
       --rose: #f43f5e;
-      --rose-dim: rgba(244, 63, 94, 0.12);
-      --slate-dim: rgba(100, 116, 139, 0.12);
       --text-primary: #f1f5f9;
       --text-secondary: rgba(148, 163, 184, 0.82);
       --text-muted: rgba(100, 116, 139, 0.55);
@@ -28,19 +24,15 @@
 
     body {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-deep);
       color: var(--text-primary);
-      overflow: hidden;
+      overflow-x: hidden;
       position: relative;
     }
 
-    /* ── Layered background system ────────────────── */
+    /* ── Background layers ──────────────────────── */
 
-    /* Base gradient mesh */
     .bg-mesh {
       position: fixed;
       inset: 0;
@@ -51,8 +43,6 @@
         radial-gradient(ellipse 120% 100% at 50% 100%, rgba(6,12,30,1) 0%, transparent 70%);
       pointer-events: none;
     }
-
-    /* Dot matrix pattern */
     .bg-dots {
       position: fixed;
       inset: 0;
@@ -60,22 +50,12 @@
       background-size: 24px 24px;
       pointer-events: none;
     }
-
-    /* Scanline overlay */
     .bg-scanlines {
       position: fixed;
       inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
-      );
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
       pointer-events: none;
     }
-
-    /* Noise/grain texture via SVG data URI */
     .bg-noise {
       position: fixed;
       inset: 0;
@@ -84,26 +64,18 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
       background-size: 200px 200px;
     }
-
-    /* Diagonal hash accent — top-right corner */
     .bg-hash {
       position: fixed;
       top: -60px;
       right: -60px;
       width: 320px;
       height: 320px;
-      background: repeating-linear-gradient(
-        -45deg,
-        transparent,
-        transparent 8px,
-        rgba(6,182,212,0.018) 8px,
-        rgba(6,182,212,0.018) 9px
-      );
+      background: repeating-linear-gradient(-45deg, transparent, transparent 8px, rgba(6,182,212,0.018) 8px, rgba(6,182,212,0.018) 9px);
       border-radius: 50%;
       pointer-events: none;
     }
 
-    /* ── Circuit board SVG illustration ──────────── */
+    /* ── Circuit board SVG ──────────────────────── */
 
     .circuit-layer {
       position: fixed;
@@ -111,143 +83,40 @@
       pointer-events: none;
       overflow: hidden;
     }
-
     .circuit-layer svg {
       position: absolute;
       width: 100%;
       height: 100%;
     }
 
-    /* ── Chromatic aberration glow behind card ───── */
+    /* ── Full-width layout ──────────────────────── */
 
-    .chromatic-shift {
-      position: absolute;
-      inset: -2px;
-      border-radius: 28px;
-      pointer-events: none;
-      z-index: -1;
-    }
-    .chromatic-shift::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      box-shadow:
-        -3px -1px 0 rgba(6,182,212,0.06),
-         3px  1px 0 rgba(244,63,94,0.04);
-      border: 1px solid rgba(100,116,139,0.06);
-    }
-
-    /* ── Main card — triple glass layer ─────────── */
-
-    .card-outer {
+    .page {
       position: relative;
-      max-width: 540px;
-      width: 92%;
       z-index: 1;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* Faint outer "ghost" panel offset behind */
-    .card-outer::before {
-      content: '';
-      position: absolute;
-      inset: 8px -6px -8px 6px;
-      background: rgba(6,182,212,0.015);
-      border: 1px solid rgba(6,182,212,0.04);
-      border-radius: 26px;
-      pointer-events: none;
-    }
+    /* ── Hero section — top area ────────────────── */
 
-    .card {
-      position: relative;
-      padding: 44px 38px 40px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+    .hero {
+      width: 100%;
+      padding: 48px 24px 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      box-shadow:
-        0 0 0 1px rgba(255,255,255,0.02) inset,
-        0 1px 0 rgba(255,255,255,0.03) inset,
-        0 -1px 0 rgba(0,0,0,0.2) inset,
-        0 24px 80px -12px rgba(0,0,0,0.6),
-        0 8px 24px -4px rgba(0,0,0,0.3),
-        0 0 120px -40px rgba(6,182,212,0.06);
-      overflow: hidden;
+      border-bottom: 1px solid var(--border);
     }
 
-    /* Inner card grain/noise layer */
-    .card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.35'/%3E%3C/svg%3E");
-      background-size: 128px 128px;
-      opacity: 0.12;
-      pointer-events: none;
-    }
-
-    /* Top highlight edge */
-    .card::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 24px;
-      right: 24px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent);
-      pointer-events: none;
-    }
-
-    /* ── Decorative broken circuit traces inside card ── */
-
-    .card-circuits {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      overflow: hidden;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Left trace (broken) */
-    .card-circuits::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 35%;
-      width: 60px;
-      height: 1px;
-      background: linear-gradient(90deg, rgba(6,182,212,0.08), rgba(6,182,212,0.02) 70%, transparent);
-    }
-
-    /* Right trace (broken) */
-    .card-circuits::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 62%;
-      width: 45px;
-      height: 1px;
-      background: linear-gradient(-90deg, rgba(244,63,94,0.06), rgba(244,63,94,0.015) 70%, transparent);
-    }
-
-    /* ── Content elements ────────────────────────── */
-
-    .card > * {
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Brand */
     .brand {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 10px;
-      margin-bottom: 34px;
+      margin-bottom: 36px;
     }
     .brand-icon {
       width: 30px;
@@ -259,23 +128,15 @@
       justify-content: center;
       box-shadow: 0 0 16px rgba(6,182,212,0.15);
     }
-    .brand-icon svg {
-      width: 16px;
-      height: 16px;
-      color: #fff;
-    }
+    .brand-icon svg { width: 16px; height: 16px; color: #fff; }
     .brand-text {
-      font-family: 'DM Sans', sans-serif;
       font-size: 15px;
       font-weight: 800;
       color: rgba(255,255,255,0.9);
       letter-spacing: 0.8px;
     }
-    .brand-text span {
-      color: var(--cyan);
-    }
+    .brand-text span { color: var(--cyan); }
 
-    /* Status badge */
     .status-badge {
       display: inline-flex;
       align-items: center;
@@ -302,20 +163,16 @@
       box-shadow: 0 0 8px rgba(244,63,94,0.4);
     }
 
-    /* Icon — disconnected node concept */
     .icon-wrapper {
       position: relative;
       display: inline-flex;
       margin-bottom: 28px;
     }
-
-    /* Static outer ring with "break" gap */
     .icon-ring-outer {
       position: absolute;
       inset: -18px;
       border-radius: 50%;
       border: 1.5px solid rgba(100,116,139,0.1);
-      /* Gap at top — a visible "disconnection" */
       clip-path: polygon(0% 0%, 40% 0%, 40% 4%, 0% 4%, 0% 100%, 100% 100%, 100% 4%, 60% 4%, 60% 0%, 100% 0%);
     }
     .icon-ring-inner {
@@ -324,12 +181,9 @@
       border-radius: 50%;
       border: 1px solid rgba(100,116,139,0.06);
     }
-
-    /* Node dots — disconnected endpoints */
-    .icon-dot-1 {
+    .icon-dot-1, .icon-dot-2 {
       position: absolute;
       top: -14px;
-      left: calc(50% - 16px);
       width: 7px;
       height: 7px;
       border-radius: 50%;
@@ -337,19 +191,8 @@
       border: 1px solid rgba(244,63,94,0.35);
       box-shadow: 0 0 10px rgba(244,63,94,0.15);
     }
-    .icon-dot-2 {
-      position: absolute;
-      top: -14px;
-      left: calc(50% + 9px);
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: rgba(244,63,94,0.2);
-      border: 1px solid rgba(244,63,94,0.35);
-      box-shadow: 0 0 10px rgba(244,63,94,0.15);
-    }
-
-    /* Broken trace lines from dots */
+    .icon-dot-1 { left: calc(50% - 16px); }
+    .icon-dot-2 { left: calc(50% + 9px); }
     .trace-left, .trace-right {
       position: absolute;
       top: -11px;
@@ -366,67 +209,32 @@
       width: 28px;
       background: linear-gradient(90deg, rgba(244,63,94,0.18), transparent);
     }
-
     .icon-box {
       width: 72px;
       height: 72px;
       border-radius: 20px;
-      background:
-        linear-gradient(135deg, rgba(244,63,94,0.1), rgba(239,68,68,0.06));
+      background: linear-gradient(135deg, rgba(244,63,94,0.1), rgba(239,68,68,0.06));
       border: 1px solid rgba(244,63,94,0.18);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow:
-        0 0 0 1px rgba(244,63,94,0.03) inset,
-        0 0 40px -8px rgba(244,63,94,0.08);
+      box-shadow: 0 0 0 1px rgba(244,63,94,0.03) inset, 0 0 40px -8px rgba(244,63,94,0.08);
     }
-    .icon-box svg {
-      width: 34px;
-      height: 34px;
-      color: var(--rose);
-      opacity: 0.85;
-    }
+    .icon-box svg { width: 34px; height: 34px; color: var(--rose); opacity: 0.85; }
 
     h1 {
-      font-family: 'DM Sans', sans-serif;
-      font-size: 23px;
+      font-size: 26px;
       font-weight: 700;
       color: #fff;
       margin-bottom: 10px;
       letter-spacing: -0.4px;
     }
-
     .description {
-      font-size: 14.5px;
+      font-size: 15px;
       line-height: 1.7;
       color: var(--text-secondary);
-      margin-bottom: 30px;
-      max-width: 380px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    /* Separator — dashed circuit trace */
-    .separator {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-bottom: 26px;
-    }
-    .sep-line {
-      flex: 1;
-      max-width: 80px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-    }
-    .sep-node {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      border: 1px solid rgba(100,116,139,0.2);
-      background: rgba(100,116,139,0.06);
+      margin-bottom: 32px;
+      max-width: 480px;
     }
 
     .info-box {
@@ -434,11 +242,13 @@
       border: 1px solid rgba(6,182,212,0.08);
       border-radius: 14px;
       padding: 16px 18px;
-      margin-bottom: 28px;
+      margin-bottom: 32px;
       display: flex;
       align-items: flex-start;
       gap: 12px;
       text-align: left;
+      max-width: 480px;
+      width: 100%;
       box-shadow: 0 0 0 1px rgba(255,255,255,0.01) inset;
     }
     .info-box svg {
@@ -450,7 +260,7 @@
       opacity: 0.7;
     }
     .info-box p {
-      font-size: 12.5px;
+      font-size: 13px;
       line-height: 1.65;
       color: rgba(148,163,184,0.7);
     }
@@ -459,9 +269,7 @@
       text-decoration: none;
       font-weight: 500;
     }
-    .info-box a:hover {
-      text-decoration: underline;
-    }
+    .info-box a:hover { text-decoration: underline; }
 
     .btn-primary {
       display: inline-flex;
@@ -471,7 +279,7 @@
       background: linear-gradient(135deg, #06b6d4, #0d9488);
       color: #fff;
       font-family: 'DM Sans', sans-serif;
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 600;
       border: none;
       border-radius: 12px;
@@ -484,126 +292,188 @@
         0 8px 32px -8px rgba(6,182,212,0.3),
         0 2px 8px rgba(0,0,0,0.2);
     }
-    .btn-primary:hover {
-      filter: brightness(1.08);
-    }
-    .btn-primary svg {
-      width: 15px;
-      height: 15px;
-      opacity: 0.9;
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-primary svg { width: 15px; height: 15px; opacity: 0.9; }
+
+    /* ── Tips section — full width ──────────────── */
+
+    .tips-section {
+      width: 100%;
+      padding: 48px 24px 56px;
+      flex: 1;
     }
 
+    .tips-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .tips-header h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      letter-spacing: -0.3px;
+    }
+    .tips-header p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .tip-card {
+      position: relative;
+      padding: 24px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.015) inset,
+        0 8px 32px -8px rgba(0,0,0,0.4);
+    }
+
+    /* Inner grain */
+    .tip-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.35'/%3E%3C/svg%3E");
+      background-size: 128px 128px;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    /* Subtle top edge glow per card */
+    .tip-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 16px;
+      right: 16px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    .tip-card[data-accent="cyan"]::after { background: linear-gradient(90deg, transparent, rgba(6,182,212,0.12), transparent); }
+    .tip-card[data-accent="teal"]::after { background: linear-gradient(90deg, transparent, rgba(20,184,166,0.12), transparent); }
+    .tip-card[data-accent="violet"]::after { background: linear-gradient(90deg, transparent, rgba(139,92,246,0.12), transparent); }
+    .tip-card[data-accent="amber"]::after { background: linear-gradient(90deg, transparent, rgba(245,158,11,0.12), transparent); }
+    .tip-card[data-accent="emerald"]::after { background: linear-gradient(90deg, transparent, rgba(16,185,129,0.12), transparent); }
+    .tip-card[data-accent="pink"]::after { background: linear-gradient(90deg, transparent, rgba(236,72,153,0.12), transparent); }
+
+    .tip-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .tip-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .tip-icon--cyan    { background: rgba(6,182,212,0.08);  border: 1px solid rgba(6,182,212,0.15);  }
+    .tip-icon--cyan svg    { color: #22d3ee; }
+    .tip-icon--teal    { background: rgba(20,184,166,0.08); border: 1px solid rgba(20,184,166,0.15); }
+    .tip-icon--teal svg    { color: #14b8a6; }
+    .tip-icon--violet  { background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.15); }
+    .tip-icon--violet svg  { color: #a78bfa; }
+    .tip-icon--amber   { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.15); }
+    .tip-icon--amber svg   { color: #fbbf24; }
+    .tip-icon--emerald { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); }
+    .tip-icon--emerald svg { color: #34d399; }
+    .tip-icon--pink    { background: rgba(236,72,153,0.08); border: 1px solid rgba(236,72,153,0.15); }
+    .tip-icon--pink svg    { color: #f472b6; }
+
+    .tip-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+    .tip-card p {
+      font-size: 12.5px;
+      line-height: 1.65;
+      color: rgba(148,163,184,0.65);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Duration badge inside tip card */
+    .tip-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      margin-top: 12px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 1;
+      background: rgba(100,116,139,0.06);
+      border: 1px solid rgba(100,116,139,0.08);
+      color: rgba(148,163,184,0.55);
+    }
+
+    /* ── Footer ─────────────────────────────────── */
+
+    .page-footer {
+      width: 100%;
+      padding: 20px 24px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
     .footer-text {
-      margin-top: 28px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 10.5px;
       color: var(--text-muted);
       letter-spacing: 0.5px;
     }
 
-    /* ── Decorative corner accents on card ────────── */
+    /* ── Responsive ─────────────────────────────── */
 
-    .corner-accent {
-      position: absolute;
-      width: 20px;
-      height: 20px;
-      pointer-events: none;
-      z-index: 2;
-    }
-    .corner-accent--tl {
-      top: -1px;
-      left: -1px;
-      border-top: 1px solid rgba(6,182,212,0.15);
-      border-left: 1px solid rgba(6,182,212,0.15);
-      border-top-left-radius: 24px;
-    }
-    .corner-accent--br {
-      bottom: -1px;
-      right: -1px;
-      border-bottom: 1px solid rgba(20,184,166,0.1);
-      border-right: 1px solid rgba(20,184,166,0.1);
-      border-bottom-right-radius: 24px;
-    }
-
-    /* ── Floating geometric shapes ────────────────── */
-
-    .geo {
-      position: fixed;
-      pointer-events: none;
-    }
-
-    /* Hexagon — top right */
-    .geo-hex {
-      top: 12%;
-      right: 8%;
-      width: 48px;
-      height: 48px;
-      opacity: 0.04;
-    }
-
-    /* Diamond — bottom left */
-    .geo-diamond {
-      bottom: 18%;
-      left: 6%;
-      width: 24px;
-      height: 24px;
-      border: 1px solid rgba(6,182,212,0.08);
-      transform: rotate(45deg);
-    }
-
-    /* Small cross — top left area */
-    .geo-cross {
-      top: 22%;
-      left: 14%;
-      width: 12px;
-      height: 12px;
-      opacity: 0.06;
-    }
-    .geo-cross::before, .geo-cross::after {
-      content: '';
-      position: absolute;
-      background: rgba(148,163,184,0.5);
-    }
-    .geo-cross::before {
-      top: 5px;
-      left: 0;
-      width: 12px;
-      height: 1px;
-    }
-    .geo-cross::after {
-      top: 0;
-      left: 5px;
-      width: 1px;
-      height: 12px;
-    }
-
-    /* Tiny circle cluster — right side */
-    .geo-circles {
-      top: 55%;
-      right: 5%;
-    }
-    .geo-circles span {
-      display: block;
-      border-radius: 50%;
-      border: 1px solid rgba(20,184,166,0.06);
-    }
-    .geo-circles span:nth-child(1) { width: 18px; height: 18px; }
-    .geo-circles span:nth-child(2) { width: 10px; height: 10px; margin-top: 6px; margin-left: 12px; }
-
-    /* ── Responsive ──────────────────────────────── */
-
-    @media (max-width: 580px) {
-      .card {
-        padding: 36px 24px 32px;
-        border-radius: 20px;
+    @media (max-width: 768px) {
+      .tips-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
       }
-      .card-outer::before { display: none; }
-      h1 { font-size: 20px; }
-      .description { font-size: 13.5px; }
-      .info-box { padding: 14px 14px; }
-      .info-box p { font-size: 12px; }
-      .btn-primary { padding: 12px 24px; font-size: 13px; }
-      .geo-hex, .geo-circles { display: none; }
+    }
+
+    @media (max-width: 540px) {
+      .hero { padding: 36px 20px 32px; }
+      h1 { font-size: 22px; }
+      .description { font-size: 14px; }
+      .tips-section { padding: 36px 16px 40px; }
+      .tips-grid {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        gap: 10px;
+      }
+      .tips-header h2 { font-size: 17px; }
+      .tip-card { padding: 20px 16px; }
       .bg-hash { width: 200px; height: 200px; }
     }
   </style>
@@ -619,57 +489,30 @@
   <!-- Background circuit traces -->
   <div class="circuit-layer">
     <svg viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <!-- Horizontal broken trace — left side -->
       <line x1="0" y1="340" x2="380" y2="340" stroke="rgba(6,182,212,0.03)" stroke-width="1"/>
       <line x1="420" y1="340" x2="480" y2="340" stroke="rgba(6,182,212,0.015)" stroke-width="1" stroke-dasharray="4 6"/>
-      <!-- Junction node -->
       <circle cx="380" cy="340" r="3" fill="rgba(6,182,212,0.06)" stroke="rgba(6,182,212,0.08)" stroke-width="0.5"/>
       <circle cx="420" cy="340" r="2" fill="rgba(244,63,94,0.05)" stroke="rgba(244,63,94,0.08)" stroke-width="0.5"/>
-
-      <!-- Vertical trace — right side -->
       <line x1="1100" y1="0" x2="1100" y2="280" stroke="rgba(20,184,166,0.025)" stroke-width="1"/>
       <line x1="1100" y1="320" x2="1100" y2="360" stroke="rgba(244,63,94,0.02)" stroke-width="1" stroke-dasharray="3 5"/>
       <line x1="1100" y1="400" x2="1100" y2="900" stroke="rgba(20,184,166,0.02)" stroke-width="1"/>
-      <!-- Break nodes -->
       <circle cx="1100" cy="280" r="2.5" fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.06)" stroke-width="0.5"/>
       <circle cx="1100" cy="400" r="2.5" fill="rgba(20,184,166,0.04)" stroke="rgba(20,184,166,0.06)" stroke-width="0.5"/>
-
-      <!-- Diagonal trace — bottom left -->
       <line x1="0" y1="700" x2="260" y2="580" stroke="rgba(100,116,139,0.02)" stroke-width="1"/>
       <circle cx="260" cy="580" r="2" fill="rgba(100,116,139,0.03)" stroke="rgba(100,116,139,0.05)" stroke-width="0.5"/>
-
-      <!-- Short horizontal — top right -->
       <line x1="1200" y1="180" x2="1440" y2="180" stroke="rgba(6,182,212,0.02)" stroke-width="1"/>
       <circle cx="1200" cy="180" r="2" fill="rgba(6,182,212,0.03)" stroke="rgba(6,182,212,0.05)" stroke-width="0.5"/>
-
-      <!-- Elbow trace — bottom right (broken at corner) -->
       <line x1="1300" y1="900" x2="1300" y2="720" stroke="rgba(100,116,139,0.02)" stroke-width="1"/>
       <line x1="1300" y1="720" x2="1440" y2="720" stroke="rgba(100,116,139,0.015)" stroke-width="1"/>
       <rect x="1296" y="716" width="8" height="8" rx="2" fill="none" stroke="rgba(100,116,139,0.04)" stroke-width="0.5"/>
     </svg>
   </div>
 
-  <!-- Floating geometric shapes -->
-  <div class="geo geo-hex">
-    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="24,2 44,14 44,34 24,46 4,34 4,14" stroke="rgba(148,163,184,0.4)" stroke-width="0.8" fill="none"/>
-    </svg>
-  </div>
-  <div class="geo geo-diamond"></div>
-  <div class="geo geo-cross"></div>
-  <div class="geo geo-circles">
-    <span></span>
-    <span></span>
-  </div>
+  <!-- Page content -->
+  <div class="page">
 
-  <!-- Card -->
-  <div class="card-outer">
-    <div class="card">
-      <div class="chromatic-shift"></div>
-      <div class="card-circuits"></div>
-      <div class="corner-accent corner-accent--tl"></div>
-      <div class="corner-accent corner-accent--br"></div>
-
+    <!-- Hero — instance removed message -->
+    <section class="hero">
       <div class="brand">
         <div class="brand-icon">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
@@ -699,12 +542,6 @@
         Instâncias de teste são removidas automaticamente após 5 dias.
       </p>
 
-      <div class="separator">
-        <div class="sep-line"></div>
-        <div class="sep-node"></div>
-        <div class="sep-line"></div>
-      </div>
-
       <div class="info-box">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
@@ -722,9 +559,97 @@
         </svg>
         Criar Nova Instância
       </a>
+    </section>
 
+    <!-- Tips — best uses for test instances -->
+    <section class="tips-section">
+      <div class="tips-header">
+        <h2>Aproveite melhor sua próxima instância</h2>
+        <p>Dicas para extrair o máximo dos 5 dias gratuitos de teste</p>
+      </div>
+
+      <div class="tips-grid">
+
+        <!-- 1. Testar automações compradas -->
+        <div class="tip-card" data-accent="cyan">
+          <div class="tip-icon tip-icon--cyan">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+            </svg>
+          </div>
+          <h3>Teste automações compradas</h3>
+          <p>Importe workflows do marketplace direto para sua instância com um clique. Valide antes de usar em produção.</p>
+          <div class="tip-badge">Aba Automações Compradas → N8n</div>
+        </div>
+
+        <!-- 2. Prototipar integrações -->
+        <div class="tip-card" data-accent="violet">
+          <div class="tip-icon tip-icon--violet">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.421 48.421 0 01-4.185-.194c.9 1.676 2.353 2.756 4.092 3.105a48.02 48.02 0 01-.003.32C8.727 10.972 7.2 12.56 6 14.25c2.437-.348 4.744-.398 6.926 0 2.182-.398 4.489-.348 6.926 0-1.2-1.69-2.727-3.278-4.243-4.264a48.02 48.02 0 01-.003-.32c1.739-.349 3.192-1.429 4.092-3.105a48.42 48.42 0 01-4.185.194.64.64 0 01-.657-.643v0z"/>
+            </svg>
+          </div>
+          <h3>Prototipar com community nodes</h3>
+          <p>Instale nodes da comunidade direto pelo painel — WhatsApp, Telegram, Google Sheets e centenas mais.</p>
+          <div class="tip-badge">Settings → Community Nodes</div>
+        </div>
+
+        <!-- 3. Conectar APIs -->
+        <div class="tip-card" data-accent="teal">
+          <div class="tip-icon tip-icon--teal">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/>
+            </svg>
+          </div>
+          <h3>Conecte qualquer API</h3>
+          <p>Use o node HTTP Request para integrar qualquer serviço externo. Teste endpoints sem precisar de um node dedicado.</p>
+          <div class="tip-badge">Node HTTP Request</div>
+        </div>
+
+        <!-- 4. Agendar execuções -->
+        <div class="tip-card" data-accent="amber">
+          <div class="tip-icon tip-icon--amber">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3>Agende execuções automáticas</h3>
+          <p>Use o Schedule Trigger para executar workflows a cada minuto, hora ou dia. Perfeito para validar fluxos recorrentes.</p>
+          <div class="tip-badge">Schedule Trigger → Cron</div>
+        </div>
+
+        <!-- 5. Webhook em tempo real -->
+        <div class="tip-card" data-accent="emerald">
+          <div class="tip-icon tip-icon--emerald">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+            </svg>
+          </div>
+          <h3>Crie webhooks em tempo real</h3>
+          <p>Endpoints webhook na sua instância para receber dados de formulários, pagamentos e notificações automaticamente.</p>
+          <div class="tip-badge">Webhook node → URL pública</div>
+        </div>
+
+        <!-- 6. Backup antes de expirar -->
+        <div class="tip-card" data-accent="pink">
+          <div class="tip-icon tip-icon--pink">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9.75v6.75m0 0l-3-3m3 3l3-3m-8.25 6a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"/>
+            </svg>
+          </div>
+          <h3>Faça backup antes de expirar</h3>
+          <p>Clique em Backup no painel para baixar todos os workflows em ZIP. Assim você não perde nada quando a instância expirar.</p>
+          <div class="tip-badge">Dashboard → Backup ZIP</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="page-footer">
       <p class="footer-text">marketcodebrasil.com.br</p>
-    </div>
+    </footer>
+
   </div>
 </body>
 </html>
