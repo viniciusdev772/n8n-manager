@@ -455,7 +455,14 @@ ENVFILE
     warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js (.env do n8n-vendas)"
     warn "  cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN"
 else
-    log "Arquivo .env ja existe (mantido sem alteracao)"
+    # Corrigir senhas placeholder se existirem
+    if grep -q "senha_segura_aqui" "$PROJECT_DIR/.env" 2>/dev/null; then
+        warn "Detectado PG_PASSWORD placeholder, gerando senha segura..."
+        GEN_PG_PASSWORD=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
+        sed -i "s/PG_PASSWORD=senha_segura_aqui/PG_PASSWORD=$GEN_PG_PASSWORD/" "$PROJECT_DIR/.env"
+        log "PG_PASSWORD atualizada automaticamente"
+    fi
+    log "Arquivo .env ja existe (verificado)"
 fi
 
 # --- 10. Criar servico systemd ---
@@ -465,8 +472,8 @@ info "Criando servico systemd..."
 cat > /etc/systemd/system/n8n-manager.service << SERVICE
 [Unit]
 Description=N8N Instance Manager
-After=network.target docker.service
-Requires=docker.service
+After=network-online.target docker.service
+Wants=network-online.target docker.service
 
 [Service]
 Type=simple
@@ -487,9 +494,24 @@ log "Servico n8n-manager criado e habilitado no boot"
 
 # --- 11. Auto-start do servico ---
 
+info "Garantindo Docker ativo antes de iniciar..."
+systemctl start docker > /dev/null 2>&1 || true
+for i in $(seq 1 20); do
+    if docker info > /dev/null 2>&1; then
+        break
+    fi
+    sleep 1
+done
+
+if ! docker info > /dev/null 2>&1; then
+    warn "Docker nao respondeu em 20s, tentando reiniciar..."
+    systemctl restart docker > /dev/null 2>&1 || true
+    sleep 5
+fi
+
 info "Iniciando N8N Manager..."
 systemctl restart n8n-manager > /dev/null 2>&1 || true
-sleep 3
+sleep 5
 
 # --- 12. Verificacao final de qualidade ---
 
