@@ -97,18 +97,24 @@ def _process_job(ch, method, properties, body):
         # 4. Aguardar startup (verifica logs + HTTP)
         push_event(job_id, {"status": "info", "message": "Aguardando instancia ficar disponivel..."})
         n8n_ready = False
-        for i in range(60):
+        migrating = False
+        for i in range(150):  # 5 minutos (150 x 2s)
             time.sleep(2)
             ct.reload()
             if ct.status == "running":
-                push_event(job_id, {"status": "info", "message": f"Verificando N8N ({i + 1}/60)"})
                 try:
-                    logs = ct.logs(tail=10).decode("utf-8", errors="replace")
+                    logs = ct.logs(tail=15).decode("utf-8", errors="replace")
                     if "Editor is now accessible" in logs or "Webhook listener" in logs or "n8n ready" in logs.lower():
                         n8n_ready = True
                         break
+                    if "Migrations in progress" in logs and not migrating:
+                        migrating = True
+                        push_event(job_id, {"status": "info", "message": "Migrations em andamento..."})
                 except Exception:
                     pass
+                # Feedback a cada 10 iteracoes
+                if i % 10 == 0:
+                    push_event(job_id, {"status": "info", "message": f"Verificando N8N ({i * 2}s/300s)"})
                 # Fallback: verificar via HTTP interno
                 if i >= 15 and i % 5 == 0:
                     try:
@@ -131,7 +137,7 @@ def _process_job(ch, method, properties, body):
 
         if not n8n_ready:
             logs = ct.logs(tail=30).decode("utf-8", errors="replace")
-            push_event(job_id, {"status": "error", "message": f"N8N nao iniciou em 2 minutos.\n{logs}"})
+            push_event(job_id, {"status": "error", "message": f"N8N nao iniciou em 5 minutos.\n{logs}"})
             set_state(job_id, "error")
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return

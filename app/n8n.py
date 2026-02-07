@@ -41,6 +41,13 @@ def build_env(name: str, encryption_key: str) -> dict:
         "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
         "N8N_SECURE_COOKIE": "false",
         "N8N_LOG_LEVEL": "warn",
+        # SQLite pool (elimina deprecation warning)
+        "DB_SQLITE_POOL_SIZE": "4",
+        # Desabilitar telemetria (reduz startup e erros de DNS)
+        "N8N_DIAGNOSTICS_ENABLED": "false",
+        # Segurança recomendada pelo n8n
+        "N8N_BLOCK_ENV_ACCESS_IN_NODE": "true",
+        "N8N_GIT_NODE_DISABLE_BARE_REPOS": "true",
         # Economia de execuções
         "EXECUTIONS_DATA_SAVE_ON_ERROR": "all",
         "EXECUTIONS_DATA_SAVE_ON_SUCCESS": "none",
