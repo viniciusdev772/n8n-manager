@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════
-#  N8N Manager — Setup do Servidor VPS
+#  N8N VADIA Manager — Setup do Servidor VPS
 #  Compatível com: Ubuntu, Debian, CentOS, Fedora, AlmaLinux, Rocky
 #  Executa: curl -fsSL https://raw.githubusercontent.com/.../setup.sh | bash
 # ═══════════════════════════════════════════════════════════
