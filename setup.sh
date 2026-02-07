@@ -9,10 +9,16 @@ set -eo pipefail
 
 export DEBIAN_FRONTEND=noninteractive
 
+REPO_RAW="https://raw.githubusercontent.com/viniciusdev772/n8n-manager/main"
+REPO_API="https://api.github.com/repos/viniciusdev772/n8n-manager/commits/main"
+PROJECT_DIR="/opt/n8n-manager"
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
 log()  { echo -e "${GREEN}[OK]${NC} $1"; }
@@ -29,8 +35,57 @@ fi
 echo ""
 echo -e "${CYAN}===============================================${NC}"
 echo -e "${CYAN}  N8N Instance Manager - Setup VPS${NC}"
+
+# Mostrar versao local instalada (se existir)
+LOCAL_HASH=""
+if [ -d "$PROJECT_DIR/.git" ]; then
+    LOCAL_HASH=$(git -C "$PROJECT_DIR" rev-parse --short HEAD 2>/dev/null || echo "")
+fi
+
+# Buscar versao mais recente do GitHub
+REMOTE_HASH=""
+REMOTE_HASH_FULL=""
+REMOTE_DATE=""
+info "Verificando versao mais recente no GitHub..."
+API_RESPONSE=$(curl -sf --max-time 10 "$REPO_API" 2>/dev/null || echo "")
+if [ -n "$API_RESPONSE" ]; then
+    REMOTE_HASH_FULL=$(echo "$API_RESPONSE" | grep -oP '"sha"\s*:\s*"\K[a-f0-9]{40}' | head -1 || echo "")
+    REMOTE_HASH="${REMOTE_HASH_FULL:0:7}"
+    REMOTE_DATE=$(echo "$API_RESPONSE" | grep -oP '"date"\s*:\s*"\K[^"]+' | head -1 || echo "")
+fi
+
+if [ -n "$LOCAL_HASH" ] && [ -n "$REMOTE_HASH" ]; then
+    if [ "$LOCAL_HASH" = "$REMOTE_HASH" ]; then
+        echo -e "${DIM}  Versao instalada: ${LOCAL_HASH} (atualizado)${NC}"
+    else
+        echo -e "${YELLOW}  Instalado: ${LOCAL_HASH} -> Atualizando para: ${REMOTE_HASH}${NC}"
+    fi
+elif [ -n "$LOCAL_HASH" ]; then
+    echo -e "${DIM}  Versao instalada: ${LOCAL_HASH}${NC}"
+elif [ -n "$REMOTE_HASH" ]; then
+    echo -e "${DIM}  Versao remota: ${REMOTE_HASH} (${REMOTE_DATE})${NC}"
+else
+    echo -e "${DIM}  Primeira instalacao${NC}"
+fi
+
 echo -e "${CYAN}===============================================${NC}"
 echo ""
+
+# --- Auto-update do proprio script ---
+
+if [ -n "$REMOTE_HASH_FULL" ]; then
+    # Se esta rodando via pipe (curl | bash), baixar versao mais recente e re-executar
+    SELF_PATH="${BASH_SOURCE[0]:-}"
+    if [ -z "$SELF_PATH" ] || [ "$SELF_PATH" = "bash" ] || [ "$SELF_PATH" = "/dev/stdin" ]; then
+        # Rodando via pipe - baixar script mais recente para /tmp e re-executar
+        TMPFILE="/tmp/n8n-setup-${REMOTE_HASH}.sh"
+        if [ ! -f "$TMPFILE" ]; then
+            info "Baixando script mais recente (${REMOTE_HASH})..."
+            curl -fsSL "${REPO_RAW}/setup.sh?t=$(date +%s)" -o "$TMPFILE" 2>/dev/null || true
+        fi
+        # Nao re-executar para evitar loop - o curl ja pega o mais recente
+    fi
+fi
 
 # --- Detectar distro ---
 
@@ -328,8 +383,6 @@ LIMITS
 log "Limites de arquivos configurados"
 
 # --- 9. Clonar e configurar o projeto ---
-
-PROJECT_DIR="/opt/n8n-manager"
 
 if [ -d "$PROJECT_DIR/.git" ]; then
     info "Projeto ja existe em $PROJECT_DIR, atualizando..."
