@@ -93,5 +93,6 @@ Traefik rodando com Cloudflare DNS Challenge.
 
 Certificados preservados em {traefik_folder}/letsencrypt/
 """)
-except subprocess.CalledProcessError:
-    print("ERRO: Falha ao iniciar Traefik. Verifique 'docker compose version'.")
+except subprocess.CalledProcessError as e:
+    print(f"ERRO: Falha ao iniciar Traefik (exit code {e.returncode}). Verifique 'docker compose version'.")
+    print("Tente manualmente: cd traefik && docker compose up -d")

@@ -787,8 +787,10 @@ else
     done
 
     # Exportar variaveis do .env para o config_traefik.py
-    export CF_DNS_API_TOKEN=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-    export ACME_EMAIL=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
+    CF_DNS_API_TOKEN=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null) || true
+    ACME_EMAIL=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null) || true
+    ACME_EMAIL="${ACME_EMAIL:-admin@marketcodebrasil.com.br}"
+    export CF_DNS_API_TOKEN ACME_EMAIL
 
     if [ -z "$CF_DNS_API_TOKEN" ]; then
         warn "CF_DNS_API_TOKEN nao configurado no .env — Traefik nao conseguira emitir certificados SSL"
@@ -796,10 +798,9 @@ else
         warn "Depois execute: cd $PROJECT_DIR && python3 config_traefik.py"
     else
         cd "$PROJECT_DIR"
-        if $PROJECT_DIR/venv/bin/python config_traefik.py; then
+        $PROJECT_DIR/venv/bin/python config_traefik.py || warn "Falha ao criar Traefik (verifique config_traefik.py)"
+        if docker ps --format '{{.Names}}' | grep -q "traefik"; then
             log "Traefik criado via config_traefik.py"
-        else
-            warn "Falha ao criar Traefik (verifique config_traefik.py)"
         fi
         cd "$PROJECT_DIR"
     fi
