@@ -775,7 +775,7 @@ if [ -n "$TRAEFIK_CONTAINER" ]; then
         fi
     fi
 else
-    # Nenhum Traefik encontrado — criar o nosso
+    # Nenhum Traefik encontrado — criar via config_traefik.py
     info "Nenhum Traefik encontrado. Criando com Cloudflare DNS Challenge..."
 
     # Aguardar portas liberarem
@@ -786,40 +786,22 @@ else
         sleep 1
     done
 
-    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-    ACME_EMAIL_ENV=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
+    # Exportar variaveis do .env para o config_traefik.py
+    export CF_DNS_API_TOKEN=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+    export ACME_EMAIL=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
 
-    if [ -z "$CF_TOKEN_ENV" ]; then
+    if [ -z "$CF_DNS_API_TOKEN" ]; then
         warn "CF_DNS_API_TOKEN nao configurado no .env — Traefik nao conseguira emitir certificados SSL"
         warn "Configure em: nano $PROJECT_DIR/.env"
-    fi
-
-    docker run -d \
-        --name traefik \
-        --restart unless-stopped \
-        --network "$DOCKER_NET" \
-        -p 80:80 -p 443:443 \
-        -e CF_DNS_API_TOKEN="$CF_TOKEN_ENV" \
-        -v /var/run/docker.sock:/var/run/docker.sock:ro \
-        -v traefik-certs:/certs \
-        traefik:v3.6 \
-        --providers.docker=true \
-        --providers.docker.exposedbydefault=false \
-        --providers.docker.network="$DOCKER_NET" \
-        --entrypoints.web.address=:80 \
-        --entrypoints.websecure.address=:443 \
-        --entrypoints.web.http.redirections.entrypoint.to=websecure \
-        --entrypoints.web.http.redirections.entrypoint.scheme=https \
-        --certificatesresolvers.letsencrypt.acme.dnschallenge=true \
-        --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare \
-        --certificatesresolvers.letsencrypt.acme.email="$ACME_EMAIL_ENV" \
-        --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json \
-        > /dev/null 2>&1
-
-    if docker ps --format '{{.Names}}' | grep -q "^traefik$"; then
-        log "Traefik criado e rodando na rede '$DOCKER_NET'"
+        warn "Depois execute: cd $PROJECT_DIR && python3 config_traefik.py"
     else
-        warn "Falha ao criar Traefik (portas podem estar ocupadas)"
+        cd "$PROJECT_DIR"
+        if $PROJECT_DIR/venv/bin/python config_traefik.py; then
+            log "Traefik criado via config_traefik.py"
+        else
+            warn "Falha ao criar Traefik (verifique config_traefik.py)"
+        fi
+        cd "$PROJECT_DIR"
     fi
 fi
 
