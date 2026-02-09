@@ -68,9 +68,12 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
 
-        # 3. Aguardar startup — testa URL publica via Traefik
+        # 3. Aguardar startup — testa URL publica via Traefik (ignora SSL pois cert pode demorar)
         n8n_ready = False
         public_url = instance_url(name)
+        no_ssl_ctx = ssl.create_default_context()
+        no_ssl_ctx.check_hostname = False
+        no_ssl_ctx.verify_mode = ssl.CERT_NONE
 
         for i in range(READINESS_MAX_ATTEMPTS):
             time.sleep(READINESS_POLL_INTERVAL)
@@ -86,16 +89,14 @@ def _process_job(ch, method, properties, body):
             if ct.status != "running":
                 continue
 
-            # HTTP check na URL publica (via Traefik)
+            # HTTP check na URL publica (via Traefik, sem validar SSL)
             try:
                 req = urllib.request.Request(public_url, method="GET")
-                resp = urllib.request.urlopen(req, timeout=5)
+                resp = urllib.request.urlopen(req, timeout=5, context=no_ssl_ctx)
                 if resp.status == 200:
                     n8n_ready = True
-                    push_event(job_id, {"status": "info", "message": "N8N acessivel!"})
+                    push_event(job_id, {"status": "info", "message": f"N8N acessivel em {public_url}"})
                     break
-            except ssl.SSLError:
-                pass  # Certificado ainda nao emitido pelo Traefik
             except Exception:
                 pass
 
