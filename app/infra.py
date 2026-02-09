@@ -225,23 +225,65 @@ def ensure_redis():
 # ─── RabbitMQ ────────────────────────────────────────────
 
 
+def _test_rabbitmq_auth():
+    """Testa se as credenciais do .env funcionam no RabbitMQ."""
+    try:
+        import pika
+        credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
+        conn = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                host="127.0.0.1", port=RABBITMQ_PORT,
+                credentials=credentials, connection_attempts=1, retry_delay=0,
+                socket_timeout=5,
+            )
+        )
+        conn.close()
+        return True
+    except Exception:
+        return False
+
+
 def ensure_rabbitmq():
-    """Garante que o RabbitMQ está rodando com management UI."""
+    """Garante que o RabbitMQ está rodando com credenciais corretas."""
     if not RABBITMQ_USER or not RABBITMQ_PASSWORD:
         logger.warning("RABBITMQ_USER/RABBITMQ_PASSWORD nao configurados no .env")
     client = get_client()
     name = "rabbitmq"
+    recreate = False
+
     try:
         c = client.containers.get(name)
         if c.status == "running":
-            return
-        try:
-            c.start()
-            return
-        except Exception:
+            # Testar se as credenciais do .env funcionam
+            if _test_rabbitmq_auth():
+                return
+            # Credenciais nao batem — volume antigo com senha diferente
+            logger.warning("RabbitMQ: credenciais do .env nao funcionam. Recriando com volume novo...")
             c.remove(force=True)
+            recreate = True
+        else:
+            try:
+                c.start()
+                time.sleep(3)
+                if _test_rabbitmq_auth():
+                    return
+            except Exception:
+                pass
+            c.remove(force=True)
+            recreate = True
     except docker.errors.NotFound:
-        pass
+        recreate = True
+
+    # Remover volume antigo se credenciais nao batiam
+    if recreate:
+        try:
+            vol = client.volumes.get("rabbitmq-data")
+            vol.remove(force=True)
+            logger.info("Volume rabbitmq-data antigo removido (credenciais incompativeis)")
+        except docker.errors.NotFound:
+            pass
+        except Exception as e:
+            logger.warning("Nao foi possivel remover volume rabbitmq-data: %s", e)
 
     _kill_port_holders(client, {RABBITMQ_PORT, 15672})
 
@@ -263,10 +305,10 @@ def ensure_rabbitmq():
 
     for i in range(15):
         time.sleep(2)
-        if _test_port("127.0.0.1", RABBITMQ_PORT):
-            logger.info("RabbitMQ: conexao verificada OK")
+        if _test_rabbitmq_auth():
+            logger.info("RabbitMQ: autenticacao verificada OK")
             return
-    logger.warning("RabbitMQ criado mas conexao nao confirmada")
+    logger.warning("RabbitMQ criado mas autenticacao nao confirmada")
 
 
 # ─── Fallback (página "instância removida") ─────────────
