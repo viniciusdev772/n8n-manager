@@ -1,33 +1,33 @@
 """Worker — consome jobs de criacao de instancia do RabbitMQ."""
 
 import json
+import ssl
 import threading
 import time
+import urllib.request
 
 import docker
 import pika
 
 from .config import (
-    DOCKER_NETWORK,
-    INSTANCE_CPU_SHARES,
-    INSTANCE_MEM_LIMIT,
-    INSTANCE_MEM_RESERVATION,
-    N8N_IMAGE,
     RABBITMQ_HOST,
     RABBITMQ_PASSWORD,
     RABBITMQ_PORT,
     RABBITMQ_USER,
+    READINESS_MAX_ATTEMPTS,
+    READINESS_POLL_INTERVAL,
+    SSL_WAIT_SECONDS,
 )
-from .docker_client import get_client
 from .job_status import push_event, set_state
+from .logger import get_logger
 from .n8n import (
-    build_env,
-    build_traefik_labels,
-    container_name,
+    create_container,
     generate_encryption_key,
     get_container,
     instance_url,
 )
+
+logger = get_logger("worker")
 
 QUEUE_NAME = "instance_creation"
 _stop_event = threading.Event()
@@ -40,7 +40,7 @@ def _process_job(ch, method, properties, body):
     name = job["name"]
     version = job.get("version", "latest")
 
-    print(f"[WORKER] Processando job {job_id}: instancia '{name}' v{version}")
+    logger.info("Processando job %s: instancia '%s' v%s", job_id, name, version)
     set_state(job_id, "running")
 
     try:
@@ -56,36 +56,10 @@ def _process_job(ch, method, properties, body):
 
         encryption_key = generate_encryption_key()
 
-        # 2. Baixar imagem Docker
-        image_tag = f"{N8N_IMAGE}:{version}"
-        push_event(job_id, {"status": "info", "message": f"Baixando imagem {image_tag}..."})
+        # 2. Criar container (pull + run via n8n.create_container)
+        push_event(job_id, {"status": "info", "message": "Baixando imagem e criando container..."})
         try:
-            get_client().images.pull(N8N_IMAGE, tag=version)
-        except Exception as e:
-            push_event(job_id, {"status": "error", "message": f"Erro ao baixar imagem: {e}"})
-            set_state(job_id, "error")
-            ch.basic_ack(delivery_tag=method.delivery_tag)
-            return
-        push_event(job_id, {"status": "info", "message": "Imagem pronta"})
-
-        # 3. Criar container
-        push_event(job_id, {"status": "info", "message": "Criando container N8N..."})
-        try:
-            env = build_env(name, encryption_key)
-            labels = build_traefik_labels(name)
-            ct = get_client().containers.run(
-                image=image_tag,
-                name=container_name(name),
-                detach=True,
-                restart_policy={"Name": "unless-stopped"},
-                environment=env,
-                labels=labels,
-                mem_limit=INSTANCE_MEM_LIMIT,
-                mem_reservation=INSTANCE_MEM_RESERVATION,
-                cpu_shares=INSTANCE_CPU_SHARES,
-                volumes={f"n8n-data-{name}": {"bind": "/home/node/.n8n", "mode": "rw"}},
-                network=DOCKER_NETWORK,
-            )
+            ct = create_container(name, version, encryption_key)
         except Exception as e:
             push_event(job_id, {"status": "error", "message": f"Erro ao criar container: {e}"})
             set_state(job_id, "error")
@@ -94,18 +68,12 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
 
-        # 4. Aguardar startup — testa URL publica via Traefik
-        import urllib.request
-        import ssl
-
+        # 3. Aguardar startup — testa URL publica via Traefik
         n8n_ready = False
-        public_url = instance_url(name)  # https://name.n8n.marketcodebrasil.com.br
-        ssl_ctx = ssl.create_default_context()
-        ssl_ctx.check_hostname = False
-        ssl_ctx.verify_mode = ssl.CERT_NONE
+        public_url = instance_url(name)
 
-        for i in range(90):  # 3 minutos (90 x 2s)
-            time.sleep(2)
+        for i in range(READINESS_MAX_ATTEMPTS):
+            time.sleep(READINESS_POLL_INTERVAL)
             ct.reload()
 
             if ct.status == "exited":
@@ -121,23 +89,31 @@ def _process_job(ch, method, properties, body):
             # HTTP check na URL publica (via Traefik)
             try:
                 req = urllib.request.Request(public_url, method="GET")
-                resp = urllib.request.urlopen(req, timeout=5, context=ssl_ctx)
+                resp = urllib.request.urlopen(req, timeout=5)
                 if resp.status == 200:
                     n8n_ready = True
                     push_event(job_id, {"status": "info", "message": "N8N acessivel!"})
                     break
+            except ssl.SSLError:
+                pass  # Certificado ainda nao emitido pelo Traefik
             except Exception:
                 pass
 
             # Feedback a cada 20s
             if i % 10 == 0:
-                push_event(job_id, {"status": "info", "message": f"Aguardando N8N ({i * 2}s)..."})
+                push_event(job_id, {"status": "info", "message": f"Aguardando N8N ({i * READINESS_POLL_INTERVAL}s)..."})
 
-        # 5. SSL via Traefik
+        if not n8n_ready:
+            push_event(job_id, {"status": "error", "message": "Timeout: N8N nao ficou acessivel em 3 minutos"})
+            set_state(job_id, "error")
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+            return
+
+        # 4. SSL via Traefik
         push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
-        time.sleep(5)
+        time.sleep(SSL_WAIT_SECONDS)
 
-        # 6. Sucesso
+        # 5. Sucesso
         push_event(job_id, {
             "status": "complete",
             "message": "Instancia N8N criada com sucesso!",
@@ -147,12 +123,17 @@ def _process_job(ch, method, properties, body):
             "container_status": "running",
         })
         set_state(job_id, "complete")
-        print(f"[WORKER] Job {job_id} concluido: instancia '{name}' criada")
+        logger.info("Job %s concluido: instancia '%s' criada", job_id, name)
 
     except Exception as e:
         push_event(job_id, {"status": "error", "message": f"Erro inesperado: {e}"})
         set_state(job_id, "error")
-        print(f"[WORKER] Job {job_id} falhou: {e}")
+        logger.error("Job %s falhou: %s", job_id, e)
+        # Limpar container parcialmente criado
+        try:
+            get_container(name).remove(force=True)
+        except Exception:
+            pass
 
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -175,17 +156,17 @@ def _consume_loop():
             channel.basic_qos(prefetch_count=1)
             channel.basic_consume(queue=QUEUE_NAME, on_message_callback=_process_job)
 
-            print("[WORKER] Aguardando jobs de criacao de instancia...")
+            logger.info("Aguardando jobs de criacao de instancia...")
             while not _stop_event.is_set():
                 connection.process_data_events(time_limit=1)
 
             connection.close()
 
         except pika.exceptions.AMQPConnectionError as e:
-            print(f"[WORKER] Conexao RabbitMQ perdida: {e}. Reconectando em 5s...")
+            logger.warning("Conexao RabbitMQ perdida: %s. Reconectando em 5s...", e)
             time.sleep(5)
         except Exception as e:
-            print(f"[WORKER] Erro inesperado: {e}. Reconectando em 10s...")
+            logger.error("Erro inesperado: %s. Reconectando em 10s...", e)
             time.sleep(10)
 
 
@@ -193,11 +174,11 @@ def start_worker() -> threading.Thread:
     """Inicia thread daemon do worker."""
     t = threading.Thread(target=_consume_loop, daemon=True, name="instance-worker")
     t.start()
-    print("[WORKER] Thread de worker iniciada")
+    logger.info("Thread de worker iniciada")
     return t
 
 
 def stop_worker():
     """Sinaliza o worker para parar."""
     _stop_event.set()
-    print("[WORKER] Sinal de parada enviado")
+    logger.info("Sinal de parada enviado")

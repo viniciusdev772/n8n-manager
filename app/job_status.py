@@ -4,22 +4,20 @@ import json
 
 import redis
 
-from .config import REDIS_HOST, REDIS_PORT
+from .config import JOB_CLEANUP_TTL, JOB_TTL, REDIS_HOST, REDIS_PORT
 
-_redis = None
-
-JOB_TTL = 600  # 10 minutos
-CLEANUP_TTL = 300  # 5 minutos apos conclusao
+_pool = None
 
 
 def get_redis() -> redis.Redis:
-    global _redis
-    if _redis is None:
-        _redis = redis.Redis(
+    global _pool
+    if _pool is None:
+        _pool = redis.ConnectionPool(
             host=REDIS_HOST, port=REDIS_PORT, decode_responses=True,
             socket_connect_timeout=5, retry_on_timeout=True,
+            max_connections=10,
         )
-    return _redis
+    return redis.Redis(connection_pool=_pool)
 
 
 def init_job(job_id: str):
@@ -57,5 +55,5 @@ def get_events_since(job_id: str, index: int) -> list[dict]:
 def cleanup_job(job_id: str):
     """Marca keys do job para expirar em breve (auto-cleanup)."""
     r = get_redis()
-    r.expire(f"job:{job_id}:events", CLEANUP_TTL)
-    r.expire(f"job:{job_id}:state", CLEANUP_TTL)
+    r.expire(f"job:{job_id}:events", JOB_CLEANUP_TTL)
+    r.expire(f"job:{job_id}:state", JOB_CLEANUP_TTL)

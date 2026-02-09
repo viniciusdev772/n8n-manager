@@ -3,10 +3,15 @@
 Uso: python config_traefik.py
 """
 
+import os
 import subprocess
 
-cf_token = "HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V"
-acme_email = "lojasketchware@gmail.com"
+cf_token = os.getenv("CF_DNS_API_TOKEN", "")
+acme_email = os.getenv("ACME_EMAIL", "admin@marketcodebrasil.com.br")
+
+if not cf_token:
+    print("ERRO: CF_DNS_API_TOKEN nao configurado. Defina no .env ou variavel de ambiente.")
+    exit(1)
 network_name = "n8n-public"
 resolver_name = "letsencrypt"
 

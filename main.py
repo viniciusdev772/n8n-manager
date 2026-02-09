@@ -7,7 +7,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.cleanup import start_cleanup, stop_cleanup
-from app.config import SERVER_PORT
+from app.config import ALLOWED_ORIGINS, SERVER_PORT
+from app.logger import setup_logging
 from app.docker_client import close_client
 from app.infra import bootstrap_infra
 from app.n8n import sync_instance_env_vars
@@ -18,6 +19,7 @@ from app.worker import start_worker, stop_worker
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    setup_logging()
     bootstrap_infra()
     sync_instance_env_vars()
     start_worker()
@@ -32,7 +34,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="N8N Instance Manager", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )

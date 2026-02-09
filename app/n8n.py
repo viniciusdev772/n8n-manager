@@ -1,10 +1,12 @@
 """Lógica de criação e configuração de containers N8N."""
 
+import re
 import secrets
 from datetime import datetime, timezone
 
 from .config import (
     BASE_DOMAIN,
+    DEFAULT_TIMEZONE,
     DOCKER_NETWORK,
     INSTANCE_CPU_SHARES,
     INSTANCE_MEM_LIMIT,
@@ -13,10 +15,33 @@ from .config import (
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
+from .logger import get_logger
+
+logger = get_logger("n8n")
 
 # Recursos reservados para infra (Traefik ~50 + Redis ~100 + RabbitMQ ~150 + OS ~200 + margem)
 RESERVED_RAM_MB = 768
 PER_INSTANCE_RAM_MB = 384
+
+
+_VALID_NAME = re.compile(r"^[a-z0-9][a-z0-9\-]{0,30}[a-z0-9]$")
+_VALID_VERSION = re.compile(r"^(latest|1\.\d{1,3}\.\d{1,3})$")
+
+
+def validate_instance_name(name: str) -> str:
+    """Valida e normaliza nome de instância."""
+    name = name.lower().strip()
+    if not name or not _VALID_NAME.match(name):
+        raise ValueError("Nome deve conter apenas letras minusculas, numeros e hifens (2-32 chars)")
+    return name
+
+
+def validate_version(version: str) -> str:
+    """Valida formato da versão N8N."""
+    version = version.strip()
+    if not _VALID_VERSION.match(version):
+        raise ValueError(f"Versao invalida: '{version}'. Use formato 1.X.Y ou 'latest'")
+    return version
 
 
 def container_name(instance_name: str) -> str:
@@ -42,7 +67,7 @@ def build_env(name: str, encryption_key: str) -> dict:
         "N8N_EDITOR_BASE_URL": f"https://{host}/",
         "N8N_ENCRYPTION_KEY": encryption_key,
         "WEBHOOK_URL": f"https://{host}/",
-        "GENERIC_TIMEZONE": "America/Sao_Paulo",
+        "GENERIC_TIMEZONE": DEFAULT_TIMEZONE,
         "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
         "N8N_SECURE_COOKIE": "false",
         "N8N_LOG_LEVEL": "warn",
@@ -89,7 +114,7 @@ def build_traefik_labels(name: str) -> dict:
     }
 
 
-def create_container(name: str, version: str, encryption_key: str):
+def create_container(name: str, version: str, encryption_key: str, created_at: str | None = None):
     """Cria e inicia um container N8N."""
     client = get_client()
     image_tag = f"{N8N_IMAGE}:{version}"
@@ -98,6 +123,8 @@ def create_container(name: str, version: str, encryption_key: str):
 
     env = build_env(name, encryption_key)
     labels = build_traefik_labels(name)
+    if created_at:
+        labels["app.created_at"] = created_at
 
     return client.containers.run(
         image=image_tag,
@@ -129,8 +156,8 @@ def remove_container(name: str):
     try:
         vol = client.volumes.get(f"n8n-data-{name}")
         vol.remove(force=True)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Falha ao remover volume n8n-data-%s: %s", name, e)
 
 
 def list_n8n_containers() -> list:
@@ -207,31 +234,10 @@ def rebuild_container(instance_id: str, version: str):
     if not encryption_key:
         raise RuntimeError(f"N8N_ENCRYPTION_KEY não encontrada no container {instance_id}")
 
-    old_labels = old.labels
+    old_created_at = old.labels.get("app.created_at")
     old.remove(force=True)  # Mantém volume
 
-    client = get_client()
-    image_tag = f"{N8N_IMAGE}:{version}"
-    client.images.pull(N8N_IMAGE, tag=version)
-
-    env = build_env(instance_id, encryption_key)
-    labels = build_traefik_labels(instance_id)
-    if "app.created_at" in old_labels:
-        labels["app.created_at"] = old_labels["app.created_at"]
-
-    client.containers.run(
-        image=image_tag,
-        name=container_name(instance_id),
-        detach=True,
-        restart_policy={"Name": "unless-stopped"},
-        environment=env,
-        labels=labels,
-        mem_limit=INSTANCE_MEM_LIMIT,
-        mem_reservation=INSTANCE_MEM_RESERVATION,
-        cpu_shares=INSTANCE_CPU_SHARES,
-        volumes={f"n8n-data-{instance_id}": {"bind": "/home/node/.n8n", "mode": "rw"}},
-        network=DOCKER_NETWORK,
-    )
+    return create_container(instance_id, version, encryption_key, created_at=old_created_at)
 
 
 def sync_instance_env_vars():
@@ -250,7 +256,7 @@ def sync_instance_env_vars():
         try:
             encryption_key = extract_encryption_key(c)
             if not encryption_key:
-                print(f"[SYNC] {inst}: sem encryption key, pulando")
+                logger.warning("%s: sem encryption key, pulando", inst)
                 continue
 
             expected_env = build_env(inst, encryption_key)
@@ -260,22 +266,22 @@ def sync_instance_env_vars():
             needs_rebuild = False
             for key, expected_val in expected_env.items():
                 if current_env.get(key) != expected_val:
-                    print(f"[SYNC] {inst}: env '{key}' diverge (atual='{current_env.get(key)}' esperado='{expected_val}')")
+                    logger.info("%s: env '%s' diverge", inst, key)
                     needs_rebuild = True
                     break
 
             if needs_rebuild:
                 version = c.image.tags[0].split(":")[-1] if c.image.tags else "latest"
-                print(f"[SYNC] Recriando container {inst} (versão {version})...")
+                logger.info("Recriando container %s (versao %s)...", inst, version)
                 rebuild_container(inst, version)
                 synced += 1
-                print(f"[SYNC] {inst} recriado com env vars atualizadas")
+                logger.info("%s recriado com env vars atualizadas", inst)
             else:
-                print(f"[SYNC] {inst}: env vars OK")
+                logger.debug("%s: env vars OK", inst)
         except Exception as e:
-            print(f"[SYNC] ERRO em {inst}: {e}. Continuando...")
+            logger.error("ERRO em %s: %s. Continuando...", inst, e)
 
-    print(f"[SYNC] Concluído: {synced} instância(s) recriada(s)")
+    logger.info("Sync concluido: %d instancia(s) recriada(s)", synced)
 
 
 def calculate_max_instances() -> dict:

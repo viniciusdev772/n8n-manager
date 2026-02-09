@@ -26,6 +26,25 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[X]${NC} $1"; exit 1; }
 info() { echo -e "${CYAN}[i]${NC} $1"; }
 
+# Prompt interativo (le de /dev/tty para funcionar com curl | bash)
+ask() {
+    local prompt="$1" default="$2" varname="$3" input
+    if [ -n "$default" ]; then
+        read -rp "$(echo -e "  ${CYAN}${prompt}${NC} [${DIM}${default}${NC}]: ")" input < /dev/tty
+    else
+        read -rp "$(echo -e "  ${CYAN}${prompt}${NC}: ")" input < /dev/tty
+    fi
+    eval "$varname=\"${input:-$default}\""
+}
+
+# Confirmar sim/nao (default = $2, retorna 0 para sim)
+confirm() {
+    local prompt="$1" default="${2:-N}" input
+    read -rp "$(echo -e "  ${CYAN}${prompt}${NC} [${default}]: ")" input < /dev/tty
+    input="${input:-$default}"
+    [[ "$input" =~ ^[sS]$ ]]
+}
+
 # --- Verificacoes iniciais ---
 
 if [ "$EUID" -ne 0 ]; then
@@ -70,22 +89,6 @@ fi
 
 echo -e "${CYAN}===============================================${NC}"
 echo ""
-
-# --- Auto-update do proprio script ---
-
-if [ -n "$REMOTE_HASH_FULL" ]; then
-    # Se esta rodando via pipe (curl | bash), baixar versao mais recente e re-executar
-    SELF_PATH="${BASH_SOURCE[0]:-}"
-    if [ -z "$SELF_PATH" ] || [ "$SELF_PATH" = "bash" ] || [ "$SELF_PATH" = "/dev/stdin" ]; then
-        # Rodando via pipe - baixar script mais recente para /tmp e re-executar
-        TMPFILE="/tmp/n8n-setup-${REMOTE_HASH}.sh"
-        if [ ! -f "$TMPFILE" ]; then
-            info "Baixando script mais recente (${REMOTE_HASH})..."
-            curl -fsSL "${REPO_RAW}/setup.sh?t=$(date +%s)" -o "$TMPFILE" 2>/dev/null || true
-        fi
-        # Nao re-executar para evitar loop - o curl ja pega o mais recente
-    fi
-fi
 
 # --- Detectar distro ---
 
@@ -365,19 +368,23 @@ log "Python $PY_VER"
 
 info "Configurando firewall..."
 
+# Porta da API (le do .env se existir, senao usa default — sera atualizado apos wizard)
+FW_API_PORT=$(grep -oP 'SERVER_PORT=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "5050")
+FW_API_PORT="${FW_API_PORT:-5050}"
+
 if [ "$FIREWALL_CMD" = "ufw" ]; then
     if command -v ufw > /dev/null 2>&1; then
-        ufw --force reset > /dev/null 2>&1 || true
         ufw default deny incoming > /dev/null 2>&1 || true
         ufw default allow outgoing > /dev/null 2>&1 || true
         ufw allow 22/tcp comment "SSH" > /dev/null 2>&1 || true
         ufw allow 80/tcp comment "HTTP" > /dev/null 2>&1 || true
         ufw allow 443/tcp comment "HTTPS" > /dev/null 2>&1 || true
-        ufw allow 5050/tcp comment "N8N Manager API" > /dev/null 2>&1 || true
-        ufw allow 8080/tcp comment "Traefik Dashboard" > /dev/null 2>&1 || true
-        ufw allow 15672/tcp comment "RabbitMQ Management" > /dev/null 2>&1 || true
+        ufw allow "${FW_API_PORT}/tcp" comment "N8N Manager API" > /dev/null 2>&1 || true
+        # Fechar portas admin que nao devem ficar expostas publicamente
+        ufw delete allow 8080/tcp > /dev/null 2>&1 || true
+        ufw delete allow 15672/tcp > /dev/null 2>&1 || true
         ufw --force enable > /dev/null 2>&1 || true
-        log "UFW configurado (SSH, HTTP, HTTPS, API, Traefik)"
+        log "UFW configurado (SSH, HTTP, HTTPS, API:${FW_API_PORT})"
     else
         $PKG_INSTALL ufw > /dev/null 2>&1 || warn "Nao foi possivel instalar UFW"
     fi
@@ -388,11 +395,12 @@ elif [ "$FIREWALL_CMD" = "firewalld" ]; then
         firewall-cmd --permanent --add-service=ssh > /dev/null 2>&1 || true
         firewall-cmd --permanent --add-service=http > /dev/null 2>&1 || true
         firewall-cmd --permanent --add-service=https > /dev/null 2>&1 || true
-        firewall-cmd --permanent --add-port=5050/tcp > /dev/null 2>&1 || true
-        firewall-cmd --permanent --add-port=8080/tcp > /dev/null 2>&1 || true
-        firewall-cmd --permanent --add-port=15672/tcp > /dev/null 2>&1 || true
+        firewall-cmd --permanent --add-port="${FW_API_PORT}/tcp" > /dev/null 2>&1 || true
+        # Fechar portas admin que nao devem ficar expostas publicamente
+        firewall-cmd --permanent --remove-port=8080/tcp > /dev/null 2>&1 || true
+        firewall-cmd --permanent --remove-port=15672/tcp > /dev/null 2>&1 || true
         firewall-cmd --reload > /dev/null 2>&1 || true
-        log "Firewalld configurado (SSH, HTTP, HTTPS, API, Traefik)"
+        log "Firewalld configurado (SSH, HTTP, HTTPS, API:${FW_API_PORT})"
     else
         $PKG_INSTALL firewalld > /dev/null 2>&1 || warn "Nao foi possivel instalar firewalld"
     fi
@@ -439,13 +447,20 @@ log "Limites de arquivos configurados"
 if [ -d "$PROJECT_DIR/.git" ]; then
     info "Projeto ja existe em $PROJECT_DIR, atualizando..."
     cd "$PROJECT_DIR"
-    git pull origin main > /dev/null 2>&1 || true
+    # Preservar .env antes do reset
+    [ -f .env ] && cp .env /tmp/n8n-manager-env-backup
+    git fetch origin main 2>/dev/null || warn "Falha ao buscar atualizacoes do GitHub"
+    git reset --hard origin/main 2>/dev/null || warn "Falha ao atualizar codigo"
+    # Restaurar .env
+    [ -f /tmp/n8n-manager-env-backup ] && mv /tmp/n8n-manager-env-backup .env
 else
     if [ -d "$PROJECT_DIR" ]; then
         rm -rf "$PROJECT_DIR"
     fi
     info "Clonando projeto..."
-    git clone https://github.com/viniciusdev772/n8n-manager.git "$PROJECT_DIR" > /dev/null 2>&1
+    if ! git clone https://github.com/viniciusdev772/n8n-manager.git "$PROJECT_DIR"; then
+        err "Falha ao clonar repositorio. Verifique a conexao com a internet."
+    fi
 fi
 
 cd "$PROJECT_DIR"
@@ -454,39 +469,107 @@ cd "$PROJECT_DIR"
 info "Criando ambiente virtual Python..."
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip > /dev/null 2>&1
-pip install -r requirements.txt > /dev/null 2>&1
+pip install --upgrade pip > /dev/null 2>&1 || warn "Falha ao atualizar pip"
+if ! pip install -r requirements.txt > /dev/null 2>&1; then
+    deactivate
+    err "Falha ao instalar dependencias Python. Verifique requirements.txt e a conexao."
+fi
 deactivate
 
 log "Dependencias Python instaladas em venv"
 
-# Auto-configurar .env (gera senhas seguras automaticamente)
-if [ ! -f "$PROJECT_DIR/.env" ]; then
-    info "Gerando configuracao automatica (.env)..."
+# --- Wizard interativo de configuracao ---
 
-    # Detectar IP publico do servidor
+run_wizard() {
+    echo ""
+    echo -e "${CYAN}-----------------------------------------------${NC}"
+    echo -e "${CYAN}  Configuracao do N8N Manager${NC}"
+    echo -e "${CYAN}-----------------------------------------------${NC}"
+    echo ""
+
+    # 1. Dominio
+    ask "Dominio base para instancias (ex: n8n.seudominio.com)" "" INPUT_DOMAIN
+    while [ -z "$INPUT_DOMAIN" ]; do
+        warn "Dominio nao pode ser vazio"
+        ask "Dominio base para instancias" "" INPUT_DOMAIN
+    done
+
+    # Extrair dominio raiz para sugerir email (ex: n8n.exemplo.com -> exemplo.com)
+    ROOT_DOMAIN=$(echo "$INPUT_DOMAIN" | awk -F. '{if(NF>2) print $(NF-1)"."$NF; else print $0}')
+    DEFAULT_EMAIL="admin@${ROOT_DOMAIN}"
+
+    # 2. Email SSL
+    ask "Email para certificados SSL" "$DEFAULT_EMAIL" INPUT_EMAIL
+    while [ -z "$INPUT_EMAIL" ]; do
+        warn "Email nao pode ser vazio"
+        ask "Email para certificados SSL" "$DEFAULT_EMAIL" INPUT_EMAIL
+    done
+
+    # 3. Cloudflare token
+    echo ""
+    info "O token Cloudflare e necessario para emitir certificados SSL automaticos."
+    info "Gere em: https://dash.cloudflare.com/profile/api-tokens"
+    info "Permissao necessaria: Zone > DNS > Edit"
+    echo ""
+    ask "Cloudflare DNS API Token (Enter para pular)" "" INPUT_CF_TOKEN
+    if [ -z "$INPUT_CF_TOKEN" ]; then
+        warn "SSL nao vai funcionar sem o token. Voce pode configurar depois em:"
+        warn "  nano $PROJECT_DIR/.env"
+    fi
+
+    # 4. Porta
+    ask "Porta da API" "5050" INPUT_PORT
+    while ! [[ "$INPUT_PORT" =~ ^[0-9]+$ ]]; do
+        warn "Porta deve ser um numero"
+        ask "Porta da API" "5050" INPUT_PORT
+    done
+
+    # Token fixo da API + senha RabbitMQ gerada
+    GEN_API_TOKEN="3ddb61bb99c56a8ef825f303a44b71fd706bd3aa38e6e06b443b7268d221e020"
+    GEN_RABBITMQ_PASS=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
+
+    # Resumo
+    echo ""
+    echo -e "${CYAN}-----------------------------------------------${NC}"
+    echo -e "${CYAN}  Resumo da configuracao${NC}"
+    echo -e "${CYAN}-----------------------------------------------${NC}"
+    echo -e "  ${BOLD}Dominio:${NC}     $INPUT_DOMAIN"
+    echo -e "  ${BOLD}Email SSL:${NC}   $INPUT_EMAIL"
+    if [ -n "$INPUT_CF_TOKEN" ]; then
+        echo -e "  ${BOLD}CF Token:${NC}    ****${INPUT_CF_TOKEN: -4}"
+    else
+        echo -e "  ${BOLD}CF Token:${NC}    ${YELLOW}NAO CONFIGURADO${NC}"
+    fi
+    echo -e "  ${BOLD}Porta API:${NC}   $INPUT_PORT"
+    echo -e "  ${BOLD}API Token:${NC}   ${GEN_API_TOKEN:0:12}... (gerado)"
+    echo ""
+
+    if ! confirm "Confirma estas configuracoes? (s/N)" "s"; then
+        info "Cancelado. Execute o setup novamente."
+        exit 0
+    fi
+
+    # Detectar IP publico
     SERVER_IP=$(curl -sf --max-time 5 https://ifconfig.me 2>/dev/null \
         || curl -sf --max-time 5 https://api.ipify.org 2>/dev/null \
         || curl -sf --max-time 5 https://icanhazip.com 2>/dev/null \
         || hostname -I | awk '{print $1}')
 
-    # Gerar token seguro
-    GEN_API_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 64)
-
+    # Gerar .env
     cat > "$PROJECT_DIR/.env" << ENVFILE
-# === Auto-gerado pelo setup.sh em $(date '+%Y-%m-%d %H:%M:%S') ===
+# === Gerado pelo setup.sh em $(date '+%Y-%m-%d %H:%M:%S') ===
 
 # Token de autenticacao da API (use este mesmo token no Next.js)
 API_AUTH_TOKEN=$GEN_API_TOKEN
 
 # Dominio base para instancias (ex: nome.BASE_DOMAIN)
-BASE_DOMAIN=n8n.marketcodebrasil.com.br
+BASE_DOMAIN=$INPUT_DOMAIN
 
 # Email para certificados SSL (Let's Encrypt via Traefik)
-ACME_EMAIL=admin@marketcodebrasil.com.br
+ACME_EMAIL=$INPUT_EMAIL
 
 # Cloudflare DNS API Token (para SSL wildcard via DNS Challenge)
-CF_DNS_API_TOKEN=HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V
+CF_DNS_API_TOKEN=$INPUT_CF_TOKEN
 
 # Rede Docker para Traefik + instancias
 DOCKER_NETWORK=n8n-public
@@ -494,28 +577,109 @@ DOCKER_NETWORK=n8n-public
 # RabbitMQ (job queue para criacao de instancias)
 RABBITMQ_HOST=127.0.0.1
 RABBITMQ_PORT=5672
-RABBITMQ_USER=guest
-RABBITMQ_PASSWORD=guest
+RABBITMQ_USER=n8n_manager
+RABBITMQ_PASSWORD=$GEN_RABBITMQ_PASS
 
 # Redis (status de jobs)
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 
 # Porta do servidor FastAPI
-SERVER_PORT=5050
+SERVER_PORT=$INPUT_PORT
+
+# CORS — origens permitidas (separadas por virgula, ou * para todas)
+ALLOWED_ORIGINS=*
+
+# Cleanup automatico
+CLEANUP_MAX_AGE_DAYS=5
+CLEANUP_INTERVAL_SECONDS=3600
+
+# Timezone padrao para instancias N8N
+DEFAULT_TIMEZONE=America/Sao_Paulo
+
+# Job status TTL (Redis)
+JOB_TTL=600
+JOB_CLEANUP_TTL=300
 ENVFILE
 
-    log "Arquivo .env gerado automaticamente"
+    log "Arquivo .env gerado"
     info "IP do servidor: $SERVER_IP"
-    info "API Token: ${GEN_API_TOKEN:0:12}... (salvo no .env)"
-    info "PG Password: gerada automaticamente"
-    warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js (.env do n8n-vendas)"
+    warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js"
     warn "  cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN"
+}
+
+# Decidir se roda wizard ou mantem .env existente
+if [ ! -f "$PROJECT_DIR/.env" ]; then
+    run_wizard
 else
-    log "Arquivo .env ja existe (verificado)"
+    log "Arquivo .env ja existe"
+    echo ""
+    if confirm "Deseja reconfigurar o .env? (s/N)" "N"; then
+        run_wizard
+    else
+        info "Mantendo .env existente. Validando..."
+
+        # Validar variaveis obrigatorias
+        ENV_WARNINGS=0
+        _val=$(grep -oP 'API_AUTH_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+        if [ -z "$_val" ]; then
+            warn ".env: API_AUTH_TOKEN esta vazio — API nao vai funcionar"
+            ENV_WARNINGS=$((ENV_WARNINGS + 1))
+        fi
+        _val=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+        if [ -z "$_val" ]; then
+            warn ".env: CF_DNS_API_TOKEN esta vazio — SSL nao vai funcionar"
+            ENV_WARNINGS=$((ENV_WARNINGS + 1))
+        fi
+        _val=$(grep -oP 'RABBITMQ_PASSWORD=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+        if [ -z "$_val" ] || [ "$_val" = "guest" ]; then
+            warn ".env: RABBITMQ_PASSWORD esta vazio ou inseguro"
+            ENV_WARNINGS=$((ENV_WARNINGS + 1))
+        fi
+        if [ "$ENV_WARNINGS" -eq 0 ]; then
+            log "Variaveis obrigatorias do .env: OK"
+        else
+            warn "Edite o .env: nano $PROJECT_DIR/.env"
+        fi
+
+        # Propagar variaveis novas (append sem sobrescrever existentes)
+        NEW_VARS_ADDED=0
+        declare -A DEFAULT_VARS=(
+            ["ALLOWED_ORIGINS"]="*"
+            ["CLEANUP_MAX_AGE_DAYS"]="5"
+            ["CLEANUP_INTERVAL_SECONDS"]="3600"
+            ["DEFAULT_TIMEZONE"]="America/Sao_Paulo"
+            ["JOB_TTL"]="600"
+            ["JOB_CLEANUP_TTL"]="300"
+        )
+
+        for var in "${!DEFAULT_VARS[@]}"; do
+            if ! grep -q "^${var}=" "$PROJECT_DIR/.env" 2>/dev/null; then
+                echo "${var}=${DEFAULT_VARS[$var]}" >> "$PROJECT_DIR/.env"
+                NEW_VARS_ADDED=$((NEW_VARS_ADDED + 1))
+            fi
+        done
+        if [ "$NEW_VARS_ADDED" -gt 0 ]; then
+            log "$NEW_VARS_ADDED nova(s) variavel(is) adicionada(s) ao .env"
+        fi
+    fi
 fi
 
-# --- 10. Criar servico systemd ---
+# --- 10. Criar usuario dedicado + servico systemd ---
+
+info "Configurando usuario dedicado..."
+if ! id -u n8n-manager > /dev/null 2>&1; then
+    useradd --system --no-create-home --shell /usr/sbin/nologin n8n-manager
+    log "Usuario n8n-manager criado"
+else
+    log "Usuario n8n-manager ja existe"
+fi
+
+# Adicionar ao grupo docker para acesso ao socket
+usermod -aG docker n8n-manager 2>/dev/null || true
+
+# Dar permissao ao projeto
+chown -R n8n-manager:n8n-manager "$PROJECT_DIR"
 
 info "Criando servico systemd..."
 
@@ -527,7 +691,8 @@ Wants=network-online.target docker.service
 
 [Service]
 Type=simple
-User=root
+User=n8n-manager
+Group=n8n-manager
 WorkingDirectory=$PROJECT_DIR
 ExecStart=$PROJECT_DIR/venv/bin/python main.py
 Restart=always
@@ -551,13 +716,10 @@ if ! docker info > /dev/null 2>&1; then
     wait_docker 15 || warn "Docker pode nao estar respondendo"
 fi
 
-info "Iniciando N8N Manager..."
-systemctl restart n8n-manager > /dev/null 2>&1 || true
-sleep 5
-
 # --- 12. Garantir Traefik na rede correta ---
 
-DOCKER_NET="n8n-public"
+DOCKER_NET=$(grep -oP 'DOCKER_NETWORK=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "n8n-public")
+DOCKER_NET="${DOCKER_NET:-n8n-public}"
 info "Verificando rede Docker '${DOCKER_NET}'..."
 
 # Criar rede se nao existir
@@ -624,7 +786,13 @@ else
         sleep 1
     done
 
-    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "HwJjOXXzv59DSvXPcJ794Ml894d7yPEmkYmtZn3V")
+    CF_TOKEN_ENV=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+    ACME_EMAIL_ENV=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "admin@marketcodebrasil.com.br")
+
+    if [ -z "$CF_TOKEN_ENV" ]; then
+        warn "CF_DNS_API_TOKEN nao configurado no .env — Traefik nao conseguira emitir certificados SSL"
+        warn "Configure em: nano $PROJECT_DIR/.env"
+    fi
 
     docker run -d \
         --name traefik \
@@ -644,7 +812,7 @@ else
         --entrypoints.web.http.redirections.entrypoint.scheme=https \
         --certificatesresolvers.letsencrypt.acme.dnschallenge=true \
         --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare \
-        --certificatesresolvers.letsencrypt.acme.email=lojasketchware@gmail.com \
+        --certificatesresolvers.letsencrypt.acme.email="$ACME_EMAIL_ENV" \
         --certificatesresolvers.letsencrypt.acme.storage=/certs/acme.json \
         > /dev/null 2>&1
 
@@ -692,6 +860,14 @@ fi
 # .env
 if [ -f "$PROJECT_DIR/.env" ]; then
     log "Arquivo .env: presente"
+    # Verificar CF_DNS_API_TOKEN (critico para SSL)
+    _cf_val=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
+    if [ -z "$_cf_val" ]; then
+        warn "CF_DNS_API_TOKEN: NAO CONFIGURADO (SSL nao vai funcionar)"
+        ERRORS=$((ERRORS + 1))
+    else
+        log "CF_DNS_API_TOKEN: configurado"
+    fi
 else
     warn "Arquivo .env: AUSENTE (servico nao vai funcionar sem credenciais)"
     ERRORS=$((ERRORS + 1))
@@ -706,9 +882,11 @@ else
 fi
 
 # Health check na API
+FINAL_PORT=$(grep -oP 'SERVER_PORT=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "5050")
+FINAL_PORT="${FINAL_PORT:-5050}"
 sleep 2
-if curl -sf http://localhost:5050/health > /dev/null 2>&1; then
-    log "API health check: OK (porta 5050)"
+if curl -sf "http://localhost:${FINAL_PORT}/health" > /dev/null 2>&1; then
+    log "API health check: OK (porta ${FINAL_PORT})"
 else
     warn "API health check: SEM RESPOSTA (pode precisar configurar .env primeiro)"
     ERRORS=$((ERRORS + 1))
@@ -758,9 +936,9 @@ if [ "$ERRORS" -gt 0 ]; then
     echo -e "  2. Reinicie o servico:    ${CYAN}systemctl restart n8n-manager${NC}"
     echo -e "  3. Veja os logs:          ${CYAN}journalctl -u n8n-manager -f${NC}"
 else
-    echo -e "  ${GREEN}Servico rodando!${NC} Teste com: ${CYAN}curl http://localhost:5050/health${NC}"
+    echo -e "  ${GREEN}Servico rodando!${NC} Teste com: ${CYAN}curl http://localhost:${FINAL_PORT}/health${NC}"
     echo -e "  Logs: ${CYAN}journalctl -u n8n-manager -f${NC}"
 fi
 echo ""
-echo -e "  ${YELLOW}Portas abertas:${NC} 22 (SSH), 80 (HTTP), 443 (HTTPS), 5050 (API), 8080 (Traefik)"
+echo -e "  ${YELLOW}Portas abertas:${NC} 22 (SSH), 80 (HTTP), 443 (HTTPS), ${FINAL_PORT} (API)"
 echo ""

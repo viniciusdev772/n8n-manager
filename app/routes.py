@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from .auth import verify_token
-from .config import BASE_DOMAIN, DEFAULT_N8N_VERSION
+from .config import BASE_DOMAIN, DEFAULT_N8N_VERSION, SSE_MAX_DURATION
 from .docker_client import get_client
 from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
@@ -24,6 +24,8 @@ from .n8n import (
     list_n8n_containers,
     rebuild_container,
     remove_container,
+    validate_instance_name,
+    validate_version,
 )
 from .queue import publish_job
 from .config import DOCKER_NETWORK, N8N_IMAGE
@@ -36,7 +38,22 @@ router = APIRouter()
 
 @router.get("/health")
 async def health():
-    return {"status": "ok", "timestamp": time.time()}
+    from .job_status import get_redis
+
+    checks = {"api": "ok"}
+    try:
+        get_redis().ping()
+        checks["redis"] = "ok"
+    except Exception:
+        checks["redis"] = "error"
+    try:
+        get_client().ping()
+        checks["docker"] = "ok"
+    except Exception:
+        checks["docker"] = "error"
+
+    overall = "ok" if all(v == "ok" for v in checks.values()) else "degraded"
+    return {"status": overall, "checks": checks, "timestamp": time.time()}
 
 
 @router.get("/versions", dependencies=[Depends(verify_token)])
@@ -76,7 +93,7 @@ async def list_versions():
                 if versions:
                     return {"versions": versions}
     except Exception as e:
-        print(f"[WARN] Falha ao buscar versoes do Docker Hub: {e}")
+        pass
 
     # Fallback: versão latest
     return {
@@ -136,6 +153,12 @@ async def enqueue_instance(request: Request):
     if not name:
         raise HTTPException(400, "Nome obrigatório")
 
+    try:
+        name = validate_instance_name(name)
+        version = validate_version(version)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
     # Checar capacidade da VPS
     cap = calculate_max_instances()
     if not cap["can_create"]:
@@ -189,6 +212,12 @@ async def create_instance(request: Request):
     if not name:
         raise HTTPException(400, "Nome obrigatório")
 
+    try:
+        name = validate_instance_name(name)
+        version = validate_version(version)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
     # Checar capacidade da VPS
     cap = calculate_max_instances()
     if not cap["can_create"]:
@@ -223,6 +252,14 @@ async def create_instance_stream(
     location: str = Query("vinhedo"),
 ):
     """Cria instância N8N via fila RabbitMQ com streaming SSE de progresso."""
+
+    try:
+        name = validate_instance_name(name)
+        version = validate_version(version)
+    except ValueError as e:
+        async def validation_error_gen():
+            yield json.dumps({"status": "error", "message": str(e)})
+        return EventSourceResponse(validation_error_gen())
 
     # Fast-fail: verificar capacidade da VPS
     cap = calculate_max_instances()
@@ -266,7 +303,7 @@ async def create_instance_stream(
         """Poll Redis por eventos do worker e yield como SSE."""
         event_index = 0
         start_time = time.time()
-        max_duration = 300  # 5 minutos
+        max_duration = SSE_MAX_DURATION
 
         try:
             while True:

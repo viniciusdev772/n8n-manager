@@ -17,6 +17,9 @@ from .config import (
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
+from .logger import get_logger
+
+logger = get_logger("infra")
 
 
 # ─── Helpers ──────────────────────────────────────────────
@@ -33,7 +36,7 @@ def _kill_port_holders(client, ports):
                 for bind in host_binds:
                     host_port = int(bind.get("HostPort", 0))
                     if host_port in ports:
-                        print(f"[INFRA] Removendo container '{container.name}' (ocupa porta {host_port})")
+                        logger.info("Removendo container '%s' (ocupa porta %d)", container.name, host_port)
                         container.remove(force=True)
                         break
         except Exception:
@@ -78,7 +81,7 @@ def _connect_to_network(container, network_name):
     client = get_client()
     network = client.networks.get(network_name)
     network.connect(container)
-    print(f"[INFRA] Container '{container.name}' conectado na rede '{network_name}'")
+    logger.info("Container '%s' conectado na rede '%s'", container.name, network_name)
 
 
 # ─── Network ─────────────────────────────────────────────
@@ -91,7 +94,7 @@ def ensure_network():
         client.networks.get(DOCKER_NETWORK)
     except Exception:
         client.networks.create(DOCKER_NETWORK, driver="bridge")
-        print(f"[INFRA] Rede '{DOCKER_NETWORK}' criada")
+        logger.info("Rede '%s' criada", DOCKER_NETWORK)
 
 
 # ─── Traefik ─────────────────────────────────────────────
@@ -115,7 +118,7 @@ def _cleanup_orphan_traefik(client):
     try:
         c = client.containers.get("traefik")
         if c.status != "running":
-            print(f"[INFRA] Removendo container Traefik orfao (status: {c.status})")
+            logger.info("Removendo container Traefik orfao (status: %s)", c.status)
             c.remove(force=True)
     except docker.errors.NotFound:
         pass
@@ -127,7 +130,7 @@ def _run_config_traefik():
     script = os.path.join(project_root, "config_traefik.py")
 
     if not os.path.exists(script):
-        print(f"[INFRA] AVISO: {script} nao encontrado, pulando config_traefik")
+        logger.warning("AVISO: %s nao encontrado, pulando config_traefik", script)
         return False
 
     try:
@@ -138,13 +141,13 @@ def _run_config_traefik():
             text=True,
             timeout=60,
         )
-        print(result.stdout)
+        logger.info(result.stdout)
         if result.returncode != 0:
-            print(f"[INFRA] config_traefik.py stderr: {result.stderr}")
+            logger.error("config_traefik.py stderr: %s", result.stderr)
             return False
         return True
     except Exception as e:
-        print(f"[INFRA] Erro ao executar config_traefik.py: {e}")
+        logger.error("Erro ao executar config_traefik.py: %s", e)
         return False
 
 
@@ -158,24 +161,24 @@ def ensure_traefik():
     if existing:
         nets = _container_networks(existing)
         if DOCKER_NETWORK in nets:
-            print(f"[INFRA] Traefik existente '{existing.name}' ja esta na rede '{DOCKER_NETWORK}'")
+            logger.info("Traefik existente '%s' ja esta na rede '%s'", existing.name, DOCKER_NETWORK)
         else:
             try:
                 _connect_to_network(existing, DOCKER_NETWORK)
-                print(f"[INFRA] Traefik existente '{existing.name}' conectado na rede '{DOCKER_NETWORK}'")
+                logger.info("Traefik existente '%s' conectado na rede '%s'", existing.name, DOCKER_NETWORK)
             except Exception as e:
-                print(f"[INFRA] AVISO: Nao foi possivel conectar Traefik '{existing.name}' na rede: {e}")
+                logger.warning("Nao foi possivel conectar Traefik '%s' na rede: %s", existing.name, e)
         # Limpar container órfão nosso se existir
         if existing.name != "traefik":
             _cleanup_orphan_traefik(client)
         return
 
     # 2. Nenhum Traefik encontrado — criar via config_traefik.py (docker compose)
-    print("[INFRA] Nenhum Traefik encontrado. Criando via docker compose...")
+    logger.info("Nenhum Traefik encontrado. Criando via docker compose...")
     _cleanup_orphan_traefik(client)
     _kill_port_holders(client, {80, 443})
     _run_config_traefik()
-    print("[INFRA] Traefik criado com Cloudflare DNS Challenge")
+    logger.info("Traefik criado com Cloudflare DNS Challenge")
 
 
 # ─── Redis ───────────────────────────────────────────────
@@ -190,7 +193,7 @@ def ensure_redis():
         if c.status == "running":
             if _has_host_port(c, REDIS_PORT):
                 return
-            print("[INFRA] Redis: recriando com porta exposta no host...")
+            logger.info("Redis: recriando com porta exposta no host...")
             c.remove(force=True)
         else:
             try:
@@ -216,7 +219,7 @@ def ensure_redis():
         mem_limit="128m",
         network=DOCKER_NETWORK,
     )
-    print("[INFRA] Redis criado e iniciado")
+    logger.info("Redis criado e iniciado")
 
 
 # ─── RabbitMQ ────────────────────────────────────────────
@@ -224,6 +227,8 @@ def ensure_redis():
 
 def ensure_rabbitmq():
     """Garante que o RabbitMQ está rodando com management UI."""
+    if not RABBITMQ_USER or not RABBITMQ_PASSWORD:
+        logger.warning("RABBITMQ_USER/RABBITMQ_PASSWORD nao configurados no .env")
     client = get_client()
     name = "rabbitmq"
     try:
@@ -254,14 +259,14 @@ def ensure_rabbitmq():
         mem_limit="256m",
         network=DOCKER_NETWORK,
     )
-    print("[INFRA] RabbitMQ criado e iniciado")
+    logger.info("RabbitMQ criado e iniciado")
 
     for i in range(15):
         time.sleep(2)
         if _test_port("127.0.0.1", RABBITMQ_PORT):
-            print("[INFRA] RabbitMQ: conexao verificada OK")
+            logger.info("RabbitMQ: conexao verificada OK")
             return
-    print("[INFRA] AVISO: RabbitMQ criado mas conexao nao confirmada")
+    logger.warning("RabbitMQ criado mas conexao nao confirmada")
 
 
 # ─── Fallback (página "instância removida") ─────────────
@@ -279,7 +284,7 @@ def ensure_fallback():
     nginx_conf_path = os.path.join(fallback_dir, "nginx.conf")
 
     if not os.path.exists(html_path):
-        print(f"[INFRA] AVISO: {html_path} não encontrado, pulando fallback")
+        logger.warning("AVISO: %s nao encontrado, pulando fallback", html_path)
         return
 
     try:
@@ -288,7 +293,7 @@ def ensure_fallback():
             # Verificar se está na rede correta
             if DOCKER_NETWORK not in _container_networks(c):
                 _connect_to_network(c, DOCKER_NETWORK)
-            print(f"[INFRA] Fallback '{name}' já está rodando")
+            logger.info("Fallback '%s' ja esta rodando", name)
             return
         # Parado — remover e recriar
         c.remove(force=True)
@@ -325,7 +330,7 @@ def ensure_fallback():
         cpu_shares=128,
         network=DOCKER_NETWORK,
     )
-    print(f"[INFRA] Fallback '{name}' criado (catchall para subdomínios sem instância)")
+    logger.info("Fallback '%s' criado (catchall para subdominios sem instancia)", name)
 
 
 # ─── Pre-pull ───────────────────────────────────────────
@@ -337,9 +342,9 @@ def _pre_pull_n8n_image():
 
     client = get_client()
     image_tag = f"{N8N_IMAGE}:{DEFAULT_N8N_VERSION}"
-    print(f"[INFRA] Pre-pull da imagem {image_tag}...")
+    logger.info("Pre-pull da imagem %s...", image_tag)
     client.images.pull(N8N_IMAGE, tag=DEFAULT_N8N_VERSION)
-    print(f"[INFRA] Imagem {image_tag} pronta")
+    logger.info("Imagem %s pronta", image_tag)
 
 
 # ─── Bootstrap ───────────────────────────────────────────
@@ -358,4 +363,4 @@ def bootstrap_infra():
         try:
             fn()
         except Exception as e:
-            print(f"[INFRA] ERRO em {label}: {e}. Continuando...")
+            logger.error("ERRO em %s: %s. Continuando...", label, e)
