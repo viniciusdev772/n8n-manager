@@ -789,7 +789,7 @@ else
     # Exportar variaveis do .env para o config_traefik.py
     CF_DNS_API_TOKEN=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null) || true
     ACME_EMAIL=$(grep -oP 'ACME_EMAIL=\K.*' "$PROJECT_DIR/.env" 2>/dev/null) || true
-    ACME_EMAIL="${ACME_EMAIL:-admin@marketcodebrasil.com.br}"
+    ACME_EMAIL="${ACME_EMAIL:-lojasketchware@gmail.com}"
     export CF_DNS_API_TOKEN ACME_EMAIL
 
     if [ -z "$CF_DNS_API_TOKEN" ]; then

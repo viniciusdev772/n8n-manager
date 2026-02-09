@@ -8,7 +8,7 @@ load_dotenv()
 
 API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN", "")
 BASE_DOMAIN = os.getenv("BASE_DOMAIN", "n8n.marketcodebrasil.com.br")
-ACME_EMAIL = os.getenv("ACME_EMAIL", "admin@marketcodebrasil.com.br")
+ACME_EMAIL = os.getenv("ACME_EMAIL", "lojasketchware@gmail.com")
 DOCKER_NETWORK = os.getenv("DOCKER_NETWORK", "n8n-public")
 SERVER_PORT = int(os.getenv("SERVER_PORT", "5050"))
 

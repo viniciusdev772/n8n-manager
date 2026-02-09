@@ -7,7 +7,7 @@ import os
 import subprocess
 
 cf_token = os.getenv("CF_DNS_API_TOKEN", "")
-acme_email = os.getenv("ACME_EMAIL", "admin@marketcodebrasil.com.br")
+acme_email = os.getenv("ACME_EMAIL", "lojasketchware@gmail.com")
 
 if not cf_token:
     print("ERRO: CF_DNS_API_TOKEN nao configurado. Defina no .env ou variavel de ambiente.")
