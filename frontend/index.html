@@ -4,17 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N8N Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/ui/style.css">
 </head>
 <body>
 
+  <!-- Grain overlay -->
+  <div class="grain"></div>
+
   <!-- Login -->
   <div id="login-screen" class="login-screen">
-    <div class="login-card">
-      <div class="login-logo">N8N<span>Manager</span></div>
-      <p class="login-subtitle">Insira o token de acesso para continuar</p>
-      <input type="password" id="token-input" placeholder="Bearer Token" autocomplete="off">
-      <button id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-backdrop">
+      <div class="login-grid-lines"></div>
+    </div>
+    <div class="login-card" style="--delay:0">
+      <div class="login-brand">
+        <div class="login-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="6" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 16h12M16 10v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="login-logo">n8n<span>manager</span></h1>
+      </div>
+      <p class="login-subtitle">Autenticacao necessaria para continuar</p>
+      <div class="login-field">
+        <label for="token-input">TOKEN DE ACESSO</label>
+        <div class="input-wrap">
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <input type="password" id="token-input" placeholder="Insira seu bearer token" autocomplete="off">
+        </div>
+      </div>
+      <button id="login-btn" onclick="doLogin()">
+        <span>Autenticar</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
       <p id="login-error" class="error hidden"></p>
     </div>
   </div>
@@ -22,134 +48,233 @@
   <!-- App -->
   <div id="app" class="hidden">
     <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-logo">N8N<span>Manager</span></div>
-      <nav>
-        <button class="nav-btn active" data-page="dashboard" onclick="navigate('dashboard')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Dashboard
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <div class="brand-mark">N8</div>
+          <span class="brand-text">manager</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>Dashboard</span>
         </button>
-        <button class="nav-btn" data-page="instances" onclick="navigate('instances')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="4" rx="1"/><rect x="2" y="14" width="20" height="4" rx="1"/><circle cx="6" cy="8" r="1" fill="currentColor"/><circle cx="6" cy="16" r="1" fill="currentColor"/></svg>
-          Instancias
+        <button class="nav-item" data-page="instances" onclick="navigate('instances')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="5" rx="1.5"/><rect x="2" y="14" width="20" height="5" rx="1.5"/><circle cx="6" cy="7.5" r="1" fill="currentColor"/><circle cx="6" cy="16.5" r="1" fill="currentColor"/></svg>
+          <span>Instancias</span>
         </button>
-        <button class="nav-btn" data-page="jobs" onclick="navigate('jobs')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-          Fila de Jobs
+        <button class="nav-item" data-page="jobs" onclick="navigate('jobs')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Fila de Jobs</span>
         </button>
-        <button class="nav-btn" data-page="create" onclick="navigate('create')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Criar Instancia
+        <button class="nav-item" data-page="create" onclick="navigate('create')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+          <span>Nova Instancia</span>
         </button>
-        <button class="nav-btn" data-page="cleanup" onclick="navigate('cleanup')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6"/><path d="M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/></svg>
-          Cleanup
+        <div class="nav-divider"></div>
+        <button class="nav-item" data-page="cleanup" onclick="navigate('cleanup')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6"/><path d="M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          <span>Cleanup</span>
         </button>
-        <button class="nav-btn" data-page="debug" onclick="navigate('debug')">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          Debug
+        <button class="nav-item" data-page="debug" onclick="navigate('debug')">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-3-3.87M4 21v-2a4 4 0 013-3.87"/><path d="M12 3v0a4 4 0 014 4v2a4 4 0 01-8 0V7a4 4 0 014-4z"/><line x1="1" y1="1" x2="23" y2="23" stroke-width="0"/><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span>Debug</span>
         </button>
       </nav>
-      <button class="nav-btn logout-btn" onclick="doLogout()">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Sair
-      </button>
+      <div class="sidebar-footer">
+        <button class="nav-item nav-logout" onclick="doLogout()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sair</span>
+        </button>
+      </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="main">
+    <main class="main" id="main-content">
       <!-- Dashboard -->
       <section id="page-dashboard" class="page">
-        <h1>Dashboard</h1>
-        <div class="cards" id="dashboard-cards">
-          <div class="card">
-            <div class="card-label">Status</div>
-            <div class="card-value" id="dash-status">--</div>
+        <div class="page-intro stagger-in">
+          <h1>Dashboard</h1>
+          <p class="page-desc">Visao geral do sistema</p>
+        </div>
+        <div class="metrics-grid stagger-in" style="--delay:1">
+          <div class="metric-card" id="metric-status">
+            <div class="metric-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="metric-body">
+              <span class="metric-label">Sistema</span>
+              <span class="metric-value" id="dash-status">--</span>
+            </div>
           </div>
-          <div class="card">
-            <div class="card-label">Instancias Ativas</div>
-            <div class="card-value" id="dash-active">--</div>
+          <div class="metric-card">
+            <div class="metric-icon icon-teal">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="5" rx="1"/><rect x="2" y="14" width="20" height="5" rx="1"/></svg>
+            </div>
+            <div class="metric-body">
+              <span class="metric-label">Instancias Ativas</span>
+              <span class="metric-value" id="dash-active">--</span>
+            </div>
           </div>
-          <div class="card">
-            <div class="card-label">Capacidade</div>
-            <div class="card-value" id="dash-capacity">--</div>
+          <div class="metric-card">
+            <div class="metric-icon icon-amber">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="metric-body">
+              <span class="metric-label">Capacidade</span>
+              <span class="metric-value" id="dash-capacity">--</span>
+            </div>
           </div>
-          <div class="card">
-            <div class="card-label">Redis</div>
-            <div class="card-value" id="dash-redis">--</div>
+          <div class="metric-card">
+            <div class="metric-icon icon-rose">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+            </div>
+            <div class="metric-body">
+              <span class="metric-label">Redis</span>
+              <span class="metric-value" id="dash-redis">--</span>
+            </div>
           </div>
-          <div class="card">
-            <div class="card-label">Docker</div>
-            <div class="card-value" id="dash-docker">--</div>
+          <div class="metric-card">
+            <div class="metric-icon icon-blue">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 17.5C22 19.43 17.52 21 12 21S2 19.43 2 17.5"/><path d="M22 12.5C22 14.43 17.52 16 12 16S2 14.43 2 12.5"/><ellipse cx="12" cy="7.5" rx="10" ry="3.5"/></svg>
+            </div>
+            <div class="metric-body">
+              <span class="metric-label">Docker</span>
+              <span class="metric-value" id="dash-docker">--</span>
+            </div>
           </div>
         </div>
-        <div id="dash-jobs-section" class="hidden">
-          <h2>Jobs em Andamento</h2>
+        <div id="dash-jobs-section" class="hidden stagger-in" style="--delay:2">
+          <div class="section-header">
+            <h2>Jobs em Andamento</h2>
+            <span class="pulse-dot"></span>
+          </div>
           <div id="dash-jobs-list" class="table-wrap"></div>
         </div>
-        <h2>Instancias Recentes</h2>
-        <div id="dash-instances-list" class="table-wrap"></div>
+        <div class="stagger-in" style="--delay:2">
+          <div class="section-header">
+            <h2>Instancias Recentes</h2>
+          </div>
+          <div id="dash-instances-list" class="table-wrap"></div>
+        </div>
       </section>
 
       <!-- Jobs -->
       <section id="page-jobs" class="page hidden">
-        <div class="page-header">
-          <h1>Fila de Jobs</h1>
-          <button class="btn btn-sm" onclick="loadJobs()">Atualizar</button>
+        <div class="page-intro stagger-in">
+          <div class="page-header">
+            <div>
+              <h1>Fila de Jobs</h1>
+              <p class="page-desc">Jobs de criacao de instancias em andamento</p>
+            </div>
+            <button class="btn btn-outline" onclick="loadJobs()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Atualizar
+            </button>
+          </div>
         </div>
-        <p class="subtitle">Jobs de criacao de instancias em andamento.</p>
-        <div id="jobs-list" class="table-wrap"></div>
-        <div id="jobs-empty" class="hidden" style="color:var(--text3);padding:1rem">Nenhum job ativo no momento.</div>
+        <div id="jobs-list" class="table-wrap stagger-in" style="--delay:1"></div>
+        <div id="jobs-empty" class="hidden empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <p>Nenhum job ativo no momento</p>
+        </div>
       </section>
 
       <!-- Instances -->
       <section id="page-instances" class="page hidden">
-        <div class="page-header">
-          <h1>Instancias</h1>
-          <button class="btn btn-sm" onclick="loadInstances()">Atualizar</button>
+        <div class="page-intro stagger-in">
+          <div class="page-header">
+            <div>
+              <h1>Instancias</h1>
+              <p class="page-desc">Gerenciar instancias N8N</p>
+            </div>
+            <button class="btn btn-outline" onclick="loadInstances()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Atualizar
+            </button>
+          </div>
         </div>
-        <div id="instances-list" class="table-wrap"></div>
+        <div id="instances-list" class="table-wrap stagger-in" style="--delay:1"></div>
       </section>
 
       <!-- Instance Detail -->
       <section id="page-instance-detail" class="page hidden">
-        <button class="btn btn-sm btn-ghost" onclick="navigate('instances')">&larr; Voltar</button>
-        <h1 id="detail-title">--</h1>
-        <div class="cards" id="detail-cards">
-          <div class="card"><div class="card-label">Status</div><div class="card-value" id="detail-status">--</div></div>
-          <div class="card"><div class="card-label">Versao</div><div class="card-value" id="detail-version">--</div></div>
-          <div class="card"><div class="card-label">Memoria</div><div class="card-value" id="detail-memory">--</div></div>
-          <div class="card"><div class="card-label">URL</div><div class="card-value" id="detail-url">--</div></div>
+        <div class="stagger-in">
+          <button class="btn-back" onclick="navigate('instances')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Voltar
+          </button>
         </div>
-        <div class="detail-actions">
-          <button class="btn" onclick="restartInstance()">Reiniciar</button>
-          <button class="btn btn-warn" onclick="resetInstance()">Resetar</button>
-          <button class="btn" onclick="showUpdateVersion()">Atualizar Versao</button>
-          <button class="btn btn-danger" onclick="deleteInstance()">Excluir</button>
+        <div class="page-intro stagger-in" style="--delay:1">
+          <h1 id="detail-title">--</h1>
         </div>
-        <div id="version-update-form" class="hidden inline-form">
+        <div class="metrics-grid stagger-in" style="--delay:2">
+          <div class="metric-card"><div class="metric-body"><span class="metric-label">Status</span><span class="metric-value" id="detail-status">--</span></div></div>
+          <div class="metric-card"><div class="metric-body"><span class="metric-label">Versao</span><span class="metric-value" id="detail-version">--</span></div></div>
+          <div class="metric-card"><div class="metric-body"><span class="metric-label">Memoria</span><span class="metric-value" id="detail-memory">--</span></div></div>
+          <div class="metric-card"><div class="metric-body"><span class="metric-label">URL</span><span class="metric-value" id="detail-url">--</span></div></div>
+        </div>
+        <div class="action-bar stagger-in" style="--delay:3">
+          <button class="btn btn-primary" onclick="restartInstance()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            Reiniciar
+          </button>
+          <button class="btn btn-amber" onclick="resetInstance()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 003.2 7.2M2 12.5a10 10 0 0018.8 4.2"/></svg>
+            Resetar
+          </button>
+          <button class="btn btn-outline" onclick="showUpdateVersion()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            Atualizar Versao
+          </button>
+          <button class="btn btn-danger" onclick="deleteInstance()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            Excluir
+          </button>
+        </div>
+        <div id="version-update-form" class="hidden version-form stagger-in">
           <select id="update-version-select"></select>
-          <button class="btn btn-sm" onclick="doUpdateVersion()">Confirmar</button>
+          <button class="btn btn-primary btn-sm" onclick="doUpdateVersion()">Confirmar</button>
         </div>
-        <h2>Logs</h2>
-        <div class="logs-toolbar">
-          <button class="btn btn-sm" onclick="loadInstanceLogs()">Atualizar Logs</button>
+        <div class="stagger-in" style="--delay:4">
+          <div class="section-header">
+            <h2>Logs do Container</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadInstanceLogs()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Atualizar
+            </button>
+          </div>
+          <pre id="detail-logs" class="logs-box"></pre>
         </div>
-        <pre id="detail-logs" class="logs-box"></pre>
       </section>
 
       <!-- Create -->
       <section id="page-create" class="page hidden">
-        <h1>Criar Instancia</h1>
-        <div class="form-card">
-          <label>Nome da Instancia</label>
-          <input type="text" id="create-name" placeholder="minha-instancia" pattern="[a-z0-9\-]+" autocomplete="off">
-          <label>Versao</label>
-          <select id="create-version"><option value="latest">Carregando...</option></select>
-          <button class="btn" id="create-btn" onclick="doCreate()">Criar</button>
-          <div id="create-progress" class="hidden">
-            <div class="progress-bar"><div class="progress-fill" id="create-progress-fill"></div></div>
-            <p id="create-progress-msg"></p>
+        <div class="page-intro stagger-in">
+          <h1>Nova Instancia</h1>
+          <p class="page-desc">Provisionar uma nova instancia N8N</p>
+        </div>
+        <div class="form-card stagger-in" style="--delay:1">
+          <div class="form-group">
+            <label for="create-name">NOME DA INSTANCIA</label>
+            <div class="input-wrap">
+              <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="create-name" placeholder="minha-instancia" pattern="[a-z0-9\-]+" autocomplete="off">
+            </div>
+            <span class="field-hint">Apenas letras minusculas, numeros e hifens</span>
+          </div>
+          <div class="form-group">
+            <label for="create-version">VERSAO</label>
+            <select id="create-version"><option value="latest">Carregando...</option></select>
+          </div>
+          <button class="btn btn-primary btn-full" id="create-btn" onclick="doCreate()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Criar Instancia
+          </button>
+          <div id="create-progress" class="hidden progress-wrap">
+            <div class="progress-track"><div class="progress-fill" id="create-progress-fill"></div></div>
+            <p id="create-progress-msg" class="progress-msg"></p>
           </div>
           <div id="create-result" class="hidden"></div>
         </div>
@@ -157,43 +282,63 @@
 
       <!-- Cleanup -->
       <section id="page-cleanup" class="page hidden">
-        <h1>Preview de Cleanup</h1>
-        <p class="subtitle">Instancias com 5+ dias sao removidas automaticamente.</p>
-        <div class="page-header">
-          <span></span>
-          <button class="btn btn-sm" onclick="loadCleanup()">Atualizar</button>
+        <div class="page-intro stagger-in">
+          <div class="page-header">
+            <div>
+              <h1>Cleanup</h1>
+              <p class="page-desc">Instancias com 5+ dias sao removidas automaticamente</p>
+            </div>
+            <button class="btn btn-outline" onclick="loadCleanup()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Atualizar
+            </button>
+          </div>
         </div>
-        <div id="cleanup-list" class="table-wrap"></div>
+        <div id="cleanup-list" class="table-wrap stagger-in" style="--delay:1"></div>
       </section>
 
       <!-- Debug -->
       <section id="page-debug" class="page hidden">
-        <h1>Debug</h1>
-        <div class="debug-section">
-          <h2>Todos os Containers</h2>
-          <button class="btn btn-sm" onclick="loadAllContainers()">Carregar</button>
-          <div id="debug-containers" class="table-wrap"></div>
+        <div class="page-intro stagger-in">
+          <h1>Debug</h1>
+          <p class="page-desc">Ferramentas de diagnostico e manutencao</p>
         </div>
-        <div class="debug-section">
-          <h2>Redes de Infra</h2>
-          <button class="btn btn-sm" onclick="loadInfraNetworks()">Carregar</button>
-          <pre id="debug-networks" class="logs-box"></pre>
-        </div>
-        <div class="debug-section">
-          <h2>Traefik</h2>
-          <button class="btn btn-warn" onclick="recreateTraefik()">Recriar Traefik</button>
-          <pre id="debug-traefik" class="logs-box hidden"></pre>
+        <div class="debug-panel stagger-in" style="--delay:1">
+          <div class="debug-block">
+            <div class="section-header">
+              <h2>Todos os Containers</h2>
+              <button class="btn btn-outline btn-sm" onclick="loadAllContainers()">Carregar</button>
+            </div>
+            <div id="debug-containers" class="table-wrap"></div>
+          </div>
+          <div class="debug-block">
+            <div class="section-header">
+              <h2>Redes de Infra</h2>
+              <button class="btn btn-outline btn-sm" onclick="loadInfraNetworks()">Carregar</button>
+            </div>
+            <pre id="debug-networks" class="logs-box"></pre>
+          </div>
+          <div class="debug-block">
+            <div class="section-header">
+              <h2>Traefik</h2>
+              <button class="btn btn-amber btn-sm" onclick="recreateTraefik()">Recriar Traefik</button>
+            </div>
+            <pre id="debug-traefik" class="logs-box hidden"></pre>
+          </div>
         </div>
       </section>
     </main>
   </div>
 
-  <!-- Modal de confirmacao -->
+  <!-- Modal -->
   <div id="modal-overlay" class="modal-overlay hidden">
     <div class="modal">
+      <div class="modal-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
       <p id="modal-msg"></p>
       <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+        <button class="btn btn-outline" onclick="closeModal()">Cancelar</button>
         <button class="btn btn-danger" id="modal-confirm">Confirmar</button>
       </div>
     </div>

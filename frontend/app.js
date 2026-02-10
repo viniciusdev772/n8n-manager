@@ -93,7 +93,7 @@ function navigate(page) {
   const target = document.getElementById('page-' + page);
   if (target) target.classList.remove('hidden');
 
-  document.querySelectorAll('.nav-btn[data-page]').forEach(b => {
+  document.querySelectorAll('.nav-item[data-page]').forEach(b => {
     b.classList.toggle('active', b.dataset.page === page);
   });
 
@@ -115,7 +115,7 @@ async function loadDashboard() {
     ]);
 
     document.getElementById('dash-status').textContent = health.status;
-    document.getElementById('dash-status').style.color = health.status === 'ok' ? 'var(--green)' : 'var(--yellow)';
+    document.getElementById('dash-status').style.color = health.status === 'ok' ? 'var(--green)' : 'var(--amber)';
     document.getElementById('dash-redis').textContent = health.checks.redis;
     document.getElementById('dash-redis').style.color = health.checks.redis === 'ok' ? 'var(--green)' : 'var(--red)';
     document.getElementById('dash-docker').textContent = health.checks.docker;
@@ -175,17 +175,19 @@ function renderJobsTable(containerId, jobs) {
       <thead><tr><th>Job ID</th><th>Instancia</th><th>Estado</th><th>Progresso</th><th>Ultima Mensagem</th><th></th></tr></thead>
       <tbody>${jobs.map(j => `
         <tr>
-          <td style="font-family:monospace;font-size:.8rem">${esc(j.job_id.substring(0, 8))}...</td>
+          <td><code style="font-size:.78rem;color:var(--text-mute)">${esc(j.job_id.substring(0, 8))}</code></td>
           <td><strong>${esc(j.name || '--')}</strong></td>
           <td>${jobStateBadge(j.state)}</td>
           <td>
-            <div class="progress-bar" style="width:120px;display:inline-block;vertical-align:middle">
-              <div class="progress-fill" style="width:${j.progress || 0}%"></div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <div class="progress-track" style="width:100px">
+                <div class="progress-fill" style="width:${j.progress || 0}%"></div>
+              </div>
+              <span style="font-family:var(--font-mono);font-size:.75rem;color:var(--text-dim)">${j.progress || 0}%</span>
             </div>
-            <span style="font-size:.8rem;color:var(--text2);margin-left:.4rem">${j.progress || 0}%</span>
           </td>
-          <td style="font-size:.85rem;color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(j.last_message || '--')}</td>
-          <td><button class="btn btn-sm btn-ghost" onclick="watchJob('${esc(j.job_id)}')">Acompanhar</button></td>
+          <td style="font-size:.82rem;color:var(--text-dim);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(j.last_message || '--')}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="watchJob('${esc(j.job_id)}')">Acompanhar</button></td>
         </tr>
       `).join('')}</tbody>
     </table>`;
@@ -198,7 +200,6 @@ function jobStateBadge(state) {
 }
 
 function watchJob(jobId) {
-  // Navega para criar instancia e mostra o progresso do job
   navigate('create');
   const progress = document.getElementById('create-progress');
   const fill = document.getElementById('create-progress-fill');
@@ -227,7 +228,7 @@ async function loadInstances() {
 function renderInstancesTable(containerId, instances) {
   const el = document.getElementById(containerId);
   if (!instances.length) {
-    el.innerHTML = '<p style="color:var(--text3);padding:1rem">Nenhuma instancia encontrada.</p>';
+    el.innerHTML = '<div class="empty-state"><p>Nenhuma instancia encontrada</p></div>';
     return;
   }
   el.innerHTML = `
@@ -237,10 +238,10 @@ function renderInstancesTable(containerId, instances) {
         <tr>
           <td><strong>${esc(i.name || i.instance_id || '--')}</strong></td>
           <td>${statusBadge(i.status || 'unknown')}</td>
-          <td>${esc(i.version || '--')}</td>
-          <td>${i.age_days != null ? i.age_days + 'd' : '--'}</td>
+          <td><code style="font-size:.8rem">${esc(i.version || '--')}</code></td>
+          <td>${i.age_days != null ? '<span style="font-family:var(--font-mono);font-size:.82rem">' + i.age_days + 'd</span>' : '--'}</td>
           <td>${i.url ? `<a href="${esc(i.url)}" target="_blank">${esc(i.url)}</a>` : '--'}</td>
-          <td><button class="btn btn-sm btn-ghost" onclick="openInstance('${esc(i.name || i.instance_id)}')">Detalhes</button></td>
+          <td><button class="btn btn-outline btn-sm" onclick="openInstance('${esc(i.name || i.instance_id)}')">Detalhes</button></td>
         </tr>
       `).join('')}</tbody>
     </table>`;
@@ -266,7 +267,7 @@ async function openInstance(id) {
     document.getElementById('detail-status').innerHTML = statusBadge(data.status);
     document.getElementById('detail-version').textContent = data.version || '--';
     document.getElementById('detail-memory').textContent = data.memory ? data.memory.usage_mb + ' / ' + data.memory.limit_mb + ' MB' : '--';
-    document.getElementById('detail-url').innerHTML = data.url ? `<a href="${esc(data.url)}" target="_blank" style="font-size:.85rem">${esc(data.url)}</a>` : '--';
+    document.getElementById('detail-url').innerHTML = data.url ? `<a href="${esc(data.url)}" target="_blank" style="font-size:.82rem;word-break:break-all">${esc(data.url)}</a>` : '--';
     loadInstanceLogs();
   } catch (e) {
     toast('Erro: ' + e.message, 'error');
@@ -439,19 +440,19 @@ async function loadCleanup() {
     const data = await api('/cleanup-preview');
     const el = document.getElementById('cleanup-list');
     if (!data.instances.length) {
-      el.innerHTML = '<p style="color:var(--text3);padding:1rem">Nenhuma instancia.</p>';
+      el.innerHTML = '<div class="empty-state"><p>Nenhuma instancia</p></div>';
       return;
     }
     el.innerHTML = `
       <table>
         <thead><tr><th>Nome</th><th>Status</th><th>Idade</th><th>Dias Restantes</th><th>Sera Removida</th></tr></thead>
         <tbody>${data.instances.map(i => `
-          <tr style="${i.will_be_deleted ? 'background:rgba(255,71,87,.08)' : ''}">
+          <tr style="${i.will_be_deleted ? 'background:rgba(248,113,113,.04)' : ''}">
             <td><strong>${esc(i.name || i.instance_id || '--')}</strong></td>
             <td>${statusBadge(i.status || 'unknown')}</td>
-            <td>${i.age_days != null ? i.age_days + 'd' : '--'}</td>
-            <td>${i.days_remaining != null ? i.days_remaining + 'd' : '--'}</td>
-            <td>${i.will_be_deleted ? '<span style="color:var(--red);font-weight:600">Sim</span>' : '<span style="color:var(--green)">Nao</span>'}</td>
+            <td><span style="font-family:var(--font-mono);font-size:.82rem">${i.age_days != null ? i.age_days + 'd' : '--'}</span></td>
+            <td><span style="font-family:var(--font-mono);font-size:.82rem">${i.days_remaining != null ? i.days_remaining + 'd' : '--'}</span></td>
+            <td>${i.will_be_deleted ? '<span style="color:var(--red);font-weight:600;font-size:.82rem">Sim</span>' : '<span style="color:var(--green);font-size:.82rem">Nao</span>'}</td>
           </tr>
         `).join('')}</tbody>
       </table>`;
@@ -472,7 +473,7 @@ async function loadAllContainers() {
         <tbody>${data.containers.map(c => `
           <tr>
             <td><strong>${esc(c.name)}</strong></td>
-            <td style="font-size:.8rem;color:var(--text2)">${esc(c.image)}</td>
+            <td><code style="font-size:.75rem;color:var(--text-dim)">${esc(c.image)}</code></td>
             <td>${statusBadge(c.status)}</td>
             <td style="font-size:.8rem">${c.ports.map(esc).join(', ') || '--'}</td>
             <td style="font-size:.8rem">${c.networks.map(esc).join(', ')}</td>
