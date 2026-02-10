@@ -427,13 +427,12 @@ log "Limites de arquivos configurados"
 
 if [ -d "$PROJECT_DIR/.git" ]; then
     info "Projeto ja existe em $PROJECT_DIR, atualizando..."
-    cd "$PROJECT_DIR"
     # Preservar .env antes do reset
-    [ -f .env ] && cp .env /tmp/n8n-manager-env-backup
-    git fetch origin main 2>/dev/null || warn "Falha ao buscar atualizacoes do GitHub"
-    git reset --hard origin/main 2>/dev/null || warn "Falha ao atualizar codigo"
+    [ -f "$PROJECT_DIR/.env" ] && cp "$PROJECT_DIR/.env" /tmp/n8n-manager-env-backup
+    git -C "$PROJECT_DIR" fetch origin main 2>/dev/null || warn "Falha ao buscar atualizacoes do GitHub"
+    git -C "$PROJECT_DIR" reset --hard origin/main 2>/dev/null || warn "Falha ao atualizar codigo"
     # Restaurar .env
-    [ -f /tmp/n8n-manager-env-backup ] && mv /tmp/n8n-manager-env-backup .env
+    [ -f /tmp/n8n-manager-env-backup ] && mv /tmp/n8n-manager-env-backup "$PROJECT_DIR/.env"
 else
     if [ -d "$PROJECT_DIR" ]; then
         rm -rf "$PROJECT_DIR"
@@ -444,18 +443,13 @@ else
     fi
 fi
 
-cd "$PROJECT_DIR"
-
 # Criar venv e instalar dependencias
 info "Criando ambiente virtual Python..."
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip > /dev/null 2>&1 || warn "Falha ao atualizar pip"
-if ! pip install -r requirements.txt > /dev/null 2>&1; then
-    deactivate
+python3 -m venv "$PROJECT_DIR/venv"
+"$PROJECT_DIR/venv/bin/pip" install --upgrade pip > /dev/null 2>&1 || warn "Falha ao atualizar pip"
+if ! "$PROJECT_DIR/venv/bin/pip" install -r "$PROJECT_DIR/requirements.txt" > /dev/null 2>&1; then
     err "Falha ao instalar dependencias Python. Verifique requirements.txt e a conexao."
 fi
-deactivate
 
 log "Dependencias Python instaladas em venv"
 
@@ -679,12 +673,10 @@ else
         info "Criando Traefik com Cloudflare DNS Challenge..."
     fi
 
-    cd "$PROJECT_DIR"
-    $PROJECT_DIR/venv/bin/python config_traefik.py || warn "Falha ao criar Traefik (verifique config_traefik.py)"
+    (cd "$PROJECT_DIR" && "$PROJECT_DIR/venv/bin/python" config_traefik.py) || warn "Falha ao criar Traefik (verifique config_traefik.py)"
     if docker ps --format '{{.Names}}' | grep -q "traefik"; then
         log "Traefik criado via config_traefik.py"
     fi
-    cd "$PROJECT_DIR"
 fi
 
 # Reiniciar servico apos garantir Traefik correto
