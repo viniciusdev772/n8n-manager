@@ -43,7 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router)
-app.mount("/", StaticFiles(directory=os.path.join(_BASE_DIR, "frontend"), html=True), name="frontend")
+app.mount("/ui", StaticFiles(directory=os.path.join(_BASE_DIR, "frontend"), html=True), name="frontend")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=SERVER_PORT, reload=False)

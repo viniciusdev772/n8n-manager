@@ -1,6 +1,6 @@
 /* ── N8N Manager — Frontend ──────────────────── */
 
-const API = '/api';
+const API = '';
 let currentInstance = null;
 
 /* ── Helpers ─────────────────────────────────── */
