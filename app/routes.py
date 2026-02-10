@@ -142,6 +142,38 @@ async def cleanup_preview():
 # ─── Queue ────────────────────────────────────────────────
 
 
+@router.get("/jobs", dependencies=[Depends(verify_token)])
+async def list_jobs():
+    """Lista todos os jobs ativos (pending/running) no Redis."""
+    from .job_status import get_redis, get_events_since
+
+    r = get_redis()
+    keys = r.keys("job:*:state")
+    jobs = []
+    for key in keys:
+        job_id = key.split(":")[1]
+        state = r.get(key) or "unknown"
+        if state in ("pending", "running"):
+            events = get_events_since(job_id, 0)
+            last_msg = events[-1].get("message", "") if events else ""
+            progress = events[-1].get("progress", 0) if events else 0
+            # Tentar extrair nome da instancia dos eventos
+            name = ""
+            for ev in events:
+                if ev.get("name"):
+                    name = ev["name"]
+                    break
+            jobs.append({
+                "job_id": job_id,
+                "state": state,
+                "progress": progress,
+                "last_message": last_msg,
+                "name": name,
+                "event_count": len(events),
+            })
+    return {"jobs": jobs}
+
+
 @router.post("/enqueue-instance", dependencies=[Depends(verify_token)])
 async def enqueue_instance(request: Request):
     """Enfileira criação de instância e retorna job_id imediatamente."""

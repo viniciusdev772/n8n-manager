@@ -86,6 +86,9 @@ function showApp() {
 /* ── Navigation ──────────────────────────────── */
 
 function navigate(page) {
+  // Limpar polling de jobs ao sair da pagina
+  if (_jobsInterval) { clearInterval(_jobsInterval); _jobsInterval = null; }
+
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   const target = document.getElementById('page-' + page);
   if (target) target.classList.remove('hidden');
@@ -96,6 +99,7 @@ function navigate(page) {
 
   if (page === 'dashboard') loadDashboard();
   else if (page === 'instances') loadInstances();
+  else if (page === 'jobs') loadJobs();
   else if (page === 'create') loadCreateForm();
   else if (page === 'cleanup') loadCleanup();
 }
@@ -120,9 +124,93 @@ async function loadDashboard() {
     document.getElementById('dash-capacity').textContent = capacity.active_instances + '/' + capacity.max_instances;
 
     renderInstancesTable('dash-instances-list', instances.instances.slice(0, 8));
+
+    // Jobs ativos no dashboard
+    try {
+      const jobsData = await api('/jobs');
+      const section = document.getElementById('dash-jobs-section');
+      if (jobsData.jobs.length) {
+        section.classList.remove('hidden');
+        renderJobsTable('dash-jobs-list', jobsData.jobs);
+      } else {
+        section.classList.add('hidden');
+      }
+    } catch { /* ignora se falhar */ }
   } catch (e) {
     toast('Erro ao carregar dashboard: ' + e.message, 'error');
   }
+}
+
+/* ── Jobs ────────────────────────────────────── */
+
+let _jobsInterval = null;
+
+async function loadJobs() {
+  clearInterval(_jobsInterval);
+  await _fetchJobs();
+  _jobsInterval = setInterval(_fetchJobs, 3000);
+}
+
+async function _fetchJobs() {
+  try {
+    const data = await api('/jobs');
+    const listEl = document.getElementById('jobs-list');
+    const emptyEl = document.getElementById('jobs-empty');
+    if (!data.jobs.length) {
+      listEl.innerHTML = '';
+      emptyEl.classList.remove('hidden');
+      return;
+    }
+    emptyEl.classList.add('hidden');
+    renderJobsTable('jobs-list', data.jobs);
+  } catch (e) {
+    toast('Erro ao carregar jobs: ' + e.message, 'error');
+  }
+}
+
+function renderJobsTable(containerId, jobs) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>Job ID</th><th>Instancia</th><th>Estado</th><th>Progresso</th><th>Ultima Mensagem</th><th></th></tr></thead>
+      <tbody>${jobs.map(j => `
+        <tr>
+          <td style="font-family:monospace;font-size:.8rem">${esc(j.job_id.substring(0, 8))}...</td>
+          <td><strong>${esc(j.name || '--')}</strong></td>
+          <td>${jobStateBadge(j.state)}</td>
+          <td>
+            <div class="progress-bar" style="width:120px;display:inline-block;vertical-align:middle">
+              <div class="progress-fill" style="width:${j.progress || 0}%"></div>
+            </div>
+            <span style="font-size:.8rem;color:var(--text2);margin-left:.4rem">${j.progress || 0}%</span>
+          </td>
+          <td style="font-size:.85rem;color:var(--text2);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(j.last_message || '--')}</td>
+          <td><button class="btn btn-sm btn-ghost" onclick="watchJob('${esc(j.job_id)}')">Acompanhar</button></td>
+        </tr>
+      `).join('')}</tbody>
+    </table>`;
+}
+
+function jobStateBadge(state) {
+  if (state === 'running') return '<span class="status-badge status-running">running</span>';
+  if (state === 'pending') return '<span class="status-badge status-created">pending</span>';
+  return '<span class="status-badge">' + esc(state) + '</span>';
+}
+
+function watchJob(jobId) {
+  // Navega para criar instancia e mostra o progresso do job
+  navigate('create');
+  const progress = document.getElementById('create-progress');
+  const fill = document.getElementById('create-progress-fill');
+  const msg = document.getElementById('create-progress-msg');
+  const result = document.getElementById('create-result');
+  const btn = document.getElementById('create-btn');
+  progress.classList.remove('hidden');
+  result.classList.add('hidden');
+  btn.disabled = true;
+  fill.style.width = '0%';
+  msg.textContent = 'Acompanhando job...';
+  pollJob(jobId, fill, msg, result, btn);
 }
 
 /* ── Instances ───────────────────────────────── */
