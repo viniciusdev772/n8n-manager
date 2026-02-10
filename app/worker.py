@@ -16,6 +16,7 @@ from .config import (
     RABBITMQ_USER,
     READINESS_MAX_ATTEMPTS,
     READINESS_POLL_INTERVAL,
+    SSL_ENABLED,
     SSL_WAIT_SECONDS,
 )
 from .job_status import push_event, set_state
@@ -110,9 +111,10 @@ def _process_job(ch, method, properties, body):
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
 
-        # 4. SSL via Traefik
-        push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
-        time.sleep(SSL_WAIT_SECONDS)
+        # 4. SSL via Traefik (se habilitado)
+        if SSL_ENABLED:
+            push_event(job_id, {"status": "info", "message": "Configurando SSL via Traefik..."})
+            time.sleep(SSL_WAIT_SECONDS)
 
         # 5. Sucesso
         push_event(job_id, {

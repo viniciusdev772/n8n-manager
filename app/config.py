@@ -25,6 +25,10 @@ REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
 # Cloudflare (para Traefik DNS Challenge quando criamos nosso próprio Traefik)
 CF_DNS_API_TOKEN = os.getenv("CF_DNS_API_TOKEN", "")
 
+# SSL: detecta automaticamente se Cloudflare está configurado
+SSL_ENABLED = bool(CF_DNS_API_TOKEN)
+PROTOCOL = "https" if SSL_ENABLED else "http"
+
 # Traefik
 TRAEFIK_CERT_RESOLVER = os.getenv("TRAEFIK_CERT_RESOLVER", "letsencrypt")
 
@@ -42,7 +46,7 @@ INSTANCE_CPU_SHARES = int(os.getenv("INSTANCE_CPU_SHARES", "512"))
 # Worker — readiness probe
 READINESS_MAX_ATTEMPTS = int(os.getenv("READINESS_MAX_ATTEMPTS", "90"))  # 90 x 2s = 3 min
 READINESS_POLL_INTERVAL = int(os.getenv("READINESS_POLL_INTERVAL", "2"))
-SSL_WAIT_SECONDS = 5
+SSL_WAIT_SECONDS = 5 if SSL_ENABLED else 0
 
 # Cleanup automático
 CLEANUP_MAX_AGE_DAYS = int(os.getenv("CLEANUP_MAX_AGE_DAYS", "5"))

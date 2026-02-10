@@ -824,8 +824,9 @@ async def test_cloudflare(request: Request):
 async def system_info():
     """Retorna informações do sistema (RAM, swap, Docker, capacidade)."""
     import subprocess
+    from .config import SSL_ENABLED, PROTOCOL
 
-    info = {"ram": {}, "swap": {}, "docker": {}, "capacity": {}}
+    info = {"ram": {}, "swap": {}, "docker": {}, "capacity": {}, "ssl_enabled": SSL_ENABLED, "protocol": PROTOCOL}
 
     # RAM e Swap via /proc/meminfo
     try:

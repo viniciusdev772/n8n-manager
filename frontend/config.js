@@ -106,6 +106,20 @@ async function loadConfig() {
       }
     }
 
+    // Indicador de modo SSL
+    const badge = document.getElementById('ssl-mode-badge');
+    const cfToken = cfg['CF_DNS_API_TOKEN'] || '';
+    const hasSSL = cfToken && !cfToken.startsWith('****') ? true : cfToken.length > 4;
+    if (hasSSL) {
+      badge.textContent = 'HTTPS (Cloudflare)';
+      badge.style.background = 'rgba(52,211,153,.1)';
+      badge.style.color = 'var(--green)';
+    } else {
+      badge.textContent = 'HTTP (Local)';
+      badge.style.background = 'rgba(251,191,36,.1)';
+      badge.style.color = 'var(--amber)';
+    }
+
     // Preencher campos read-only
     for (const key of READONLY_FIELDS) {
       const el = document.getElementById('cfg-' + key);

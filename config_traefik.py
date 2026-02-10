@@ -1,4 +1,7 @@
-"""Gera docker-compose.yml do Traefik com Cloudflare DNS Challenge.
+"""Gera docker-compose.yml do Traefik.
+
+Com CF_DNS_API_TOKEN: HTTPS via Cloudflare DNS Challenge (producao)
+Sem CF_DNS_API_TOKEN: HTTP-only (local/WSL/dev)
 
 Uso: python config_traefik.py
 """
@@ -8,12 +11,9 @@ import subprocess
 
 cf_token = os.getenv("CF_DNS_API_TOKEN", "")
 acme_email = os.getenv("ACME_EMAIL", "lojasketchware@gmail.com")
-
-if not cf_token:
-    print("ERRO: CF_DNS_API_TOKEN nao configurado. Defina no .env ou variavel de ambiente.")
-    exit(1)
 network_name = "n8n-public"
 resolver_name = "letsencrypt"
+ssl_enabled = bool(cf_token)
 
 traefik_folder = "./traefik"
 
@@ -23,10 +23,15 @@ os.makedirs(f"{traefik_folder}/letsencrypt", exist_ok=True)
 
 # Gera .env para o docker-compose
 with open(f"{traefik_folder}/.env", "w") as env_file:
-    env_file.write(f"CF_DNS_API_TOKEN={cf_token}\n")
+    if cf_token:
+        env_file.write(f"CF_DNS_API_TOKEN={cf_token}\n")
+    else:
+        env_file.write("# Sem CF token — modo HTTP\n")
 
 # Gera docker-compose.yml
-docker_compose = f"""\
+if ssl_enabled:
+    # Modo HTTPS com Cloudflare DNS Challenge
+    docker_compose = f"""\
 version: '3'
 
 networks:
@@ -61,11 +66,38 @@ services:
       - --certificatesresolvers.{resolver_name}.acme.email={acme_email}
       - --certificatesresolvers.{resolver_name}.acme.storage=/letsencrypt/acme.json
 """
+else:
+    # Modo HTTP-only (local/WSL/dev)
+    docker_compose = f"""\
+version: '3'
+
+networks:
+  {network_name}:
+    external: true
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - {network_name}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network={network_name}
+      - --entrypoints.web.address=:80
+"""
 
 with open(f"{traefik_folder}/docker-compose.yml", "w") as dc_file:
     dc_file.write(docker_compose)
 
-print(f"Configuracao atualizada em '{traefik_folder}/'.")
+mode_label = "HTTPS (Cloudflare)" if ssl_enabled else "HTTP (local)"
+print(f"Configuracao atualizada em '{traefik_folder}/' — modo: {mode_label}")
 
 # Cria a rede Docker se nao existir
 try:
@@ -83,7 +115,8 @@ try:
         cwd=traefik_folder,
         check=True,
     )
-    print(f"""
+    if ssl_enabled:
+        print(f"""
 Traefik rodando com Cloudflare DNS Challenge.
 
   Rede:     {network_name}
@@ -92,6 +125,16 @@ Traefik rodando com Cloudflare DNS Challenge.
   Imagem:   traefik:v3.6
 
 Certificados preservados em {traefik_folder}/letsencrypt/
+""")
+    else:
+        print(f"""
+Traefik rodando em modo HTTP (sem SSL).
+
+  Rede:     {network_name}
+  Porta:    80
+  Imagem:   traefik:v3.6
+
+Para habilitar SSL, configure CF_DNS_API_TOKEN no .env e execute novamente.
 """)
 except subprocess.CalledProcessError as e:
     print(f"ERRO: Falha ao iniciar Traefik (exit code {e.returncode}). Verifique 'docker compose version'.")

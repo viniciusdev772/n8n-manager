@@ -513,8 +513,8 @@ run_wizard() {
     echo ""
     ask "Cloudflare DNS API Token (Enter para pular)" "" INPUT_CF_TOKEN
     if [ -z "$INPUT_CF_TOKEN" ]; then
-        warn "SSL nao vai funcionar sem o token. Voce pode configurar depois em:"
-        warn "  nano $PROJECT_DIR/.env"
+        info "Sem token Cloudflare — sistema vai rodar em modo HTTP (local/dev)"
+        info "Para habilitar SSL depois, configure via painel web ou .env"
     fi
 
     # 4. Porta (default, pode alterar depois via web)
@@ -533,8 +533,10 @@ run_wizard() {
     echo -e "  ${BOLD}Email SSL:${NC}   $INPUT_EMAIL"
     if [ -n "$INPUT_CF_TOKEN" ]; then
         echo -e "  ${BOLD}CF Token:${NC}    ****${INPUT_CF_TOKEN: -4}"
+        echo -e "  ${BOLD}Modo:${NC}        ${GREEN}HTTPS (Cloudflare)${NC}"
     else
         echo -e "  ${BOLD}CF Token:${NC}    ${YELLOW}NAO CONFIGURADO${NC}"
+        echo -e "  ${BOLD}Modo:${NC}        ${YELLOW}HTTP (local/dev)${NC}"
     fi
     echo -e "  ${BOLD}Porta API:${NC}   $INPUT_PORT (altere via painel web)"
     echo -e "  ${BOLD}API Token:${NC}   ${GEN_API_TOKEN:0:12}... (gerado automaticamente)"
@@ -624,8 +626,7 @@ else
         fi
         _val=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
         if [ -z "$_val" ]; then
-            warn ".env: CF_DNS_API_TOKEN esta vazio — SSL nao vai funcionar"
-            ENV_WARNINGS=$((ENV_WARNINGS + 1))
+            info ".env: CF_DNS_API_TOKEN vazio — rodando em modo HTTP (local)"
         fi
         _val=$(grep -oP 'RABBITMQ_PASSWORD=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
         if [ -z "$_val" ] || [ "$_val" = "guest" ]; then
@@ -772,7 +773,7 @@ if [ -n "$TRAEFIK_CONTAINER" ]; then
     fi
 else
     # Nenhum Traefik encontrado — criar via config_traefik.py
-    info "Nenhum Traefik encontrado. Criando com Cloudflare DNS Challenge..."
+    info "Nenhum Traefik encontrado. Criando via config_traefik.py..."
 
     # Aguardar portas liberarem
     for i in $(seq 1 10); do
@@ -789,17 +790,17 @@ else
     export CF_DNS_API_TOKEN ACME_EMAIL
 
     if [ -z "$CF_DNS_API_TOKEN" ]; then
-        warn "CF_DNS_API_TOKEN nao configurado no .env — Traefik nao conseguira emitir certificados SSL"
-        warn "Configure em: nano $PROJECT_DIR/.env"
-        warn "Depois execute: cd $PROJECT_DIR && python3 config_traefik.py"
+        info "Criando Traefik em modo HTTP (sem SSL)..."
     else
-        cd "$PROJECT_DIR"
-        $PROJECT_DIR/venv/bin/python config_traefik.py || warn "Falha ao criar Traefik (verifique config_traefik.py)"
-        if docker ps --format '{{.Names}}' | grep -q "traefik"; then
-            log "Traefik criado via config_traefik.py"
-        fi
-        cd "$PROJECT_DIR"
+        info "Criando Traefik com Cloudflare DNS Challenge..."
     fi
+
+    cd "$PROJECT_DIR"
+    $PROJECT_DIR/venv/bin/python config_traefik.py || warn "Falha ao criar Traefik (verifique config_traefik.py)"
+    if docker ps --format '{{.Names}}' | grep -q "traefik"; then
+        log "Traefik criado via config_traefik.py"
+    fi
+    cd "$PROJECT_DIR"
 fi
 
 # Reiniciar servico apos garantir Traefik correto

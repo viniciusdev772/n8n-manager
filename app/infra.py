@@ -14,6 +14,7 @@ from .config import (
     RABBITMQ_PORT,
     RABBITMQ_USER,
     REDIS_PORT,
+    SSL_ENABLED,
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
@@ -350,13 +351,16 @@ def ensure_fallback():
     labels = {
         "traefik.enable": "true",
         f"traefik.http.routers.{name}.rule": rule,
-        f"traefik.http.routers.{name}.entrypoints": "websecure",
-        f"traefik.http.routers.{name}.tls.certresolver": TRAEFIK_CERT_RESOLVER,
         f"traefik.http.routers.{name}.priority": "1",
         f"traefik.http.services.{name}.loadbalancer.server.port": "80",
         "app.managed": "true",
         "app.type": "fallback",
     }
+    if SSL_ENABLED:
+        labels[f"traefik.http.routers.{name}.entrypoints"] = "websecure"
+        labels[f"traefik.http.routers.{name}.tls.certresolver"] = TRAEFIK_CERT_RESOLVER
+    else:
+        labels[f"traefik.http.routers.{name}.entrypoints"] = "web"
 
     client.containers.run(
         image="nginx:alpine",

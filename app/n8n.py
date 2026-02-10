@@ -12,6 +12,8 @@ from .config import (
     INSTANCE_MEM_LIMIT,
     INSTANCE_MEM_RESERVATION,
     N8N_IMAGE,
+    PROTOCOL,
+    SSL_ENABLED,
     TRAEFIK_CERT_RESOLVER,
 )
 from .docker_client import get_client
@@ -49,7 +51,7 @@ def container_name(instance_name: str) -> str:
 
 
 def instance_url(instance_name: str) -> str:
-    return f"https://{instance_name}.{BASE_DOMAIN}"
+    return f"{PROTOCOL}://{instance_name}.{BASE_DOMAIN}"
 
 
 def generate_encryption_key() -> str:
@@ -63,13 +65,13 @@ def build_env(name: str, encryption_key: str) -> dict:
     return {
         "N8N_HOST": "0.0.0.0",
         "N8N_PORT": "5678",
-        "N8N_PROTOCOL": "https",
-        "N8N_EDITOR_BASE_URL": f"https://{host}/",
+        "N8N_PROTOCOL": PROTOCOL,
+        "N8N_EDITOR_BASE_URL": f"{PROTOCOL}://{host}/",
         "N8N_ENCRYPTION_KEY": encryption_key,
-        "WEBHOOK_URL": f"https://{host}/",
+        "WEBHOOK_URL": f"{PROTOCOL}://{host}/",
         "GENERIC_TIMEZONE": DEFAULT_TIMEZONE,
         "N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS": "true",
-        "N8N_SECURE_COOKIE": "false",
+        "N8N_SECURE_COOKIE": "true" if SSL_ENABLED else "false",
         "N8N_LOG_LEVEL": "warn",
         # SQLite pool (elimina deprecation warning)
         "DB_SQLITE_POOL_SIZE": "4",
@@ -99,19 +101,23 @@ def build_env(name: str, encryption_key: str) -> dict:
 
 
 def build_traefik_labels(name: str) -> dict:
-    """Labels para roteamento automático do Traefik com SSL."""
+    """Labels para roteamento automático do Traefik (com ou sem SSL)."""
     host = f"{name}.{BASE_DOMAIN}"
-    return {
+    labels = {
         "traefik.enable": "true",
         f"traefik.http.routers.n8n-{name}.rule": f"Host(`{host}`)",
-        f"traefik.http.routers.n8n-{name}.entrypoints": "websecure",
-        f"traefik.http.routers.n8n-{name}.tls.certresolver": TRAEFIK_CERT_RESOLVER,
         f"traefik.http.services.n8n-{name}.loadbalancer.server.port": "5678",
         "app.managed": "true",
         "app.type": "n8n",
         "app.instance": name,
         "app.created_at": datetime.now(timezone.utc).isoformat(),
     }
+    if SSL_ENABLED:
+        labels[f"traefik.http.routers.n8n-{name}.entrypoints"] = "websecure"
+        labels[f"traefik.http.routers.n8n-{name}.tls.certresolver"] = TRAEFIK_CERT_RESOLVER
+    else:
+        labels[f"traefik.http.routers.n8n-{name}.entrypoints"] = "web"
+    return labels
 
 
 def create_container(name: str, version: str, encryption_key: str, created_at: str | None = None):
