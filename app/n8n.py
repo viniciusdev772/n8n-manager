@@ -23,7 +23,19 @@ logger = get_logger("n8n")
 
 # Recursos reservados para infra (Traefik ~50 + Redis ~100 + RabbitMQ ~150 + OS ~200 + margem)
 RESERVED_RAM_MB = 768
-PER_INSTANCE_RAM_MB = 384
+
+
+def _parse_mem_string(s: str) -> int:
+    """Converte string de memoria (ex: '384m', '1g') para MB."""
+    s = s.strip().lower()
+    if s.endswith("g"):
+        return int(float(s[:-1]) * 1024)
+    if s.endswith("m"):
+        return int(s[:-1])
+    return int(s) // (1024 * 1024)  # assume bytes
+
+
+PER_INSTANCE_RAM_MB = _parse_mem_string(INSTANCE_MEM_LIMIT)
 
 
 _VALID_NAME = re.compile(r"^[a-z0-9][a-z0-9\-]{0,30}[a-z0-9]$")
