@@ -274,6 +274,16 @@ async function openInstance(id) {
   }
 }
 
+async function loadInstanceEnv() {
+  if (!currentInstance) return;
+  try {
+    const data = await api('/instance/' + encodeURIComponent(currentInstance) + '/env');
+    renderEnvTable('detail-env', data.env);
+  } catch (e) {
+    document.getElementById('detail-env').innerHTML = '<p style="color:var(--red);font-size:.85rem">Erro: ' + esc(e.message) + '</p>';
+  }
+}
+
 async function loadInstanceLogs() {
   if (!currentInstance) return;
   try {
@@ -461,6 +471,46 @@ async function loadCleanup() {
   }
 }
 
+/* ── Env Vars ────────────────────────────────── */
+
+function renderEnvTable(containerId, envObj) {
+  const el = document.getElementById(containerId);
+  const entries = Object.entries(envObj).sort((a, b) => a[0].localeCompare(b[0]));
+  if (!entries.length) {
+    el.innerHTML = '<p style="color:var(--text-mute);font-size:.85rem">Nenhuma variavel de ambiente</p>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table class="env-table">
+        <thead><tr><th>Variavel</th><th>Valor</th></tr></thead>
+        <tbody>${entries.map(([k, v]) => `
+          <tr>
+            <td class="env-key">${esc(k)}</td>
+            <td class="env-value">${esc(v)}</td>
+          </tr>
+        `).join('')}</tbody>
+      </table>
+    </div>
+    <p class="env-count">${entries.length} variaveis</p>`;
+}
+
+function showContainerEnv(name) {
+  document.getElementById('debug-env-name').value = name;
+  loadDebugEnv();
+}
+
+async function loadDebugEnv() {
+  const name = document.getElementById('debug-env-name').value.trim();
+  if (!name) { toast('Informe o nome do container', 'error'); return; }
+  try {
+    const data = await api('/debug/container-env/' + encodeURIComponent(name));
+    renderEnvTable('debug-env-result', data.env);
+  } catch (e) {
+    document.getElementById('debug-env-result').innerHTML = '<p style="color:var(--red);font-size:.85rem">Erro: ' + esc(e.message) + '</p>';
+  }
+}
+
 /* ── Debug ───────────────────────────────────── */
 
 async function loadAllContainers() {
@@ -469,7 +519,7 @@ async function loadAllContainers() {
     const el = document.getElementById('debug-containers');
     el.innerHTML = `
       <table>
-        <thead><tr><th>Nome</th><th>Imagem</th><th>Status</th><th>Portas</th><th>Redes</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Imagem</th><th>Status</th><th>Portas</th><th>Redes</th><th></th></tr></thead>
         <tbody>${data.containers.map(c => `
           <tr>
             <td><strong>${esc(c.name)}</strong></td>
@@ -477,6 +527,7 @@ async function loadAllContainers() {
             <td>${statusBadge(c.status)}</td>
             <td style="font-size:.8rem">${c.ports.map(esc).join(', ') || '--'}</td>
             <td style="font-size:.8rem">${c.networks.map(esc).join(', ')}</td>
+            <td><button class="btn btn-outline btn-sm" onclick="showContainerEnv('${esc(c.name)}')">Env</button></td>
           </tr>
         `).join('')}</tbody>
       </table>`;

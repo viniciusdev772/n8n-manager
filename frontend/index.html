@@ -239,6 +239,16 @@
         </div>
         <div class="stagger-in" style="--delay:4">
           <div class="section-header">
+            <h2>Variaveis de Ambiente</h2>
+            <button class="btn btn-outline btn-sm" onclick="loadInstanceEnv()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+              Carregar
+            </button>
+          </div>
+          <div id="detail-env" class="env-table-wrap"></div>
+        </div>
+        <div class="stagger-in" style="--delay:5">
+          <div class="section-header">
             <h2>Logs do Container</h2>
             <button class="btn btn-outline btn-sm" onclick="loadInstanceLogs()">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
@@ -310,6 +320,19 @@
               <button class="btn btn-outline btn-sm" onclick="loadAllContainers()">Carregar</button>
             </div>
             <div id="debug-containers" class="table-wrap"></div>
+          </div>
+          <div class="debug-block">
+            <div class="section-header">
+              <h2>Variaveis de Ambiente</h2>
+            </div>
+            <div class="env-lookup">
+              <div class="input-wrap" style="max-width:320px">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="debug-env-name" placeholder="Nome do container" autocomplete="off">
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="loadDebugEnv()">Carregar Env</button>
+            </div>
+            <div id="debug-env-result" class="env-table-wrap"></div>
           </div>
           <div class="debug-block">
             <div class="section-header">

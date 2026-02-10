@@ -456,6 +456,23 @@ async def update_version(instance_id: str, request: Request):
     return {"message": f"Versão atualizada para {new_version}", "instance_id": instance_id}
 
 
+@router.get("/instance/{instance_id}/env", dependencies=[Depends(verify_token)])
+async def instance_env(instance_id: str):
+    """Retorna as variáveis de ambiente do container (somente leitura)."""
+    try:
+        container = get_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância não encontrada")
+
+    container.reload()
+    env_list = container.attrs.get("Config", {}).get("Env", [])
+    env_vars = {}
+    for item in env_list:
+        key, _, value = item.partition("=")
+        env_vars[key] = value
+    return {"instance_id": instance_id, "env": env_vars}
+
+
 @router.get("/instance/{instance_id}/logs", dependencies=[Depends(verify_token)])
 async def instance_logs(instance_id: str, tail: int = Query(50)):
     """Retorna as últimas linhas de log do container."""
@@ -466,6 +483,23 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
 
     logs = container.logs(tail=min(tail, 200)).decode("utf-8", errors="replace")
     return {"instance_id": instance_id, "logs": logs}
+
+
+@router.get("/debug/container-env/{name}", dependencies=[Depends(verify_token)])
+async def debug_container_env(name: str):
+    """Variáveis de ambiente de qualquer container (somente leitura)."""
+    client = get_client()
+    try:
+        c = client.containers.get(name)
+        c.reload()
+        env_list = c.attrs.get("Config", {}).get("Env", [])
+        env_vars = {}
+        for item in env_list:
+            key, _, value = item.partition("=")
+            env_vars[key] = value
+        return {"name": name, "env": env_vars}
+    except docker.errors.NotFound:
+        raise HTTPException(404, f"Container '{name}' não encontrado")
 
 
 @router.post("/debug/start-container/{name}", dependencies=[Depends(verify_token)])
