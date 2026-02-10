@@ -1,0 +1,129 @@
+/* ── Reset & Base ────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--bg2:#181a20;--bg3:#1e2028;
+  --surface:#23262f;--surface2:#2a2d37;
+  --border:#2e3140;--border2:#383b48;
+  --text:#e4e6ed;--text2:#9ca0af;--text3:#6b7084;
+  --primary:#6c5ce7;--primary2:#7c6df7;
+  --green:#2ed573;--yellow:#ffa502;--red:#ff4757;
+  --radius:8px;--radius-lg:12px;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+html{font-size:14px}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--primary2);text-decoration:none}
+a:hover{text-decoration:underline}
+.hidden{display:none!important}
+
+/* ── Login ───────────────────────────────────── */
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2.5rem;width:360px;text-align:center}
+.login-logo{font-size:1.8rem;font-weight:800;margin-bottom:.5rem;color:var(--text)}
+.login-logo span{color:var(--primary)}
+.login-subtitle{color:var(--text2);margin-bottom:1.5rem;font-size:.9rem}
+.login-card input{width:100%;padding:.75rem 1rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.95rem;margin-bottom:1rem;outline:none;transition:border .2s}
+.login-card input:focus{border-color:var(--primary)}
+.login-card button{width:100%;padding:.75rem;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+.login-card button:hover{background:var(--primary2)}
+.error{color:var(--red);font-size:.85rem;margin-top:.5rem}
+
+/* ── Layout ──────────────────────────────────── */
+#app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem .75rem;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:10}
+.sidebar-logo{font-size:1.3rem;font-weight:800;padding:.5rem .75rem;margin-bottom:1.5rem;color:var(--text)}
+.sidebar-logo span{color:var(--primary)}
+.sidebar nav{flex:1;display:flex;flex-direction:column;gap:.25rem}
+.nav-btn{display:flex;align-items:center;gap:.6rem;padding:.6rem .75rem;background:none;border:none;color:var(--text2);font-size:.9rem;border-radius:var(--radius);cursor:pointer;transition:all .15s;text-align:left;width:100%}
+.nav-btn:hover{background:var(--surface);color:var(--text)}
+.nav-btn.active{background:var(--primary);color:#fff}
+.nav-btn svg{flex-shrink:0}
+.logout-btn{margin-top:auto;color:var(--red)}
+.logout-btn:hover{background:rgba(255,71,87,.1)}
+
+.main{margin-left:220px;flex:1;padding:2rem 2.5rem;max-width:1100px}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+
+/* ── Cards ───────────────────────────────────── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:2rem}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem}
+.card-label{color:var(--text3);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem}
+.card-value{font-size:1.4rem;font-weight:700}
+
+/* ── Buttons ─────────────────────────────────── */
+.btn{padding:.55rem 1.1rem;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:var(--primary2);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm{padding:.4rem .8rem;font-size:.8rem}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--surface);color:var(--text);transform:translateY(-1px)}
+.btn-warn{background:var(--yellow);color:#000}
+.btn-warn:hover{background:#ffb732}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#ff6b7a}
+
+/* ── Tables ──────────────────────────────────── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;color:var(--text3);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;padding:.6rem .75rem;border-bottom:1px solid var(--border)}
+td{padding:.7rem .75rem;border-bottom:1px solid var(--border);font-size:.9rem;vertical-align:middle}
+tr:hover td{background:var(--surface)}
+.status-badge{display:inline-block;padding:.15rem .55rem;border-radius:999px;font-size:.75rem;font-weight:600}
+.status-running{background:rgba(46,213,115,.15);color:var(--green)}
+.status-exited{background:rgba(255,71,87,.15);color:var(--red)}
+.status-created{background:rgba(255,165,2,.15);color:var(--yellow)}
+
+/* ── Forms ───────────────────────────────────── */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.75rem;max-width:480px}
+.form-card label{display:block;color:var(--text2);font-size:.8rem;margin-bottom:.35rem;margin-top:1rem}
+.form-card label:first-child{margin-top:0}
+.form-card input,.form-card select{width:100%;padding:.65rem .85rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.9rem;outline:none;transition:border .2s}
+.form-card input:focus,.form-card select:focus{border-color:var(--primary)}
+.form-card .btn{margin-top:1.25rem;width:100%}
+.inline-form{margin-top:1rem;display:flex;gap:.5rem;align-items:center}
+.inline-form select{padding:.45rem .7rem;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:.85rem}
+
+/* ── Progress ────────────────────────────────── */
+.progress-bar{width:100%;height:8px;background:var(--bg);border-radius:99px;margin-top:1rem;overflow:hidden}
+.progress-fill{height:100%;background:var(--primary);border-radius:99px;width:0%;transition:width .4s ease}
+#create-progress-msg{color:var(--text2);font-size:.85rem;margin-top:.5rem}
+#create-result{margin-top:1rem;padding:1rem;border-radius:var(--radius);font-size:.9rem}
+#create-result.success{background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.3);color:var(--green)}
+#create-result.error{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.3);color:var(--red)}
+
+/* ── Logs ────────────────────────────────────── */
+.logs-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;font-family:"JetBrains Mono","Fira Code",monospace;font-size:.8rem;color:var(--text2);max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-all;line-height:1.6;margin-top:.5rem}
+.logs-toolbar{margin-top:1rem;margin-bottom:.25rem}
+
+/* ── Detail actions ──────────────────────────── */
+.detail-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin:1.5rem 0}
+
+/* ── Debug ───────────────────────────────────── */
+.debug-section{margin-bottom:2rem}
+.debug-section h2{margin-bottom:.75rem}
+
+/* ── Modal ───────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:100}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:2rem;width:380px;text-align:center}
+.modal p{margin-bottom:1.5rem;font-size:.95rem;line-height:1.5}
+.modal-actions{display:flex;gap:.75rem;justify-content:center}
+
+/* ── Toast ───────────────────────────────────── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);padding:.75rem 1.25rem;font-size:.85rem;z-index:200;animation:toastIn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.success{border-color:var(--green);color:var(--green)}
+.toast.error{border-color:var(--red);color:var(--red)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Headings ────────────────────────────────── */
+h1{font-size:1.5rem;font-weight:700;margin-bottom:1.25rem}
+h2{font-size:1.1rem;font-weight:600;margin-bottom:.75rem;color:var(--text2)}
+.subtitle{color:var(--text3);margin-bottom:1rem;font-size:.9rem}
+
+/* ── Responsive ──────────────────────────────── */
+@media(max-width:768px){
+  .sidebar{width:60px;padding:.75rem .4rem}
+  .sidebar-logo,.nav-btn span,.logout-btn span{display:none}
+  .nav-btn{justify-content:center;padding:.6rem}
+  .main{margin-left:60px;padding:1.25rem}
+  .cards{grid-template-columns:repeat(2,1fr)}
+}

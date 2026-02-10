@@ -1,10 +1,12 @@
 """Entrypoint — inicializa infra e sobe o servidor."""
 
+import os
 from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.cleanup import start_cleanup, stop_cleanup
 from app.config import ALLOWED_ORIGINS, SERVER_PORT
@@ -15,6 +17,8 @@ from app.n8n import sync_instance_env_vars
 from app.queue import close_rabbitmq
 from app.routes import router
 from app.worker import start_worker, stop_worker
+
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 @asynccontextmanager
@@ -39,6 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router)
+app.mount("/", StaticFiles(directory=os.path.join(_BASE_DIR, "frontend"), html=True), name="frontend")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=SERVER_PORT, reload=False)

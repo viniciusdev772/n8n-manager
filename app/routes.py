@@ -30,7 +30,7 @@ from .n8n import (
 from .queue import publish_job
 from .config import DOCKER_NETWORK, N8N_IMAGE
 
-router = APIRouter()
+router = APIRouter(prefix="/api")
 
 
 # ─── Info ─────────────────────────────────────────────────
