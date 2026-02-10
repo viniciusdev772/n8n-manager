@@ -656,6 +656,243 @@ async def debug_infra_networks():
     return result
 
 
+# ─── Configuração ─────────────────────────────────────────
+
+
+@router.get("/config", dependencies=[Depends(verify_token)])
+async def get_config(request: Request):
+    """Retorna configuração atual do .env + defaults."""
+    import os as _os
+    from dotenv import dotenv_values
+
+    env_path = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), ".env")
+    env_vals = dotenv_values(env_path) if _os.path.exists(env_path) else {}
+
+    # Defaults para campos que podem não existir no .env
+    defaults = {
+        "BASE_DOMAIN": "n8n.marketcodebrasil.com.br",
+        "ACME_EMAIL": "lojasketchware@gmail.com",
+        "CF_DNS_API_TOKEN": "",
+        "SERVER_PORT": "5050",
+        "ALLOWED_ORIGINS": "*",
+        "API_AUTH_TOKEN": "",
+        "DEFAULT_N8N_VERSION": "1.123.20",
+        "DEFAULT_TIMEZONE": "America/Sao_Paulo",
+        "INSTANCE_MEM_LIMIT": "384m",
+        "INSTANCE_MEM_RESERVATION": "192m",
+        "INSTANCE_CPU_SHARES": "512",
+        "CLEANUP_MAX_AGE_DAYS": "5",
+        "CLEANUP_INTERVAL_SECONDS": "3600",
+        "DOCKER_NETWORK": "n8n-public",
+        "RABBITMQ_HOST": "127.0.0.1",
+        "RABBITMQ_PORT": "5672",
+        "RABBITMQ_USER": "",
+        "RABBITMQ_PASSWORD": "",
+        "REDIS_HOST": "127.0.0.1",
+        "REDIS_PORT": "6379",
+        "JOB_TTL": "600",
+        "JOB_CLEANUP_TTL": "300",
+    }
+
+    merged = {**defaults, **env_vals}
+
+    # Campos sensiveis: mascarar
+    sensitive = ["CF_DNS_API_TOKEN", "RABBITMQ_PASSWORD", "API_AUTH_TOKEN"]
+    reveal = request.query_params.get("reveal", "")
+    for key in sensitive:
+        val = merged.get(key, "")
+        if val and key != reveal:
+            merged[key] = "****" + val[-4:] if len(val) > 4 else "****"
+
+    return {"config": merged, "env_path": env_path}
+
+
+@router.put("/config", dependencies=[Depends(verify_token)])
+async def update_config(request: Request):
+    """Salva alterações no .env."""
+    import os as _os
+
+    body = await request.json()
+    updates = body.get("config", {})
+    if not updates:
+        raise HTTPException(400, "Nenhuma configuração enviada")
+
+    # Validações básicas
+    if "SERVER_PORT" in updates:
+        try:
+            port = int(updates["SERVER_PORT"])
+            if port < 1 or port > 65535:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise HTTPException(400, "SERVER_PORT deve ser um número entre 1 e 65535")
+
+    if "BASE_DOMAIN" in updates and not updates["BASE_DOMAIN"].strip():
+        raise HTTPException(400, "BASE_DOMAIN não pode ser vazio")
+
+    if "CLEANUP_MAX_AGE_DAYS" in updates:
+        try:
+            days = int(updates["CLEANUP_MAX_AGE_DAYS"])
+            if days < 1:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise HTTPException(400, "CLEANUP_MAX_AGE_DAYS deve ser >= 1")
+
+    if "INSTANCE_CPU_SHARES" in updates:
+        try:
+            shares = int(updates["INSTANCE_CPU_SHARES"])
+            if shares < 128 or shares > 4096:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise HTTPException(400, "INSTANCE_CPU_SHARES deve ser entre 128 e 4096")
+
+    env_path = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), ".env")
+
+    # Ler .env existente preservando comentários e ordem
+    lines = []
+    existing_keys = set()
+    if _os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+
+    # Atualizar linhas existentes
+    new_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in stripped:
+            key = stripped.split("=", 1)[0]
+            if key in updates:
+                # Não sobrescrever com valor mascarado
+                if updates[key].startswith("****"):
+                    new_lines.append(line)
+                else:
+                    new_lines.append(f"{key}={updates[key]}\n")
+                existing_keys.add(key)
+                continue
+        new_lines.append(line)
+
+    # Adicionar novas chaves que não existiam
+    for key, value in updates.items():
+        if key not in existing_keys and not value.startswith("****"):
+            new_lines.append(f"{key}={value}\n")
+
+    with open(env_path, "w") as f:
+        f.writelines(new_lines)
+
+    # Campos que precisam de restart para aplicar
+    restart_fields = {
+        "SERVER_PORT", "API_AUTH_TOKEN", "BASE_DOMAIN", "CF_DNS_API_TOKEN",
+        "ACME_EMAIL", "DOCKER_NETWORK", "RABBITMQ_HOST", "RABBITMQ_PORT",
+        "RABBITMQ_USER", "RABBITMQ_PASSWORD", "REDIS_HOST", "REDIS_PORT",
+        "ALLOWED_ORIGINS",
+    }
+    needs_restart = bool(set(updates.keys()) & restart_fields)
+
+    return {
+        "message": "Configuração salva",
+        "needs_restart": needs_restart,
+        "updated_keys": list(updates.keys()),
+    }
+
+
+@router.post("/config/test-cloudflare", dependencies=[Depends(verify_token)])
+async def test_cloudflare(request: Request):
+    """Testa se o token Cloudflare é válido."""
+    import httpx
+
+    body = await request.json()
+    token = body.get("token", "").strip()
+    if not token:
+        raise HTTPException(400, "Token não informado")
+
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                "https://api.cloudflare.com/client/v4/user/tokens/verify",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            data = resp.json()
+            if data.get("success"):
+                return {"valid": True, "message": "Token válido"}
+            errors = data.get("errors", [{}])
+            msg = errors[0].get("message", "Token inválido") if errors else "Token inválido"
+            return {"valid": False, "message": msg}
+    except Exception as e:
+        return {"valid": False, "message": f"Erro de conexão: {e}"}
+
+
+@router.get("/config/system-info", dependencies=[Depends(verify_token)])
+async def system_info():
+    """Retorna informações do sistema (RAM, swap, Docker, capacidade)."""
+    import subprocess
+
+    info = {"ram": {}, "swap": {}, "docker": {}, "capacity": {}}
+
+    # RAM e Swap via /proc/meminfo
+    try:
+        with open("/proc/meminfo", "r") as f:
+            meminfo = {}
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 2:
+                    meminfo[parts[0].rstrip(":")] = int(parts[1])
+
+        info["ram"] = {
+            "total_mb": round(meminfo.get("MemTotal", 0) / 1024),
+            "available_mb": round(meminfo.get("MemAvailable", 0) / 1024),
+            "used_mb": round((meminfo.get("MemTotal", 0) - meminfo.get("MemAvailable", 0)) / 1024),
+        }
+        info["swap"] = {
+            "total_mb": round(meminfo.get("SwapTotal", 0) / 1024),
+            "used_mb": round((meminfo.get("SwapTotal", 0) - meminfo.get("SwapFree", 0)) / 1024),
+        }
+    except Exception:
+        pass
+
+    # Docker version
+    try:
+        client = get_client()
+        ver = client.version()
+        info["docker"] = {
+            "version": ver.get("Version", "unknown"),
+            "api_version": ver.get("ApiVersion", "unknown"),
+        }
+    except Exception:
+        info["docker"] = {"version": "indisponível"}
+
+    # Capacidade de instâncias
+    try:
+        info["capacity"] = calculate_max_instances()
+    except Exception:
+        pass
+
+    # Uptime
+    try:
+        with open("/proc/uptime", "r") as f:
+            uptime_secs = float(f.read().split()[0])
+            days = int(uptime_secs // 86400)
+            hours = int((uptime_secs % 86400) // 3600)
+            info["uptime"] = f"{days}d {hours}h"
+    except Exception:
+        info["uptime"] = "indisponível"
+
+    return info
+
+
+@router.post("/config/restart-service", dependencies=[Depends(verify_token)])
+async def restart_service():
+    """Reinicia o serviço n8n-manager via systemctl."""
+    import subprocess
+    import threading
+
+    def _restart():
+        import time as _time
+        _time.sleep(1)  # Dar tempo para a resposta HTTP ser enviada
+        subprocess.run(["systemctl", "restart", "n8n-manager"], timeout=30)
+
+    threading.Thread(target=_restart, daemon=True).start()
+    return {"message": "Reiniciando serviço... aguarde alguns segundos"}
+
+
 @router.get("/instance/{instance_id}/network", dependencies=[Depends(verify_token)])
 async def instance_network(instance_id: str):
     """Retorna info de rede do container para debug."""

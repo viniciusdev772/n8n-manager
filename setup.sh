@@ -517,15 +517,11 @@ run_wizard() {
         warn "  nano $PROJECT_DIR/.env"
     fi
 
-    # 4. Porta
-    ask "Porta da API" "5050" INPUT_PORT
-    while ! [[ "$INPUT_PORT" =~ ^[0-9]+$ ]]; do
-        warn "Porta deve ser um numero"
-        ask "Porta da API" "5050" INPUT_PORT
-    done
+    # 4. Porta (default, pode alterar depois via web)
+    INPUT_PORT="5050"
 
-    # Token fixo da API + senha RabbitMQ gerada
-    GEN_API_TOKEN="3ddb61bb99c56a8ef825f303a44b71fd706bd3aa38e6e06b443b7268d221e020"
+    # Token da API + senha RabbitMQ gerados automaticamente
+    GEN_API_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 64)
     GEN_RABBITMQ_PASS=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
 
     # Resumo
@@ -540,8 +536,8 @@ run_wizard() {
     else
         echo -e "  ${BOLD}CF Token:${NC}    ${YELLOW}NAO CONFIGURADO${NC}"
     fi
-    echo -e "  ${BOLD}Porta API:${NC}   $INPUT_PORT"
-    echo -e "  ${BOLD}API Token:${NC}   ${GEN_API_TOKEN:0:12}... (gerado)"
+    echo -e "  ${BOLD}Porta API:${NC}   $INPUT_PORT (altere via painel web)"
+    echo -e "  ${BOLD}API Token:${NC}   ${GEN_API_TOKEN:0:12}... (gerado automaticamente)"
     echo ""
 
     if ! confirm "Confirma estas configuracoes? (s/N)" "s"; then
@@ -924,4 +920,8 @@ else
 fi
 echo ""
 echo -e "  ${YELLOW}Portas abertas:${NC} 22 (SSH), 80 (HTTP), 443 (HTTPS), ${FINAL_PORT} (API)"
+echo ""
+echo -e "  ${CYAN}Painel de configuracoes:${NC}"
+echo -e "    ${GREEN}http://${SERVER_IP:-localhost}:${FINAL_PORT}/ui/config.html${NC}"
+echo -e "    Para ajustar dominio, SSL, recursos, cleanup e mais via interface web."
 echo ""

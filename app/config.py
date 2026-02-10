@@ -35,9 +35,9 @@ N8N_IMAGE = "docker.n8n.io/n8nio/n8n"
 DEFAULT_N8N_VERSION = "1.123.20"
 
 # Recursos por instância (otimizado — N8N idle ~100MB, CPU não-intensivo)
-INSTANCE_MEM_LIMIT = "384m"          # Hard limit (heap max 256MB + overhead)
-INSTANCE_MEM_RESERVATION = "192m"    # Soft limit — Docker recupera sob pressão de memória
-INSTANCE_CPU_SHARES = 512            # Peso relativo (default=1024). Sem hard cap de CPU.
+INSTANCE_MEM_LIMIT = os.getenv("INSTANCE_MEM_LIMIT", "384m")
+INSTANCE_MEM_RESERVATION = os.getenv("INSTANCE_MEM_RESERVATION", "192m")
+INSTANCE_CPU_SHARES = int(os.getenv("INSTANCE_CPU_SHARES", "512"))
 
 # Worker — readiness probe
 READINESS_MAX_ATTEMPTS = int(os.getenv("READINESS_MAX_ATTEMPTS", "90"))  # 90 x 2s = 3 min

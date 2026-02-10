@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N8N Manager - Configuracoes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/ui/style.css">
+  <style>
+    .config-layout{display:flex;min-height:100vh}
+    .config-main{margin-left:var(--sidebar-w);flex:1;padding:2.5rem 3rem;max-width:1000px;min-height:100vh}
+    .config-section{margin-bottom:2.5rem}
+    .config-section-title{
+      font-size:.95rem;font-weight:700;color:var(--accent);
+      font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;
+      margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+    }
+    .config-section-title svg{opacity:.6}
+    .config-grid{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r2);
+      padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;
+    }
+    .config-grid.single-col{grid-template-columns:1fr}
+    .config-field{display:flex;flex-direction:column;gap:.4rem}
+    .config-field.full-width{grid-column:1/-1}
+    .config-field label{
+      font-family:var(--font-mono);font-size:.68rem;font-weight:600;
+      color:var(--text-mute);text-transform:uppercase;letter-spacing:.08em;
+    }
+    .config-field input,.config-field select{
+      width:100%;padding:.65rem .85rem;
+      background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r);
+      color:var(--text);font-family:var(--font-body);font-size:.88rem;
+      outline:none;transition:all .2s;
+    }
+    .config-field input:focus,.config-field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+    .config-field input:read-only{opacity:.5;cursor:not-allowed}
+    .config-field input::placeholder{color:var(--text-mute)}
+    .config-field .hint{font-size:.72rem;color:var(--text-mute)}
+    .config-field select{
+      cursor:pointer;-webkit-appearance:none;appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%237c8498' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right .85rem center;padding-right:2.2rem;
+    }
+    .field-row{display:flex;gap:.5rem;align-items:flex-end}
+    .field-row input{flex:1}
+    .field-row .btn{white-space:nowrap;padding:.65rem .85rem}
+
+    .password-wrap{position:relative}
+    .password-wrap input{padding-right:2.6rem}
+    .password-toggle{
+      position:absolute;right:.6rem;top:50%;transform:translateY(-50%);
+      background:none;border:none;color:var(--text-mute);cursor:pointer;padding:.2rem;
+      transition:color .15s;
+    }
+    .password-toggle:hover{color:var(--text)}
+
+    .system-info-grid{
+      display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.75rem;
+    }
+    .sys-card{
+      background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r2);
+      padding:1rem 1.15rem;
+    }
+    .sys-card .sys-label{font-family:var(--font-mono);font-size:.68rem;color:var(--text-mute);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem}
+    .sys-card .sys-value{font-family:var(--font-mono);font-size:1.1rem;font-weight:700;color:var(--text)}
+
+    .save-bar{
+      position:sticky;bottom:0;
+      background:var(--bg-raised);border-top:1px solid var(--border);
+      padding:1rem 0;display:flex;gap:.75rem;align-items:center;
+      margin-top:2rem;z-index:10;
+    }
+    .save-bar .save-msg{font-size:.82rem;color:var(--text-dim);font-family:var(--font-mono)}
+
+    .restart-banner{
+      background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);
+      border-radius:var(--r2);padding:1rem 1.25rem;margin-bottom:1.5rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      font-size:.88rem;color:var(--amber);
+    }
+    .restart-banner.hidden{display:none!important}
+
+    @media(max-width:768px){
+      .config-main{padding:1.5rem}
+      .config-grid{grid-template-columns:1fr;padding:1rem}
+      .system-info-grid{grid-template-columns:1fr 1fr}
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grain"></div>
+
+  <!-- Login (mesmo do index.html) -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-backdrop"><div class="login-grid-lines"></div></div>
+    <div class="login-card" style="--delay:0">
+      <div class="login-brand">
+        <div class="login-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="2" y="2" width="28" height="28" rx="6" stroke="currentColor" stroke-width="2"/>
+            <path d="M10 16h12M16 10v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h1 class="login-logo">n8n<span>manager</span></h1>
+      </div>
+      <p class="login-subtitle">Autenticacao necessaria para continuar</p>
+      <div class="login-field">
+        <label for="token-input">TOKEN DE ACESSO</label>
+        <div class="input-wrap">
+          <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <input type="password" id="token-input" placeholder="Insira seu bearer token" autocomplete="off">
+        </div>
+      </div>
+      <button id="login-btn" onclick="doLogin()">
+        <span>Autenticar</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+      <p id="login-error" class="error hidden"></p>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div id="app" class="hidden config-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <div class="sidebar-brand">
+          <div class="brand-mark">N8</div>
+          <span class="brand-text">manager</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/ui/" class="nav-item">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <div class="nav-divider"></div>
+        <button class="nav-item active">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Configuracoes</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-item nav-logout" onclick="doLogout()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span>Sair</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="config-main">
+      <div class="page-intro stagger-in">
+        <h1>Configuracoes</h1>
+        <p class="page-desc">Gerenciar variaveis de ambiente e parametros do sistema</p>
+      </div>
+
+      <!-- Restart banner -->
+      <div id="restart-banner" class="restart-banner hidden">
+        <span>Alteracoes salvas requerem reinicio do servico para serem aplicadas</span>
+        <button class="btn btn-amber" onclick="restartService()">Reiniciar Servico</button>
+      </div>
+
+      <!-- System Info -->
+      <div class="config-section stagger-in" style="--delay:1">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Informacoes do Sistema
+        </div>
+        <div id="system-info" class="system-info-grid">
+          <div class="sys-card"><div class="sys-label">RAM Total</div><div class="sys-value" id="sys-ram">--</div></div>
+          <div class="sys-card"><div class="sys-label">RAM Disponivel</div><div class="sys-value" id="sys-ram-avail">--</div></div>
+          <div class="sys-card"><div class="sys-label">Swap</div><div class="sys-value" id="sys-swap">--</div></div>
+          <div class="sys-card"><div class="sys-label">Docker</div><div class="sys-value" id="sys-docker">--</div></div>
+          <div class="sys-card"><div class="sys-label">Uptime</div><div class="sys-value" id="sys-uptime">--</div></div>
+          <div class="sys-card"><div class="sys-label">Capacidade</div><div class="sys-value" id="sys-capacity">--</div></div>
+        </div>
+      </div>
+
+      <!-- Dominio & SSL -->
+      <div class="config-section stagger-in" style="--delay:2">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Dominio & SSL
+        </div>
+        <div class="config-grid">
+          <div class="config-field">
+            <label>BASE_DOMAIN</label>
+            <input type="text" id="cfg-BASE_DOMAIN" placeholder="n8n.seudominio.com">
+            <span class="hint">Dominio base para instancias N8N</span>
+          </div>
+          <div class="config-field">
+            <label>ACME_EMAIL</label>
+            <input type="email" id="cfg-ACME_EMAIL" placeholder="admin@exemplo.com">
+            <span class="hint">Email para certificados Let's Encrypt</span>
+          </div>
+          <div class="config-field full-width">
+            <label>CF_DNS_API_TOKEN</label>
+            <div class="field-row">
+              <div class="password-wrap" style="flex:1">
+                <input type="password" id="cfg-CF_DNS_API_TOKEN" placeholder="Token da API Cloudflare">
+                <button type="button" class="password-toggle" onclick="togglePassword('cfg-CF_DNS_API_TOKEN')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <button class="btn btn-outline" onclick="testCloudflare()">Testar Token</button>
+            </div>
+            <span class="hint">Necessario para SSL via DNS Challenge (Zone > DNS > Edit)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Servidor -->
+      <div class="config-section stagger-in" style="--delay:3">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          Servidor
+        </div>
+        <div class="config-grid">
+          <div class="config-field">
+            <label>SERVER_PORT</label>
+            <input type="number" id="cfg-SERVER_PORT" placeholder="5050" min="1" max="65535">
+            <span class="hint">Porta da API (requer restart)</span>
+          </div>
+          <div class="config-field">
+            <label>ALLOWED_ORIGINS</label>
+            <input type="text" id="cfg-ALLOWED_ORIGINS" placeholder="*">
+            <span class="hint">CORS: origens permitidas (virgula para separar)</span>
+          </div>
+          <div class="config-field full-width">
+            <label>API_AUTH_TOKEN</label>
+            <div class="field-row">
+              <div class="password-wrap" style="flex:1">
+                <input type="password" id="cfg-API_AUTH_TOKEN" placeholder="Token de autenticacao">
+                <button type="button" class="password-toggle" onclick="togglePassword('cfg-API_AUTH_TOKEN')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <button class="btn btn-outline" onclick="copyField('cfg-API_AUTH_TOKEN')">Copiar</button>
+            </div>
+            <span class="hint">Use este token no Next.js e no login do painel</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Instancias N8N -->
+      <div class="config-section stagger-in" style="--delay:4">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="5" rx="1.5"/><rect x="2" y="14" width="20" height="5" rx="1.5"/><circle cx="6" cy="7.5" r="1" fill="currentColor"/><circle cx="6" cy="16.5" r="1" fill="currentColor"/></svg>
+          Defaults de Instancias N8N
+        </div>
+        <div class="config-grid">
+          <div class="config-field">
+            <label>DEFAULT_N8N_VERSION</label>
+            <input type="text" id="cfg-DEFAULT_N8N_VERSION" placeholder="1.123.20">
+            <span class="hint">Versao padrao ao criar instancias</span>
+          </div>
+          <div class="config-field">
+            <label>DEFAULT_TIMEZONE</label>
+            <select id="cfg-DEFAULT_TIMEZONE">
+              <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+              <option value="America/Fortaleza">America/Fortaleza</option>
+              <option value="America/Manaus">America/Manaus</option>
+              <option value="America/Bahia">America/Bahia</option>
+              <option value="America/New_York">America/New_York</option>
+              <option value="America/Chicago">America/Chicago</option>
+              <option value="America/Los_Angeles">America/Los_Angeles</option>
+              <option value="Europe/London">Europe/London</option>
+              <option value="Europe/Berlin">Europe/Berlin</option>
+              <option value="Europe/Lisbon">Europe/Lisbon</option>
+              <option value="Asia/Tokyo">Asia/Tokyo</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <div class="config-field">
+            <label>INSTANCE_MEM_LIMIT</label>
+            <select id="cfg-INSTANCE_MEM_LIMIT">
+              <option value="256m">256 MB</option>
+              <option value="384m">384 MB (padrao)</option>
+              <option value="512m">512 MB</option>
+              <option value="768m">768 MB</option>
+              <option value="1024m">1024 MB</option>
+            </select>
+            <span class="hint">Limite de RAM por instancia</span>
+          </div>
+          <div class="config-field">
+            <label>INSTANCE_MEM_RESERVATION</label>
+            <select id="cfg-INSTANCE_MEM_RESERVATION">
+              <option value="128m">128 MB</option>
+              <option value="192m">192 MB (padrao)</option>
+              <option value="256m">256 MB</option>
+              <option value="384m">384 MB</option>
+              <option value="512m">512 MB</option>
+            </select>
+            <span class="hint">Reserva minima de RAM</span>
+          </div>
+          <div class="config-field">
+            <label>INSTANCE_CPU_SHARES</label>
+            <input type="number" id="cfg-INSTANCE_CPU_SHARES" placeholder="512" min="128" max="4096" step="128">
+            <span class="hint">Peso relativo de CPU (128-4096, default 512)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cleanup -->
+      <div class="config-section stagger-in" style="--delay:5">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,6 5,6 21,6"/><path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6"/><path d="M8,6V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"/></svg>
+          Cleanup Automatico
+        </div>
+        <div class="config-grid">
+          <div class="config-field">
+            <label>CLEANUP_MAX_AGE_DAYS</label>
+            <input type="number" id="cfg-CLEANUP_MAX_AGE_DAYS" placeholder="5" min="1" max="365">
+            <span class="hint">Dias ate auto-remocao de instancias</span>
+          </div>
+          <div class="config-field">
+            <label>CLEANUP_INTERVAL_SECONDS</label>
+            <input type="number" id="cfg-CLEANUP_INTERVAL_SECONDS" placeholder="3600" min="300" max="86400">
+            <span class="hint">Intervalo de verificacao (segundos)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infraestrutura (read-only) -->
+      <div class="config-section stagger-in" style="--delay:6">
+        <div class="config-section-title">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Infraestrutura (somente leitura)
+        </div>
+        <div class="config-grid">
+          <div class="config-field">
+            <label>DOCKER_NETWORK</label>
+            <input type="text" id="cfg-DOCKER_NETWORK" readonly>
+          </div>
+          <div class="config-field">
+            <label>RABBITMQ_HOST</label>
+            <input type="text" id="cfg-RABBITMQ_HOST" readonly>
+          </div>
+          <div class="config-field">
+            <label>RABBITMQ_PORT</label>
+            <input type="text" id="cfg-RABBITMQ_PORT" readonly>
+          </div>
+          <div class="config-field">
+            <label>REDIS_HOST</label>
+            <input type="text" id="cfg-REDIS_HOST" readonly>
+          </div>
+          <div class="config-field">
+            <label>REDIS_PORT</label>
+            <input type="text" id="cfg-REDIS_PORT" readonly>
+          </div>
+          <div class="config-field">
+            <label>JOB_TTL</label>
+            <input type="text" id="cfg-JOB_TTL" readonly>
+            <span class="hint">TTL de jobs no Redis (segundos)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Bar -->
+      <div class="save-bar stagger-in" style="--delay:7">
+        <button class="btn btn-primary" onclick="saveConfig()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar Configuracoes
+        </button>
+        <button class="btn btn-amber" onclick="restartService()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Reiniciar Servico
+        </button>
+        <span id="save-msg" class="save-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/ui/config.js"></script>
+</body>
+</html>
