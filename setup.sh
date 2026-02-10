@@ -26,25 +26,6 @@ warn() { echo -e "${YELLOW}[!]${NC} $1"; }
 err()  { echo -e "${RED}[X]${NC} $1"; exit 1; }
 info() { echo -e "${CYAN}[i]${NC} $1"; }
 
-# Prompt interativo (le de /dev/tty para funcionar com curl | bash)
-ask() {
-    local prompt="$1" default="$2" varname="$3" input
-    if [ -n "$default" ]; then
-        read -rp "$(echo -e "  ${CYAN}${prompt}${NC} [${DIM}${default}${NC}]: ")" input < /dev/tty
-    else
-        read -rp "$(echo -e "  ${CYAN}${prompt}${NC}: ")" input < /dev/tty
-    fi
-    eval "$varname=\"${input:-$default}\""
-}
-
-# Confirmar sim/nao (default = $2, retorna 0 para sim)
-confirm() {
-    local prompt="$1" default="${2:-N}" input
-    read -rp "$(echo -e "  ${CYAN}${prompt}${NC} [${default}]: ")" input < /dev/tty
-    input="${input:-$default}"
-    [[ "$input" =~ ^[sS]$ ]]
-}
-
 # --- Verificacoes iniciais ---
 
 if [ "$EUID" -ne 0 ]; then
@@ -478,96 +459,34 @@ deactivate
 
 log "Dependencias Python instaladas em venv"
 
-# --- Wizard interativo de configuracao ---
+# --- Configuracao do .env (automatica, sem wizard) ---
 
-run_wizard() {
-    echo ""
-    echo -e "${CYAN}-----------------------------------------------${NC}"
-    echo -e "${CYAN}  Configuracao do N8N Manager${NC}"
-    echo -e "${CYAN}-----------------------------------------------${NC}"
-    echo ""
+# Detectar IP publico (usado no resumo final)
+SERVER_IP=$(curl -4 -sf --max-time 5 https://ifconfig.me 2>/dev/null \
+    || curl -4 -sf --max-time 5 https://api.ipify.org 2>/dev/null \
+    || curl -4 -sf --max-time 5 https://icanhazip.com 2>/dev/null \
+    || hostname -I | awk '{print $1}')
 
-    # 1. Dominio
-    ask "Dominio base para instancias (ex: n8n.seudominio.com)" "" INPUT_DOMAIN
-    while [ -z "$INPUT_DOMAIN" ]; do
-        warn "Dominio nao pode ser vazio"
-        ask "Dominio base para instancias" "" INPUT_DOMAIN
-    done
+if [ ! -f "$PROJECT_DIR/.env" ]; then
+    info "Gerando .env com tokens seguros..."
 
-    # Extrair dominio raiz para sugerir email (ex: n8n.exemplo.com -> exemplo.com)
-    ROOT_DOMAIN=$(echo "$INPUT_DOMAIN" | awk -F. '{if(NF>2) print $(NF-1)"."$NF; else print $0}')
-    DEFAULT_EMAIL="admin@${ROOT_DOMAIN}"
-
-    # 2. Email SSL
-    ask "Email para certificados SSL" "$DEFAULT_EMAIL" INPUT_EMAIL
-    while [ -z "$INPUT_EMAIL" ]; do
-        warn "Email nao pode ser vazio"
-        ask "Email para certificados SSL" "$DEFAULT_EMAIL" INPUT_EMAIL
-    done
-
-    # 3. Cloudflare token
-    echo ""
-    info "O token Cloudflare e necessario para emitir certificados SSL automaticos."
-    info "Gere em: https://dash.cloudflare.com/profile/api-tokens"
-    info "Permissao necessaria: Zone > DNS > Edit"
-    echo ""
-    ask "Cloudflare DNS API Token (Enter para pular)" "" INPUT_CF_TOKEN
-    if [ -z "$INPUT_CF_TOKEN" ]; then
-        info "Sem token Cloudflare — sistema vai rodar em modo HTTP (local/dev)"
-        info "Para habilitar SSL depois, configure via painel web ou .env"
-    fi
-
-    # 4. Porta (default, pode alterar depois via web)
-    INPUT_PORT="5050"
-
-    # Token da API + senha RabbitMQ gerados automaticamente
     GEN_API_TOKEN=$(openssl rand -hex 32 2>/dev/null || head -c 64 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 64)
     GEN_RABBITMQ_PASS=$(openssl rand -hex 16 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' | head -c 32)
 
-    # Resumo
-    echo ""
-    echo -e "${CYAN}-----------------------------------------------${NC}"
-    echo -e "${CYAN}  Resumo da configuracao${NC}"
-    echo -e "${CYAN}-----------------------------------------------${NC}"
-    echo -e "  ${BOLD}Dominio:${NC}     $INPUT_DOMAIN"
-    echo -e "  ${BOLD}Email SSL:${NC}   $INPUT_EMAIL"
-    if [ -n "$INPUT_CF_TOKEN" ]; then
-        echo -e "  ${BOLD}CF Token:${NC}    ****${INPUT_CF_TOKEN: -4}"
-        echo -e "  ${BOLD}Modo:${NC}        ${GREEN}HTTPS (Cloudflare)${NC}"
-    else
-        echo -e "  ${BOLD}CF Token:${NC}    ${YELLOW}NAO CONFIGURADO${NC}"
-        echo -e "  ${BOLD}Modo:${NC}        ${YELLOW}HTTP (local/dev)${NC}"
-    fi
-    echo -e "  ${BOLD}Porta API:${NC}   $INPUT_PORT (altere via painel web)"
-    echo -e "  ${BOLD}API Token:${NC}   ${GEN_API_TOKEN:0:12}... (gerado automaticamente)"
-    echo ""
-
-    if ! confirm "Confirma estas configuracoes? (s/N)" "s"; then
-        info "Cancelado. Execute o setup novamente."
-        exit 0
-    fi
-
-    # Detectar IP publico
-    SERVER_IP=$(curl -4 -sf --max-time 5 https://ifconfig.me 2>/dev/null \
-        || curl -4 -sf --max-time 5 https://api.ipify.org 2>/dev/null \
-        || curl -4 -sf --max-time 5 https://icanhazip.com 2>/dev/null \
-        || hostname -I | awk '{print $1}')
-
-    # Gerar .env
     cat > "$PROJECT_DIR/.env" << ENVFILE
 # === Gerado pelo setup.sh em $(date '+%Y-%m-%d %H:%M:%S') ===
 
 # Token de autenticacao da API (use este mesmo token no Next.js)
 API_AUTH_TOKEN=$GEN_API_TOKEN
 
-# Dominio base para instancias (ex: nome.BASE_DOMAIN)
-BASE_DOMAIN=$INPUT_DOMAIN
+# Dominio base — configure via painel web
+BASE_DOMAIN=localhost
 
 # Email para certificados SSL (Let's Encrypt via Traefik)
-ACME_EMAIL=$INPUT_EMAIL
+ACME_EMAIL=
 
-# Cloudflare DNS API Token (para SSL wildcard via DNS Challenge)
-CF_DNS_API_TOKEN=$INPUT_CF_TOKEN
+# Cloudflare DNS API Token (vazio = modo HTTP)
+CF_DNS_API_TOKEN=
 
 # Rede Docker para Traefik + instancias
 DOCKER_NETWORK=n8n-public
@@ -583,7 +502,7 @@ REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 
 # Porta do servidor FastAPI
-SERVER_PORT=$INPUT_PORT
+SERVER_PORT=5050
 
 # CORS — origens permitidas (separadas por virgula, ou * para todas)
 ALLOWED_ORIGINS=*
@@ -600,65 +519,30 @@ JOB_TTL=600
 JOB_CLEANUP_TTL=300
 ENVFILE
 
-    log "Arquivo .env gerado"
-    info "IP do servidor: $SERVER_IP"
-    warn "IMPORTANTE: Copie o API_AUTH_TOKEN para o seu Next.js"
-    warn "  cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN"
-}
-
-# Decidir se roda wizard ou mantem .env existente
-if [ ! -f "$PROJECT_DIR/.env" ]; then
-    run_wizard
+    log ".env gerado com tokens seguros"
+    warn "IMPORTANTE: Acesse o painel web para configurar dominio e SSL"
 else
-    log "Arquivo .env ja existe"
-    echo ""
-    if confirm "Deseja reconfigurar o .env? (s/N)" "N"; then
-        run_wizard
-    else
-        info "Mantendo .env existente. Validando..."
+    log ".env ja existe, mantendo configuracao atual"
 
-        # Validar variaveis obrigatorias
-        ENV_WARNINGS=0
-        _val=$(grep -oP 'API_AUTH_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-        if [ -z "$_val" ]; then
-            warn ".env: API_AUTH_TOKEN esta vazio — API nao vai funcionar"
-            ENV_WARNINGS=$((ENV_WARNINGS + 1))
-        fi
-        _val=$(grep -oP 'CF_DNS_API_TOKEN=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-        if [ -z "$_val" ]; then
-            info ".env: CF_DNS_API_TOKEN vazio — rodando em modo HTTP (local)"
-        fi
-        _val=$(grep -oP 'RABBITMQ_PASSWORD=\K.*' "$PROJECT_DIR/.env" 2>/dev/null || echo "")
-        if [ -z "$_val" ] || [ "$_val" = "guest" ]; then
-            warn ".env: RABBITMQ_PASSWORD esta vazio ou inseguro"
-            ENV_WARNINGS=$((ENV_WARNINGS + 1))
-        fi
-        if [ "$ENV_WARNINGS" -eq 0 ]; then
-            log "Variaveis obrigatorias do .env: OK"
-        else
-            warn "Edite o .env: nano $PROJECT_DIR/.env"
-        fi
+    # Propagar variaveis novas (append sem sobrescrever existentes)
+    NEW_VARS_ADDED=0
+    declare -A DEFAULT_VARS=(
+        ["ALLOWED_ORIGINS"]="*"
+        ["CLEANUP_MAX_AGE_DAYS"]="5"
+        ["CLEANUP_INTERVAL_SECONDS"]="3600"
+        ["DEFAULT_TIMEZONE"]="America/Sao_Paulo"
+        ["JOB_TTL"]="600"
+        ["JOB_CLEANUP_TTL"]="300"
+    )
 
-        # Propagar variaveis novas (append sem sobrescrever existentes)
-        NEW_VARS_ADDED=0
-        declare -A DEFAULT_VARS=(
-            ["ALLOWED_ORIGINS"]="*"
-            ["CLEANUP_MAX_AGE_DAYS"]="5"
-            ["CLEANUP_INTERVAL_SECONDS"]="3600"
-            ["DEFAULT_TIMEZONE"]="America/Sao_Paulo"
-            ["JOB_TTL"]="600"
-            ["JOB_CLEANUP_TTL"]="300"
-        )
-
-        for var in "${!DEFAULT_VARS[@]}"; do
-            if ! grep -q "^${var}=" "$PROJECT_DIR/.env" 2>/dev/null; then
-                echo "${var}=${DEFAULT_VARS[$var]}" >> "$PROJECT_DIR/.env"
-                NEW_VARS_ADDED=$((NEW_VARS_ADDED + 1))
-            fi
-        done
-        if [ "$NEW_VARS_ADDED" -gt 0 ]; then
-            log "$NEW_VARS_ADDED nova(s) variavel(is) adicionada(s) ao .env"
+    for var in "${!DEFAULT_VARS[@]}"; do
+        if ! grep -q "^${var}=" "$PROJECT_DIR/.env" 2>/dev/null; then
+            echo "${var}=${DEFAULT_VARS[$var]}" >> "$PROJECT_DIR/.env"
+            NEW_VARS_ADDED=$((NEW_VARS_ADDED + 1))
         fi
+    done
+    if [ "$NEW_VARS_ADDED" -gt 0 ]; then
+        log "$NEW_VARS_ADDED nova(s) variavel(is) adicionada(s) ao .env"
     fi
 fi
 
@@ -912,9 +796,8 @@ echo -e "  ${CYAN}Servico:${NC}      $(systemctl is-active n8n-manager 2>/dev/nu
 echo ""
 if [ "$ERRORS" -gt 0 ]; then
     echo -e "  ${YELLOW}Acao necessaria:${NC}"
-    echo -e "  1. Edite as credenciais:  ${CYAN}nano $PROJECT_DIR/.env${NC}"
-    echo -e "  2. Reinicie o servico:    ${CYAN}systemctl restart n8n-manager${NC}"
-    echo -e "  3. Veja os logs:          ${CYAN}journalctl -u n8n-manager -f${NC}"
+    echo -e "  1. Reinicie o servico:    ${CYAN}systemctl restart n8n-manager${NC}"
+    echo -e "  2. Veja os logs:          ${CYAN}journalctl -u n8n-manager -f${NC}"
 else
     echo -e "  ${GREEN}Servico rodando!${NC} Teste com: ${CYAN}curl http://localhost:${FINAL_PORT}/health${NC}"
     echo -e "  Logs: ${CYAN}journalctl -u n8n-manager -f${NC}"
@@ -922,7 +805,10 @@ fi
 echo ""
 echo -e "  ${YELLOW}Portas abertas:${NC} 22 (SSH), 80 (HTTP), 443 (HTTPS), ${FINAL_PORT} (API)"
 echo ""
-echo -e "  ${CYAN}Painel de configuracoes:${NC}"
+echo -e "  ${GREEN}>>> PROXIMO PASSO <<<${NC}"
+echo -e "  ${CYAN}Acesse o painel web para configurar dominio, SSL e mais:${NC}"
 echo -e "    ${GREEN}http://${SERVER_IP:-localhost}:${FINAL_PORT}/ui/config.html${NC}"
-echo -e "    Para ajustar dominio, SSL, recursos, cleanup e mais via interface web."
+echo ""
+echo -e "  ${CYAN}Token da API (copie para o Next.js):${NC}"
+echo -e "    ${CYAN}cat $PROJECT_DIR/.env | grep API_AUTH_TOKEN${NC}"
 echo ""

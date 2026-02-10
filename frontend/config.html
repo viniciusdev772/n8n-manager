@@ -83,6 +83,28 @@
     }
     .restart-banner.hidden{display:none!important}
 
+    .first-run-banner{
+      background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(52,211,153,.06));
+      border:1px solid rgba(99,102,241,.25);
+      border-radius:var(--r2);padding:1.25rem 1.5rem;margin-bottom:1.5rem;
+    }
+    .first-run-banner.hidden{display:none!important}
+    .first-run-banner h3{
+      font-size:.95rem;font-weight:700;color:var(--accent);margin:0 0 .5rem;
+      display:flex;align-items:center;gap:.5rem;
+    }
+    .first-run-banner p{font-size:.82rem;color:var(--text-mute);margin:0;line-height:1.5}
+    .first-run-banner .steps{margin-top:.75rem;padding-left:1.2rem}
+    .first-run-banner .steps li{font-size:.82rem;color:var(--text-dim);margin-bottom:.3rem}
+    .first-run-banner .steps li strong{color:var(--text)}
+
+    .btn-danger{
+      background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2);
+      font-family:var(--font-mono);font-size:.78rem;padding:.5rem .75rem;
+      border-radius:var(--r);cursor:pointer;transition:all .15s;
+    }
+    .btn-danger:hover{background:rgba(239,68,68,.2)}
+
     @media(max-width:768px){
       .config-main{padding:1.5rem}
       .config-grid{grid-template-columns:1fr;padding:1rem}
@@ -157,6 +179,21 @@
       <div class="page-intro stagger-in">
         <h1>Configuracoes</h1>
         <p class="page-desc">Gerenciar variaveis de ambiente e parametros do sistema</p>
+      </div>
+
+      <!-- First-run banner -->
+      <div id="first-run-banner" class="first-run-banner hidden">
+        <h3>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+          Configuracao Inicial Necessaria
+        </h3>
+        <p>O sistema esta rodando com configuracao padrao. Configure para comecar a criar instancias:</p>
+        <ol class="steps">
+          <li>Defina o <strong>BASE_DOMAIN</strong> (ex: n8n.seudominio.com)</li>
+          <li>Configure o <strong>ACME_EMAIL</strong> para certificados SSL</li>
+          <li>Opcionalmente, adicione o <strong>CF_DNS_API_TOKEN</strong> para HTTPS automatico</li>
+          <li>Clique em <strong>Salvar</strong> e depois <strong>Reiniciar Servico</strong></li>
+        </ol>
       </div>
 
       <!-- Restart banner -->
@@ -242,6 +279,7 @@
                 </button>
               </div>
               <button class="btn btn-outline" onclick="copyField('cfg-API_AUTH_TOKEN')">Copiar</button>
+              <button class="btn-danger" onclick="regenerateToken()">Regenerar</button>
             </div>
             <span class="hint">Use este token no Next.js e no login do painel</span>
           </div>
@@ -345,6 +383,19 @@
           <div class="config-field">
             <label>RABBITMQ_PORT</label>
             <input type="text" id="cfg-RABBITMQ_PORT" readonly>
+          </div>
+          <div class="config-field full-width">
+            <label>RABBITMQ_PASSWORD</label>
+            <div class="field-row">
+              <div class="password-wrap" style="flex:1">
+                <input type="password" id="cfg-RABBITMQ_PASSWORD" readonly>
+                <button type="button" class="password-toggle" onclick="togglePassword('cfg-RABBITMQ_PASSWORD')">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <button class="btn-danger" onclick="regenerateRabbitmqPassword()">Regenerar</button>
+            </div>
+            <span class="hint">Senha do RabbitMQ (regenerar requer restart)</span>
           </div>
           <div class="config-field">
             <label>REDIS_HOST</label>

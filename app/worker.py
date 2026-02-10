@@ -10,6 +10,7 @@ import docker
 import pika
 
 from .config import (
+    BASE_DOMAIN,
     RABBITMQ_HOST,
     RABBITMQ_PASSWORD,
     RABBITMQ_PORT,
@@ -69,12 +70,23 @@ def _process_job(ch, method, properties, body):
 
         push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
 
-        # 3. Aguardar startup — testa URL publica via Traefik (ignora SSL pois cert pode demorar)
+        # 3. Aguardar startup — testa via Traefik
         n8n_ready = False
         public_url = instance_url(name)
         no_ssl_ctx = ssl.create_default_context()
         no_ssl_ctx.check_hostname = False
         no_ssl_ctx.verify_mode = ssl.CERT_NONE
+
+        # Em modo HTTP (local/WSL), acessa via 127.0.0.1 com Host header
+        # pois o dominio pode nao resolver para localhost
+        if SSL_ENABLED:
+            check_url = public_url
+            host_header = None
+        else:
+            host_header = f"{name}.{BASE_DOMAIN}"
+            check_url = "http://127.0.0.1"
+
+        logger.info("Health check URL: %s (Host: %s)", check_url, host_header)
 
         for i in range(READINESS_MAX_ATTEMPTS):
             time.sleep(READINESS_POLL_INTERVAL)
@@ -90,16 +102,19 @@ def _process_job(ch, method, properties, body):
             if ct.status != "running":
                 continue
 
-            # HTTP check na URL publica (via Traefik, sem validar SSL)
+            # HTTP check via Traefik (sem validar SSL)
             try:
-                req = urllib.request.Request(public_url, method="GET")
+                req = urllib.request.Request(check_url, method="GET")
+                if host_header:
+                    req.add_header("Host", host_header)
                 resp = urllib.request.urlopen(req, timeout=5, context=no_ssl_ctx)
                 if resp.status == 200:
                     n8n_ready = True
                     push_event(job_id, {"status": "info", "message": f"N8N acessivel em {public_url}"})
                     break
-            except Exception:
-                pass
+            except Exception as exc:
+                if i % 10 == 0:
+                    logger.debug("Health check tentativa %d falhou: %s", i, exc)
 
             # Feedback a cada 20s
             if i % 10 == 0:

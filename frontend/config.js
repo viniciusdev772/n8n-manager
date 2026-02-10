@@ -86,7 +86,7 @@ const EDITABLE_FIELDS = [
 
 // Campos somente leitura
 const READONLY_FIELDS = [
-  'DOCKER_NETWORK', 'RABBITMQ_HOST', 'RABBITMQ_PORT',
+  'DOCKER_NETWORK', 'RABBITMQ_HOST', 'RABBITMQ_PORT', 'RABBITMQ_PASSWORD',
   'REDIS_HOST', 'REDIS_PORT', 'JOB_TTL',
 ];
 
@@ -127,6 +127,15 @@ async function loadConfig() {
         el.value = cfg[key];
       }
     }
+
+    // Banner de primeiro acesso (BASE_DOMAIN = localhost ou vazio)
+    const domain = cfg['BASE_DOMAIN'] || '';
+    const banner = document.getElementById('first-run-banner');
+    if (!domain || domain === 'localhost') {
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
   } catch (e) {
     toast('Erro ao carregar configuracoes: ' + e.message, 'error');
   }
@@ -161,6 +170,11 @@ async function saveConfig() {
 
     if (result.needs_restart) {
       document.getElementById('restart-banner').classList.remove('hidden');
+    }
+
+    // Esconder banner first-run se dominio foi configurado
+    if (updates['BASE_DOMAIN'] && updates['BASE_DOMAIN'] !== 'localhost') {
+      document.getElementById('first-run-banner').classList.add('hidden');
     }
 
     // Atualizar original para não detectar mudança duplicada
@@ -315,6 +329,44 @@ async function copyField(inputId) {
     document.execCommand('copy');
     input.type = 'password';
     toast('Copiado!', 'success');
+  }
+}
+
+/* ── Regenerate Tokens ────────────────────────── */
+
+async function regenerateToken() {
+  if (!confirm('ATENCAO: Gerar novo API Token vai invalidar o token atual.\n\nVoce sera deslogado e precisara usar o novo token.\n\nContinuar?')) return;
+
+  try {
+    const result = await api('/config/regenerate-token', { method: 'POST' });
+    const newToken = result.token;
+
+    // Atualizar campo na tela
+    const input = document.getElementById('cfg-API_AUTH_TOKEN');
+    input.value = newToken;
+    input.type = 'text';
+
+    // Copiar para clipboard
+    try { await navigator.clipboard.writeText(newToken); } catch {}
+
+    toast('Novo token gerado e copiado! Salve-o antes de reiniciar.', 'success');
+    document.getElementById('restart-banner').classList.remove('hidden');
+  } catch (e) {
+    toast('Erro ao regenerar token: ' + e.message, 'error');
+  }
+}
+
+async function regenerateRabbitmqPassword() {
+  if (!confirm('Regenerar senha do RabbitMQ?\n\nO servico precisara ser reiniciado.')) return;
+
+  try {
+    const result = await api('/config/regenerate-rabbitmq-password', { method: 'POST' });
+    toast('Senha RabbitMQ regenerada (****' + result.password_last4 + '). Reinicie o servico.', 'success');
+    document.getElementById('restart-banner').classList.remove('hidden');
+    // Recarregar config para mostrar nova senha mascarada
+    loadConfig();
+  } catch (e) {
+    toast('Erro ao regenerar senha: ' + e.message, 'error');
   }
 }
 

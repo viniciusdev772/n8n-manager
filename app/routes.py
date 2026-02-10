@@ -894,6 +894,70 @@ async def restart_service():
     return {"message": "Reiniciando serviço... aguarde alguns segundos"}
 
 
+@router.post("/config/regenerate-token", dependencies=[Depends(verify_token)])
+async def regenerate_api_token():
+    """Gera um novo API_AUTH_TOKEN e salva no .env."""
+    import secrets as _secrets
+    import os as _os
+
+    new_token = _secrets.token_hex(32)
+    env_path = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), ".env")
+
+    lines = []
+    found = False
+    if _os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+
+    new_lines = []
+    for line in lines:
+        if line.strip().startswith("API_AUTH_TOKEN="):
+            new_lines.append(f"API_AUTH_TOKEN={new_token}\n")
+            found = True
+        else:
+            new_lines.append(line)
+
+    if not found:
+        new_lines.append(f"API_AUTH_TOKEN={new_token}\n")
+
+    with open(env_path, "w") as f:
+        f.writelines(new_lines)
+
+    return {"token": new_token, "needs_restart": True}
+
+
+@router.post("/config/regenerate-rabbitmq-password", dependencies=[Depends(verify_token)])
+async def regenerate_rabbitmq_password():
+    """Gera nova senha RabbitMQ, salva no .env e recria o container."""
+    import secrets as _secrets
+    import os as _os
+
+    new_pass = _secrets.token_hex(16)
+    env_path = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), ".env")
+
+    lines = []
+    if _os.path.exists(env_path):
+        with open(env_path, "r") as f:
+            lines = f.readlines()
+
+    new_lines = []
+    found = False
+    for line in lines:
+        if line.strip().startswith("RABBITMQ_PASSWORD="):
+            new_lines.append(f"RABBITMQ_PASSWORD={new_pass}\n")
+            found = True
+        else:
+            new_lines.append(line)
+
+    if not found:
+        new_lines.append(f"RABBITMQ_PASSWORD={new_pass}\n")
+
+    with open(env_path, "w") as f:
+        f.writelines(new_lines)
+
+    return {"password_last4": new_pass[-4:], "needs_restart": True}
+
+
 @router.get("/instance/{instance_id}/network", dependencies=[Depends(verify_token)])
 async def instance_network(instance_id: str):
     """Retorna info de rede do container para debug."""
