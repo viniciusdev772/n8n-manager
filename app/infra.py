@@ -8,7 +8,6 @@ import time
 import docker
 
 from .config import (
-    BASE_DOMAIN,
     DOCKER_NETWORK,
     RABBITMQ_PASSWORD,
     RABBITMQ_PORT,
@@ -330,24 +329,9 @@ def ensure_fallback():
         logger.warning("AVISO: %s nao encontrado, pulando fallback", html_path)
         return
 
-    try:
-        c = client.containers.get(name)
-        if c.status == "running":
-            # Verificar se está na rede correta
-            if DOCKER_NETWORK not in _container_networks(c):
-                _connect_to_network(c, DOCKER_NETWORK)
-            logger.info("Fallback '%s' ja esta rodando", name)
-            return
-        # Parado — remover e recriar
-        c.remove(force=True)
-    except docker.errors.NotFound:
-        pass
-
-    # Labels Traefik: catchall para *.n8n.marketcodebrasil.com.br com prioridade baixa
-    # Traefik v3 usa regex puro (sem named groups do v2)
-    # Dots no domínio precisam ser escapados como \. para regex
-    escaped_domain = BASE_DOMAIN.replace(".", "\\.")
-    rule = f"HostRegexp(`[a-z0-9-]+\\.{escaped_domain}`)"
+    # Regra global de fallback para qualquer Host não atendido por rotas de maior prioridade.
+    # Prioridade baixa para não competir com as rotas específicas de instâncias.
+    rule = "HostRegexp(`^.+$`)"
     labels = {
         "traefik.enable": "true",
         f"traefik.http.routers.{name}.rule": rule,
@@ -356,11 +340,43 @@ def ensure_fallback():
         "app.managed": "true",
         "app.type": "fallback",
     }
+    labels[f"traefik.http.routers.{name}.entrypoints"] = "web,websecure"
     if SSL_ENABLED:
-        labels[f"traefik.http.routers.{name}.entrypoints"] = "websecure"
         labels[f"traefik.http.routers.{name}.tls.certresolver"] = TRAEFIK_CERT_RESOLVER
-    else:
-        labels[f"traefik.http.routers.{name}.entrypoints"] = "web"
+
+    recreate = False
+    try:
+        c = client.containers.get(name)
+        c.reload()
+
+        # Se estiver parado, recriar.
+        if c.status != "running":
+            c.remove(force=True)
+            recreate = True
+        else:
+            # Verifica se está na rede correta e com labels/mounts esperados.
+            if DOCKER_NETWORK not in _container_networks(c):
+                _connect_to_network(c, DOCKER_NETWORK)
+
+            current_labels = c.attrs.get("Config", {}).get("Labels", {}) or {}
+            mounts = c.attrs.get("Mounts", [])
+            mount_sources = {m.get("Source") for m in mounts}
+            expected_sources = {os.path.abspath(fallback_dir), os.path.abspath(nginx_conf_path)}
+
+            labels_ok = all(current_labels.get(k) == v for k, v in labels.items())
+            mounts_ok = expected_sources.issubset(mount_sources)
+            if labels_ok and mounts_ok:
+                logger.info("Fallback '%s' ja esta rodando", name)
+                return
+
+            logger.info("Fallback '%s' com configuracao antiga; recriando...", name)
+            c.remove(force=True)
+            recreate = True
+    except docker.errors.NotFound:
+        recreate = True
+
+    if not recreate:
+        return
 
     client.containers.run(
         image="nginx:alpine",
@@ -369,14 +385,14 @@ def ensure_fallback():
         restart_policy={"Name": "unless-stopped"},
         labels=labels,
         volumes={
-            html_path: {"bind": "/usr/share/nginx/html/index.html", "mode": "ro"},
+            os.path.abspath(fallback_dir): {"bind": "/usr/share/nginx/html", "mode": "ro"},
             nginx_conf_path: {"bind": "/etc/nginx/conf.d/default.conf", "mode": "ro"},
         },
         mem_limit="32m",
         cpu_shares=128,
         network=DOCKER_NETWORK,
     )
-    logger.info("Fallback '%s' criado (catchall para subdominios sem instancia)", name)
+    logger.info("Fallback '%s' criado (catchall global para hosts sem instancia)", name)
 
 
 # ─── Pre-pull ───────────────────────────────────────────
