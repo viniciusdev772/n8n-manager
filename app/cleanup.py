@@ -1,6 +1,7 @@
 """Auto-cleanup — remove instâncias N8N com mais de MAX_AGE_DAYS dias."""
 
 import threading
+from datetime import datetime, timezone
 
 from .config import CLEANUP_INTERVAL_SECONDS, CLEANUP_MAX_AGE_DAYS
 from .logger import get_logger

@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from .auth import verify_token
-from .config import BASE_DOMAIN, DEFAULT_N8N_VERSION, SSE_MAX_DURATION
+from .config import BASE_DOMAIN, CLEANUP_MAX_AGE_DAYS, DEFAULT_N8N_VERSION, SSE_MAX_DURATION
 from .docker_client import get_client
 from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
@@ -133,8 +133,8 @@ async def cleanup_preview():
         age = c.get("age_days")
         preview.append({
             **c,
-            "will_be_deleted": age is not None and age >= 5,
-            "days_remaining": max(0, 5 - age) if age is not None else None,
+            "will_be_deleted": age is not None and age >= CLEANUP_MAX_AGE_DAYS,
+            "days_remaining": max(0, CLEANUP_MAX_AGE_DAYS - age) if age is not None else None,
         })
     return {"instances": preview}
 
