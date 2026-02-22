@@ -204,8 +204,13 @@ def _run_parser_api_compose():
     if os.path.exists(env_file):
         base_cmd.extend(["--env-file", env_file])
 
-    build_cmd = base_cmd + ["build", "--progress=plain", "parser-api"]
+    build_cmd = base_cmd + ["--progress", "plain", "build", "parser-api"]
     up_cmd = base_cmd + ["up", "-d", "parser-api"]
+    compose_env = os.environ.copy()
+    compose_env.setdefault("HOME", "/tmp")
+    docker_config_dir = os.path.join(project_root, ".docker")
+    os.makedirs(docker_config_dir, exist_ok=True)
+    compose_env.setdefault("DOCKER_CONFIG", docker_config_dir)
 
     try:
         build_result = subprocess.run(
@@ -214,6 +219,7 @@ def _run_parser_api_compose():
             capture_output=True,
             text=True,
             timeout=900,
+            env=compose_env,
         )
         if build_result.stdout:
             logger.info(build_result.stdout)
@@ -232,6 +238,7 @@ def _run_parser_api_compose():
             capture_output=True,
             text=True,
             timeout=300,
+            env=compose_env,
         )
         if up_result.stdout:
             logger.info(up_result.stdout)
