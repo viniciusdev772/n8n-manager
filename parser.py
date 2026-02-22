@@ -20,7 +20,7 @@ from html import escape
 
 import pdfplumber
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 # ── Thresholds de coluna ─────────────────────────────────────────────────────
 X_ITEM_MAX   = 145   # descrição do item fica em x0 < 145
@@ -202,7 +202,7 @@ app = FastAPI(
         "As saidas sao disponibilizadas em JSON, CSV e HTML."
     ),
     version="1.0.0",
-    docs_url=None,
+    docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
     openapi_tags=TAGS_METADATA,
@@ -623,11 +623,6 @@ def _render_file_tree_html(output_dir: Path, base_url: str):
 )
 def health():
     return {"status": "ok"}
-
-
-@app.get("/docs", include_in_schema=False)
-def docs_redirect():
-    return RedirectResponse(url="/redoc")
 
 
 @app.get(
