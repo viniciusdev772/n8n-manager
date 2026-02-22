@@ -139,9 +139,11 @@ def save_html(json_path, html_path, source_filename=""):
                 f"<tr><td>{color_code}</td><td>{color_desc}</td></tr>"
             )
 
+        empty_row = '<tr><td colspan="2">Sem cores</td></tr>'
+        table_rows = "".join(color_rows) if color_rows else empty_row
         colors_table = (
             "<table><thead><tr><th>Código da Cor</th><th>Descrição da Cor</th></tr></thead>"
-            f"<tbody>{''.join(color_rows) if color_rows else '<tr><td colspan=\"2\">Sem cores</td></tr>'}</tbody></table>"
+            f"<tbody>{table_rows}</tbody></table>"
         )
         item_cards.append(
             f"<section class=\"item-card\"><h3>{item_code} - {item_desc}</h3>{colors_table}</section>"
