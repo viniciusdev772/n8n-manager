@@ -16,6 +16,7 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 from collections import defaultdict
+from html import escape
 
 import pdfplumber
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
@@ -115,6 +116,55 @@ def save_csv(items, path):
     print(f"[OK] CSV  → {path}")
 
 
+def save_html(json_path, html_path, source_filename=""):
+    template_path = os.getenv("PARSER_HTML_TEMPLATE", "templates/parser_report.html")
+    if not os.path.isabs(template_path):
+        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path)
+
+    with open(json_path, "r", encoding="utf-8") as f:
+        items = json.load(f)
+
+    total_colors = sum(len(it.get("colors", [])) for it in items)
+    generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+
+    item_cards = []
+    for it in items:
+        item_code = escape(str(it.get("item_code", "")))
+        item_desc = escape(str(it.get("item_desc", "")))
+        color_rows = []
+        for c in it.get("colors", []):
+            color_code = escape(str(c.get("color_code", "")))
+            color_desc = escape(str(c.get("color_desc", "")))
+            color_rows.append(
+                f"<tr><td>{color_code}</td><td>{color_desc}</td></tr>"
+            )
+
+        colors_table = (
+            "<table><thead><tr><th>Código da Cor</th><th>Descrição da Cor</th></tr></thead>"
+            f"<tbody>{''.join(color_rows) if color_rows else '<tr><td colspan=\"2\">Sem cores</td></tr>'}</tbody></table>"
+        )
+        item_cards.append(
+            f"<section class=\"item-card\"><h3>{item_code} - {item_desc}</h3>{colors_table}</section>"
+        )
+
+    with open(template_path, "r", encoding="utf-8") as f:
+        html_template = f.read()
+
+    html = (
+        html_template
+        .replace("__REPORT_TITLE__", "Relatório Parseado")
+        .replace("__SOURCE_FILE__", escape(source_filename or "Arquivo PDF"))
+        .replace("__GENERATED_AT__", generated_at)
+        .replace("__TOTAL_ITEMS__", str(len(items)))
+        .replace("__TOTAL_COLORS__", str(total_colors))
+        .replace("__ITEMS_HTML__", "".join(item_cards))
+    )
+
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html)
+    print(f"[OK] HTML → {html_path}")
+
+
 def print_summary(items):
     total_cores = sum(len(it["colors"]) for it in items)
     print(f"\n{'='*65}")
@@ -163,6 +213,8 @@ def download_file(filename: str):
         media_type = "application/json"
     elif file_path.suffix.lower() == ".csv":
         media_type = "text/csv"
+    elif file_path.suffix.lower() == ".html":
+        media_type = "text/html"
 
     return FileResponse(str(file_path), filename=file_path.name, media_type=media_type)
 
@@ -189,17 +241,21 @@ async def parse(request: Request, file: UploadFile = File(...)):
         file_base = f"{base_name}_{stamp}"
         json_name = f"{file_base}_parsed.json"
         csv_name = f"{file_base}_parsed.csv"
+        html_name = f"{file_base}_parsed.html"
 
         json_path = output_dir / json_name
         csv_path = output_dir / csv_name
+        html_path = output_dir / html_name
 
         save_json(items, str(json_path))
         save_csv(items, str(csv_path))
+        save_html(str(json_path), str(html_path), source_filename=filename)
         print_summary(items)
 
         base_url = _public_base_url(request)
         json_url = f"{base_url}/files/{quote(json_name)}"
         csv_url = f"{base_url}/files/{quote(csv_name)}"
+        html_url = f"{base_url}/files/{quote(html_name)}"
 
         total_colors = sum(len(it["colors"]) for it in items)
         return {
@@ -209,8 +265,10 @@ async def parse(request: Request, file: UploadFile = File(...)):
             "outputs": {
                 "json": json_url,
                 "csv": csv_url,
+                "html": html_url,
                 "json_local_path": str(json_path),
                 "csv_local_path": str(csv_path),
+                "html_local_path": str(html_path),
             },
         }
     except Exception as e:
@@ -232,6 +290,10 @@ if __name__ == "__main__":
     items = parse_pdf(pdf_path)
 
     base = os.path.splitext(pdf_path)[0]
-    save_json(items, base + "_parsed.json")
-    save_csv(items,  base + "_parsed.csv")
+    json_path = base + "_parsed.json"
+    csv_path = base + "_parsed.csv"
+    html_path = base + "_parsed.html"
+    save_json(items, json_path)
+    save_csv(items, csv_path)
+    save_html(json_path, html_path, source_filename=os.path.basename(pdf_path))
     print_summary(items)

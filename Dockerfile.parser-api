@@ -6,6 +6,7 @@ COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt python-multipart
 
 COPY parser.py ./parser.py
+COPY templates ./templates
 
 ENV PARSER_OUTPUT_DIR=/app/output
 RUN mkdir -p /app/output
