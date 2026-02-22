@@ -20,7 +20,7 @@ from html import escape
 
 import pdfplumber
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 
 # ── Thresholds de coluna ─────────────────────────────────────────────────────
 X_ITEM_MAX   = 145   # descrição do item fica em x0 < 145
@@ -195,12 +195,88 @@ def _public_base_url(request: Request):
     return str(request.base_url).rstrip("/")
 
 
+def _render_file_tree_html(output_dir: Path, base_url: str):
+    entries = []
+    for path in sorted(output_dir.rglob("*")):
+        rel = path.relative_to(output_dir).as_posix()
+        if rel.startswith("."):
+            continue
+        parts = rel.split("/")
+        entries.append((parts, path.is_dir()))
+
+    tree = {}
+    for parts, is_dir in entries:
+        node = tree
+        for i, part in enumerate(parts):
+            if part not in node:
+                node[part] = {"__is_dir__": i < len(parts) - 1 or is_dir, "__children__": {}}
+            node = node[part]["__children__"]
+
+    def render_node(node, parent_path=""):
+        rows = []
+        for name in sorted(node.keys()):
+            item = node[name]
+            is_dir = item["__is_dir__"]
+            current_path = f"{parent_path}/{name}" if parent_path else name
+            safe_path = quote(current_path, safe="/")
+
+            if is_dir:
+                child_html = render_node(item["__children__"], current_path)
+                rows.append(
+                    f"<li><details open><summary>[DIR] {escape(name)}</summary>{child_html}</details></li>"
+                )
+            else:
+                href = f"{base_url}/files/{safe_path}"
+                rows.append(
+                    f"<li>[FILE] <a href=\"{href}\" target=\"_blank\">{escape(name)}</a></li>"
+                )
+        return f"<ul>{''.join(rows)}</ul>"
+
+    tree_html = render_node(tree) if tree else "<p>Nenhum arquivo gerado ainda.</p>"
+    return f"""<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Arquivos do Parser</title>
+  <style>
+    body {{ font-family: "Segoe UI", Arial, sans-serif; margin: 24px; background: #f8fafc; color: #0f172a; }}
+    .wrap {{ max-width: 980px; margin: 0 auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px; }}
+    h1 {{ margin: 0 0 8px; color: #0f766e; }}
+    p {{ color: #475569; }}
+    ul {{ list-style: none; padding-left: 20px; }}
+    li {{ margin: 6px 0; }}
+    a {{ color: #0f766e; text-decoration: none; }}
+    a:hover {{ text-decoration: underline; }}
+    summary {{ cursor: pointer; font-weight: 600; }}
+    code {{ background: #f1f5f9; padding: 2px 6px; border-radius: 6px; }}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Arquivos Gerados</h1>
+    <p>Diretório: <code>{escape(str(output_dir))}</code></p>
+    {tree_html}
+  </div>
+</body>
+</html>"""
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
-@app.get("/files/{filename}")
+@app.get("/files")
+@app.get("/files/")
+def list_files(request: Request):
+    output_dir = _output_dir().resolve()
+    base_url = _public_base_url(request)
+    html = _render_file_tree_html(output_dir, base_url)
+    return HTMLResponse(content=html, media_type="text/html")
+
+
+@app.get("/files/{filename:path}")
 def download_file(filename: str):
     output_dir = _output_dir().resolve()
     file_path = (output_dir / filename).resolve()
