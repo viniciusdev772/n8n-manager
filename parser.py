@@ -210,13 +210,21 @@ def download_file(filename: str):
     if not file_path.is_file():
         raise HTTPException(status_code=404, detail="Arquivo nao encontrado")
 
+    suffix = file_path.suffix.lower()
     media_type = "application/octet-stream"
-    if file_path.suffix.lower() == ".json":
+    if suffix == ".json":
         media_type = "application/json"
-    elif file_path.suffix.lower() == ".csv":
+    elif suffix == ".csv":
         media_type = "text/csv"
-    elif file_path.suffix.lower() == ".html":
+    elif suffix == ".html":
         media_type = "text/html"
+
+    if suffix == ".html":
+        return FileResponse(
+            str(file_path),
+            media_type=media_type,
+            headers={"Content-Disposition": f'inline; filename="{file_path.name}"'},
+        )
 
     return FileResponse(str(file_path), filename=file_path.name, media_type=media_type)
 
