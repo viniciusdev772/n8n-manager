@@ -213,12 +213,17 @@ def _run_parser_api_compose():
             cwd=project_root,
             capture_output=True,
             text=True,
-            timeout=180,
+            timeout=900,
         )
         if result.stdout:
             logger.info(result.stdout)
+        if result.stderr and result.returncode == 0:
+            logger.warning("parser-api compose warnings: %s", result.stderr)
         if result.returncode != 0:
-            logger.error("parser-api compose stderr: %s", result.stderr)
+            if result.stdout:
+                logger.error("parser-api compose stdout (erro): %s", result.stdout)
+            if result.stderr:
+                logger.error("parser-api compose stderr (erro): %s", result.stderr)
             return False
         if needs_build:
             try:
