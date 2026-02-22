@@ -14,10 +14,12 @@ import sys, re, json, csv, os
 import tempfile
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import quote
 from collections import defaultdict
 
 import pdfplumber
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse
 
 # ── Thresholds de coluna ─────────────────────────────────────────────────────
 X_ITEM_MAX   = 145   # descrição do item fica em x0 < 145
@@ -127,19 +129,51 @@ def print_summary(items):
 app = FastAPI(title="PDF Parser API", version="1.0.0")
 
 
+def _output_dir():
+    output_dir = Path(os.getenv("PARSER_OUTPUT_DIR", "parsed_output"))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
+
+
+def _public_base_url(request: Request):
+    forwarded_proto = request.headers.get("x-forwarded-proto")
+    forwarded_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if forwarded_proto and forwarded_host:
+        return f"{forwarded_proto}://{forwarded_host}".rstrip("/")
+    return str(request.base_url).rstrip("/")
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
 
+@app.get("/files/{filename}")
+def download_file(filename: str):
+    output_dir = _output_dir().resolve()
+    file_path = (output_dir / filename).resolve()
+
+    if output_dir not in file_path.parents and file_path != output_dir:
+        raise HTTPException(status_code=400, detail="Arquivo invalido")
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Arquivo nao encontrado")
+
+    media_type = "application/octet-stream"
+    if file_path.suffix.lower() == ".json":
+        media_type = "application/json"
+    elif file_path.suffix.lower() == ".csv":
+        media_type = "text/csv"
+
+    return FileResponse(str(file_path), filename=file_path.name, media_type=media_type)
+
+
 @app.post("/parse")
-async def parse(file: UploadFile = File(...)):
+async def parse(request: Request, file: UploadFile = File(...)):
     filename = file.filename or "arquivo.pdf"
     if not filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Envie um arquivo PDF")
 
-    output_dir = Path(os.getenv("PARSER_OUTPUT_DIR", "parsed_output"))
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _output_dir()
 
     suffix = Path(filename).suffix or ".pdf"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
@@ -152,14 +186,20 @@ async def parse(file: UploadFile = File(...)):
 
         base_name = Path(filename).stem
         stamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        base = output_dir / f"{base_name}_{stamp}"
+        file_base = f"{base_name}_{stamp}"
+        json_name = f"{file_base}_parsed.json"
+        csv_name = f"{file_base}_parsed.csv"
 
-        json_path = str(base) + "_parsed.json"
-        csv_path = str(base) + "_parsed.csv"
+        json_path = output_dir / json_name
+        csv_path = output_dir / csv_name
 
-        save_json(items, json_path)
-        save_csv(items, csv_path)
+        save_json(items, str(json_path))
+        save_csv(items, str(csv_path))
         print_summary(items)
+
+        base_url = _public_base_url(request)
+        json_url = f"{base_url}/files/{quote(json_name)}"
+        csv_url = f"{base_url}/files/{quote(csv_name)}"
 
         total_colors = sum(len(it["colors"]) for it in items)
         return {
@@ -167,8 +207,10 @@ async def parse(file: UploadFile = File(...)):
             "items": items,
             "summary": {"total_items": len(items), "total_colors": total_colors},
             "outputs": {
-                "json": json_path,
-                "csv": csv_path,
+                "json": json_url,
+                "csv": csv_url,
+                "json_local_path": str(json_path),
+                "csv_local_path": str(csv_path),
             },
         }
     except Exception as e:
