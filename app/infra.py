@@ -4,6 +4,7 @@ import os
 import socket
 import subprocess
 import time
+import hashlib
 
 import docker
 
@@ -148,6 +149,90 @@ def _run_config_traefik():
         return True
     except Exception as e:
         logger.error("Erro ao executar config_traefik.py: %s", e)
+        return False
+
+
+def _run_parser_api_compose():
+    """Sobe/atualiza a parser-api dedicada via docker compose."""
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    compose_file = os.path.join(project_root, "docker-compose.parser-api.yml")
+    env_file = os.path.join(project_root, ".env")
+    build_hash_file = os.path.join(project_root, ".parser_api_build_hash")
+
+    def _read_file_sha256(path):
+        hasher = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+
+    def _compute_parser_source_hash():
+        tracked_files = [
+            os.path.join(project_root, "parser.py"),
+            os.path.join(project_root, "requirements.txt"),
+            os.path.join(project_root, "Dockerfile.parser-api"),
+            compose_file,
+        ]
+        hasher = hashlib.sha256()
+        for path in tracked_files:
+            if not os.path.exists(path):
+                return None
+            file_hash = _read_file_sha256(path)
+            hasher.update(path.encode("utf-8"))
+            hasher.update(file_hash.encode("utf-8"))
+        return hasher.hexdigest()
+
+    if not os.path.exists(compose_file):
+        logger.warning("AVISO: %s nao encontrado, pulando parser-api", compose_file)
+        return False
+
+    current_hash = _compute_parser_source_hash()
+    if current_hash is None:
+        logger.warning("Arquivos da parser-api incompletos; pulando parser-api")
+        return False
+
+    previous_hash = ""
+    if os.path.exists(build_hash_file):
+        try:
+            with open(build_hash_file, "r", encoding="utf-8") as f:
+                previous_hash = f.read().strip()
+        except Exception:
+            previous_hash = ""
+
+    needs_build = current_hash != previous_hash
+    cmd = ["docker", "compose", "-f", compose_file]
+    if os.path.exists(env_file):
+        cmd.extend(["--env-file", env_file])
+    cmd.extend(["up", "-d"])
+    if needs_build:
+        cmd.append("--build")
+
+    try:
+        result = subprocess.run(
+            cmd,
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            timeout=180,
+        )
+        if result.stdout:
+            logger.info(result.stdout)
+        if result.returncode != 0:
+            logger.error("parser-api compose stderr: %s", result.stderr)
+            return False
+        if needs_build:
+            try:
+                with open(build_hash_file, "w", encoding="utf-8") as f:
+                    f.write(current_hash)
+                logger.info("parser-api rebuildada (alteracoes detectadas)")
+            except Exception as e:
+                logger.warning("Falha ao salvar hash da parser-api: %s", e)
+        else:
+            logger.info("parser-api sem alteracoes; startup rapido sem rebuild")
+        logger.info("parser-api dedicada pronta")
+        return True
+    except Exception as e:
+        logger.error("Erro ao subir parser-api: %s", e)
         return False
 
 
@@ -419,6 +504,7 @@ def bootstrap_infra():
         ("traefik", ensure_traefik),
         ("redis", ensure_redis),
         ("rabbitmq", ensure_rabbitmq),
+        ("parser-api", _run_parser_api_compose),
         ("fallback", ensure_fallback),
         ("image-pull", _pre_pull_n8n_image),
     ]:

@@ -1,0 +1,25 @@
+version: '3.8'
+
+networks:
+  n8n-public:
+    external: true
+
+services:
+  parser-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.parser-api
+    container_name: parser-api
+    restart: unless-stopped
+    environment:
+      - PARSER_OUTPUT_DIR=/app/output
+    volumes:
+      - ./parser-output:/app/output
+    networks:
+      - n8n-public
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.parser-api.rule=Host(`${PARSER_SUBDOMAIN:-parser}.${BASE_DOMAIN:-localhost}`)
+      - traefik.http.services.parser-api.loadbalancer.server.port=8000
+      - traefik.http.routers.parser-api.entrypoints=web,websecure
+      - traefik.http.routers.parser-api.tls.certresolver=${TRAEFIK_CERT_RESOLVER:-letsencrypt}
