@@ -20,6 +20,8 @@ from html import escape
 
 import pdfplumber
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.openapi.docs import get_redoc_html
+from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, HTMLResponse
 
 # ── Thresholds de coluna ─────────────────────────────────────────────────────
@@ -203,7 +205,7 @@ app = FastAPI(
     ),
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc",
+    redoc_url=None,
     openapi_url="/openapi.json",
     openapi_tags=TAGS_METADATA,
     contact={
@@ -215,6 +217,34 @@ app = FastAPI(
         "identifier": "MIT",
     },
 )
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        summary=app.summary,
+        description=app.description,
+        routes=app.routes,
+        tags=app.openapi_tags,
+        contact=app.contact,
+        license_info=app.license_info,
+    )
+    openapi_schema["info"]["x-logo"] = {
+        "url": "https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png"
+    }
+    openapi_schema["externalDocs"] = {
+        "description": "Documentacao adicional do projeto n8n-manager",
+        "url": "https://github.com/vinicius/n8n-manager",
+    }
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 
 def _output_dir():
@@ -623,6 +653,15 @@ def _render_file_tree_html(output_dir: Path, base_url: str):
 )
 def health():
     return {"status": "ok"}
+
+
+@app.get("/redoc", include_in_schema=False)
+def custom_redoc_html():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=f"{app.title} - ReDoc",
+        redoc_js_url="https://unpkg.com/redoc@2/bundles/redoc.standalone.js",
+    )
 
 
 @app.get(
