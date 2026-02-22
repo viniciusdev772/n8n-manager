@@ -20,7 +20,7 @@ from html import escape
 
 import pdfplumber
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 # ── Thresholds de coluna ─────────────────────────────────────────────────────
 X_ITEM_MAX   = 145   # descrição do item fica em x0 < 145
@@ -178,7 +178,43 @@ def print_summary(items):
             print(f"   └── {c['color_code']} - {c['color_desc']}")
 
 
-app = FastAPI(title="PDF Parser API", version="1.0.0")
+TAGS_METADATA = [
+    {
+        "name": "status",
+        "description": "Endpoints de verificacao e disponibilidade da API.",
+    },
+    {
+        "name": "files",
+        "description": "Navegacao e download dos arquivos gerados pelo parser.",
+    },
+    {
+        "name": "parser",
+        "description": "Upload de PDF e processamento para gerar saidas em JSON, CSV e HTML.",
+    },
+]
+
+
+app = FastAPI(
+    title="PDF Parser API",
+    summary="API para processar PDF de saldo de abastecimento e gerar arquivos parseados.",
+    description=(
+        "API para upload de arquivos PDF e extracao estruturada de itens e cores.  \n"
+        "As saidas sao disponibilizadas em JSON, CSV e HTML."
+    ),
+    version="1.0.0",
+    docs_url=None,
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    openapi_tags=TAGS_METADATA,
+    contact={
+        "name": "Parser API Support",
+        "url": "https://github.com/vinicius/n8n-manager",
+    },
+    license_info={
+        "name": "MIT",
+        "identifier": "MIT",
+    },
+)
 
 
 def _output_dir():
@@ -579,13 +615,28 @@ def _render_file_tree_html(output_dir: Path, base_url: str):
 </html>"""
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    tags=["status"],
+    summary="Health check",
+    description="Retorna o estado de saude da API para monitoramento.",
+)
 def health():
     return {"status": "ok"}
 
 
-@app.get("/files")
-@app.get("/files/")
+@app.get("/docs", include_in_schema=False)
+def docs_redirect():
+    return RedirectResponse(url="/redoc")
+
+
+@app.get(
+    "/files",
+    tags=["files"],
+    summary="Lista arquivos gerados",
+    description="Renderiza uma interface HTML para navegar e filtrar os arquivos parseados.",
+)
+@app.get("/files/", include_in_schema=False)
 def list_files(request: Request):
     output_dir = _output_dir().resolve()
     base_url = _public_base_url(request)
@@ -593,7 +644,12 @@ def list_files(request: Request):
     return HTMLResponse(content=html, media_type="text/html")
 
 
-@app.get("/files/{filename:path}")
+@app.get(
+    "/files/{filename:path}",
+    tags=["files"],
+    summary="Baixa ou visualiza arquivo gerado",
+    description="Retorna um arquivo individual (JSON, CSV, HTML ou binario) da pasta de output.",
+)
 def download_file(filename: str):
     output_dir = _output_dir().resolve()
     file_path = (output_dir / filename).resolve()
@@ -622,7 +678,15 @@ def download_file(filename: str):
     return FileResponse(str(file_path), filename=file_path.name, media_type=media_type)
 
 
-@app.post("/parse")
+@app.post(
+    "/parse",
+    tags=["parser"],
+    summary="Processa um PDF",
+    description=(
+        "Recebe um arquivo PDF, extrai itens e cores, e salva os resultados em JSON, CSV e HTML. "
+        "Tambem retorna links publicos para os arquivos gerados."
+    ),
+)
 async def parse(request: Request, file: UploadFile = File(...)):
     filename = file.filename or "arquivo.pdf"
     if not filename.lower().endswith(".pdf"):
