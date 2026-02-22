@@ -199,41 +199,61 @@ def _run_parser_api_compose():
         except Exception:
             previous_hash = ""
 
-    needs_build = current_hash != previous_hash
-    cmd = ["docker", "compose", "-f", compose_file]
+    hash_changed = current_hash != previous_hash
+    base_cmd = ["docker", "compose", "-f", compose_file]
     if os.path.exists(env_file):
-        cmd.extend(["--env-file", env_file])
-    cmd.extend(["up", "-d"])
-    if needs_build:
-        cmd.append("--build")
+        base_cmd.extend(["--env-file", env_file])
+
+    build_cmd = base_cmd + ["build", "--progress=plain", "parser-api"]
+    up_cmd = base_cmd + ["up", "-d", "parser-api"]
 
     try:
-        result = subprocess.run(
-            cmd,
+        build_result = subprocess.run(
+            build_cmd,
             cwd=project_root,
             capture_output=True,
             text=True,
             timeout=900,
         )
-        if result.stdout:
-            logger.info(result.stdout)
-        if result.stderr and result.returncode == 0:
-            logger.warning("parser-api compose warnings: %s", result.stderr)
-        if result.returncode != 0:
-            if result.stdout:
-                logger.error("parser-api compose stdout (erro): %s", result.stdout)
-            if result.stderr:
-                logger.error("parser-api compose stderr (erro): %s", result.stderr)
+        if build_result.stdout:
+            logger.info(build_result.stdout)
+        if build_result.stderr and build_result.returncode == 0:
+            logger.warning("parser-api build warnings: %s", build_result.stderr)
+        if build_result.returncode != 0:
+            if build_result.stdout:
+                logger.error("parser-api build stdout (erro): %s", build_result.stdout)
+            if build_result.stderr:
+                logger.error("parser-api build stderr (erro): %s", build_result.stderr)
             return False
-        if needs_build:
-            try:
-                with open(build_hash_file, "w", encoding="utf-8") as f:
-                    f.write(current_hash)
-                logger.info("parser-api rebuildada (alteracoes detectadas)")
-            except Exception as e:
-                logger.warning("Falha ao salvar hash da parser-api: %s", e)
+
+        up_result = subprocess.run(
+            up_cmd,
+            cwd=project_root,
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        if up_result.stdout:
+            logger.info(up_result.stdout)
+        if up_result.stderr and up_result.returncode == 0:
+            logger.warning("parser-api up warnings: %s", up_result.stderr)
+        if up_result.returncode != 0:
+            if up_result.stdout:
+                logger.error("parser-api up stdout (erro): %s", up_result.stdout)
+            if up_result.stderr:
+                logger.error("parser-api up stderr (erro): %s", up_result.stderr)
+            return False
+
+        try:
+            with open(build_hash_file, "w", encoding="utf-8") as f:
+                f.write(current_hash)
+        except Exception as e:
+            logger.warning("Falha ao salvar hash da parser-api: %s", e)
+
+        if hash_changed:
+            logger.info("parser-api rebuildada (alteracoes detectadas por hash)")
         else:
-            logger.info("parser-api sem alteracoes; startup rapido sem rebuild")
+            logger.info("parser-api rebuildada (hash sem alteracoes, conforme startup forcado)")
         logger.info("parser-api dedicada pronta")
         return True
     except Exception as e:
