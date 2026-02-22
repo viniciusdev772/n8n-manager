@@ -195,6 +195,160 @@ TAGS_METADATA = [
     },
 ]
 
+HEALTH_RESPONSES = {
+    200: {
+        "description": "API disponivel.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "ok": {
+                        "summary": "Servico saudavel",
+                        "value": {"status": "ok"},
+                    }
+                }
+            }
+        },
+    }
+}
+
+PARSE_RESPONSES = {
+    200: {
+        "description": "PDF processado com sucesso.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "pdf_parseado": {
+                        "summary": "Sucesso com arquivos gerados",
+                        "value": {
+                            "file": "relatorio_saldo.pdf",
+                            "items": [
+                                {
+                                    "item_code": "1234",
+                                    "item_desc": "TENIS CASUAL",
+                                    "colors": [
+                                        {
+                                            "color_code": "101",
+                                            "color_desc": "PRETO",
+                                        }
+                                    ],
+                                }
+                            ],
+                            "summary": {"total_items": 1, "total_colors": 1},
+                            "outputs": {
+                                "json": "https://api.exemplo.com/files/relatorio_saldo_20260222093000_parsed.json",
+                                "csv": "https://api.exemplo.com/files/relatorio_saldo_20260222093000_parsed.csv",
+                                "html": "https://api.exemplo.com/files/relatorio_saldo_20260222093000_parsed.html",
+                                "json_local_path": "parsed_output/relatorio_saldo_20260222093000_parsed.json",
+                                "csv_local_path": "parsed_output/relatorio_saldo_20260222093000_parsed.csv",
+                                "html_local_path": "parsed_output/relatorio_saldo_20260222093000_parsed.html",
+                            },
+                        },
+                    },
+                    "pdf_com_varios_itens": {
+                        "summary": "Sucesso com multiplos itens",
+                        "value": {
+                            "file": "saldo_fev_2026.pdf",
+                            "items": [
+                                {
+                                    "item_code": "4567",
+                                    "item_desc": "SAPATILHA FEMININA",
+                                    "colors": [
+                                        {
+                                            "color_code": "205",
+                                            "color_desc": "BRANCO",
+                                        },
+                                        {
+                                            "color_code": "330",
+                                            "color_desc": "ROSA CLARO",
+                                        },
+                                    ],
+                                },
+                                {
+                                    "item_code": "8910",
+                                    "item_desc": "SANDALIA ANABELA",
+                                    "colors": [
+                                        {
+                                            "color_code": "777",
+                                            "color_desc": "CARAMELO",
+                                        }
+                                    ],
+                                },
+                            ],
+                            "summary": {"total_items": 2, "total_colors": 3},
+                            "outputs": {
+                                "json": "https://api.exemplo.com/files/saldo_fev_2026_20260222093110_parsed.json",
+                                "csv": "https://api.exemplo.com/files/saldo_fev_2026_20260222093110_parsed.csv",
+                                "html": "https://api.exemplo.com/files/saldo_fev_2026_20260222093110_parsed.html",
+                                "json_local_path": "parsed_output/saldo_fev_2026_20260222093110_parsed.json",
+                                "csv_local_path": "parsed_output/saldo_fev_2026_20260222093110_parsed.csv",
+                                "html_local_path": "parsed_output/saldo_fev_2026_20260222093110_parsed.html",
+                            },
+                        },
+                    },
+                }
+            }
+        },
+    },
+    400: {
+        "description": "Arquivo invalido (nao PDF).",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "arquivo_nao_pdf": {
+                        "summary": "Validacao de extensao",
+                        "value": {"detail": "Envie um arquivo PDF"},
+                    }
+                }
+            }
+        },
+    },
+    500: {
+        "description": "Falha interna durante o parse do PDF.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "erro_parse": {
+                        "summary": "Falha ao processar",
+                        "value": {
+                            "detail": "Falha ao processar PDF: erro ao ler tabela da pagina 2"
+                        },
+                    }
+                }
+            }
+        },
+    },
+}
+
+DOWNLOAD_FILE_RESPONSES = {
+    200: {"description": "Arquivo retornado com sucesso (JSON/CSV/HTML/binario)."},
+    400: {
+        "description": "Caminho de arquivo invalido.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "arquivo_invalido": {
+                        "summary": "Tentativa de path traversal",
+                        "value": {"detail": "Arquivo invalido"},
+                    }
+                }
+            }
+        },
+    },
+    404: {
+        "description": "Arquivo nao encontrado.",
+        "content": {
+            "application/json": {
+                "examples": {
+                    "nao_encontrado": {
+                        "summary": "Arquivo inexistente",
+                        "value": {"detail": "Arquivo nao encontrado"},
+                    }
+                }
+            }
+        },
+    },
+}
+
 
 app = FastAPI(
     title="PDF Parser API",
@@ -650,6 +804,7 @@ def _render_file_tree_html(output_dir: Path, base_url: str):
     tags=["status"],
     summary="Health check",
     description="Retorna o estado de saude da API para monitoramento.",
+    responses=HEALTH_RESPONSES,
 )
 def health():
     return {"status": "ok"}
@@ -683,6 +838,7 @@ def list_files(request: Request):
     tags=["files"],
     summary="Baixa ou visualiza arquivo gerado",
     description="Retorna um arquivo individual (JSON, CSV, HTML ou binario) da pasta de output.",
+    responses=DOWNLOAD_FILE_RESPONSES,
 )
 def download_file(filename: str):
     output_dir = _output_dir().resolve()
@@ -720,6 +876,7 @@ def download_file(filename: str):
         "Recebe um arquivo PDF, extrai itens e cores, e salva os resultados em JSON, CSV e HTML. "
         "Tambem retorna links publicos para os arquivos gerados."
     ),
+    responses=PARSE_RESPONSES,
 )
 async def parse(request: Request, file: UploadFile = File(...)):
     filename = file.filename or "arquivo.pdf"
