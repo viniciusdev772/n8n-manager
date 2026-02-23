@@ -1,0 +1,170 @@
+[
+  {
+    "item_code": "44187",
+    "item_desc": "CACHAREL SOFT(B P/V 11/12)+ESP PU",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "abast": -3.0445,
+        "saldo_casa": "177.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "89673",
+        "color_desc": "TAN 1080",
+        "abast": -46.8335,
+        "saldo_casa": "642.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "52531",
+        "color_desc": "NUDE 658",
+        "abast": -13.3672,
+        "saldo_casa": "150.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "abast": -1.0355,
+        "saldo_casa": "57.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "58702",
+    "item_desc": "FORRO CACHAREL CONFORT(MD O/I",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "29452",
+        "color_desc": "BEGE 435",
+        "abast": -4.4406,
+        "saldo_casa": "575.60000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67345",
+    "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "105897",
+        "color_desc": "OSTRA 1431/C",
+        "abast": -17.9832,
+        "saldo_casa": "30.40000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107823",
+        "color_desc": "OLIVE 1469/CR",
+        "abast": -0.3985,
+        "saldo_casa": "25.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "94157",
+    "item_desc": "NAPA TURIM PU 1.0+VELVET",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "95701",
+        "color_desc": "CAMEL 1165/CR",
+        "abast": -5.522,
+        "saldo_casa": "61.20000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "114196",
+    "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "53180",
+        "color_desc": "NUDE 658/CREM",
+        "abast": -0.72,
+        "saldo_casa": "36.40000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "143760",
+    "item_desc": "METALIZADO LONDON PU 0.9+BASE",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRET",
+        "abast": -1.872,
+        "saldo_casa": "1.20000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "185735",
+    "item_desc": "NAPA RELAX PU 2.0 (MD O/I 25) -IM",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF",
+        "abast": -23.3061,
+        "saldo_casa": "50.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108729",
+        "color_desc": "TERRACOTA",
+        "abast": -36.2921,
+        "saldo_casa": "50.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187451",
+    "item_desc": "NYLON KANSAS(ACT O/I22)+ESPUMA",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "41291",
+        "color_desc": "BEGE 435/BRAN",
+        "abast": -24.48,
+        "saldo_casa": "71.50000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "200476",
+    "item_desc": "NAPA TRESSE TORONTO PU 0.9 (B P",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRET",
+        "abast": -6.4744,
+        "saldo_casa": "10.40000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  }
+]
