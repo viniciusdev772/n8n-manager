@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Itens em Comum</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --line: #dbe3ec;
+      --text: #102236;
+      --muted: #516277;
+      --accent: #0054a6;
+      --ok: #0f766e;
+      --warn: #b45309;
+    }
+    body { font-family: "Segoe UI", Tahoma, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 16px; }
+    .head { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
+    h2 { margin: 0; font-size: 22px; }
+    .sub { margin-top: 5px; color: var(--muted); font-size: 13px; }
+    .stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    .pill { background: #edf4fb; border: 1px solid #c9ddef; color: #113c66; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 600; }
+    .tools { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 12px; }
+    input, select { border: 1px solid #bfd0e2; border-radius: 10px; padding: 10px; font-size: 14px; background: #fff; }
+    label { font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 4px; display: block; }
+    .toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+    .panel h3 { margin: 0; padding: 12px; border-bottom: 1px solid var(--line); font-size: 16px; }
+    .empty { padding: 16px; color: var(--muted); }
+    .note { font-size: 12px; color: var(--muted); padding: 0 12px 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #e7edf4; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #f6f9fc; color: #294864; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+    .prio { font-weight: 700; color: var(--accent); }
+    .dest { font-weight: 700; }
+    .muted { color: var(--muted); }
+    .status-pill { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid transparent; }
+    .status-ok { background: #e6f7f2; color: #0f766e; border-color: #b7e7d9; }
+    .status-partial { background: #fff7e6; color: #b45309; border-color: #f4d7a4; }
+    .status-none { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+    .group-card { border-top: 1px solid #e7edf4; }
+    .group-head { padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; cursor: pointer; background: #fcfdff; }
+    .group-title { font-weight: 700; font-size: 14px; }
+    .group-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .badge { font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 999px; border: 1px solid #d7e6f6; background: #eef6ff; color: #0b4a86; height: fit-content; }
+    .details { display: none; padding: 0 12px 12px; }
+    .open .details { display: block; }
+    @media (max-width: 980px) {
+      .tools { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h2>Painel de Distribuição de Itens em Comum</h2>
+      <div class="sub">Fonte: 1771933554666_D01_75911416824082243.pdf | Gerado em: 2026-02-24 23:50:28 UTC</div>
+      <div class="stats">
+        <span class="pill">Grupos: 33</span>
+        <span class="pill">Itens em comum: 33</span>
+        <span class="pill" id="destinos-count">Destinos visíveis: 0</span>
+        <span class="pill" id="coverage-overall">Cobertura geral: 0%</span>
+      </div>
+    </div>
+    <div class="tools">
+      <div>
+        <label for="q">Busca rápida</label>
+        <input id="q" placeholder="Item, descrição, cor ou mini fábrica...">
+      </div>
+      <div>
+        <label for="mini">Filtrar mini fábrica</label>
+        <select id="mini"><option value="">Todas as mini fábricas</option></select>
+      </div>
+      <div>
+        <label for="sort">Ordenação</label>
+        <select id="sort">
+          <option value="prio">Prioridade operacional</option>
+          <option value="need">Maior necessidade</option>
+          <option value="item">Código do item</option>
+          <option value="mini">Mais mini fábricas</option>
+        </select>
+      </div>
+      <div>
+        <label for="coverage">Filtro de Saldo Casa</label>
+        <select id="coverage">
+          <option value="">Todos</option>
+          <option value="short">Com falta de saldo</option>
+          <option value="ok">Saldo cobre total</option>
+          <option value="zero">Sem saldo em casa</option>
+        </select>
+      </div>
+      <label class="toggle"><input type="checkbox" id="onlyMulti"> Mostrar só itens que atendem 2+ minis</label>
+    </div>
+
+    <section class="panel">
+      <h3>Roteiro de Envio (uma linha por destino)</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Prioridade</th>
+            <th>Item</th>
+            <th>Cor / Tam</th>
+            <th>Mini Fábrica Destino</th>
+            <th>Deve</th>
+            <th>Saldo Casa</th>
+            <th>Origem</th>
+            <th>Necessidade</th>
+            <th>Cobertura</th>
+            <th>Saldo Após</th>
+            <th>Abrange</th>
+          </tr>
+        </thead>
+        <tbody id="dispatch-rows"></tbody>
+      </table>
+      <div class="empty" id="dispatch-empty" style="display:none">Nenhum destino encontrado com os filtros atuais.</div>
+      <div class="note">Prioridade operacional considera necessidade do destino e abrangência do item para múltiplas mini fábricas.</div>
+    </section>
+
+    <section class="panel">
+      <h3>Conferência por Item em Comum</h3>
+      <div id="groups"></div>
+      <div class="empty" id="groups-empty" style="display:none">Nenhum item comum encontrado com os filtros atuais.</div>
+    </section>
+  </div>
+  <script>
+    const DATA = [{"item_code": "56577", "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)", "tipo_unidade": "", "codigo_cor": "35312", "descricao_cor": "BRANCO OFF 526", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 9.009, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -7.896, "necessidade": 7.896, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -1.113, "necessidade": 1.113, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "67345", "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40 0.40", "tipo_unidade": "", "codigo_cor": "101602", "descricao_cor": "CHOCOLATE 1271/PRETO 01", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 36.291, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 9", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -0.724, "necessidade": 0.724, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -35.307, "necessidade": 35.307, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -0.26, "necessidade": 0.26, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "73034", "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BASE FLEX 1.0", "tipo_unidade": "", "codigo_cor": "101646", "descricao_cor": "CHOCOLATE 1271/PRETO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 1.43, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -0.602, "necessidade": 0.602, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -0.828, "necessidade": 0.828, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "128938", "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21)", "tipo_unidade": "", "codigo_cor": "95373", "descricao_cor": "CAMEL 1165", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 8.668, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -5.0, "necessidade": 5.0, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -3.668, "necessidade": 3.668, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "149602", "item_desc": "CAMURCA STRECH DUO + VELVET (MD O/I /23)", "tipo_unidade": "", "codigo_cor": "15787", "descricao_cor": "PRETO 01/PRETO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 4.884, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 38"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -4.038, "necessidade": 4.038, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 38", "deve_abast": -0.846, "necessidade": 0.846, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "192842", "item_desc": "BRILHO ITALIA PU 0.9 (P/V 25/26)+BASE FLEX", "tipo_unidade": "", "codigo_cor": "34788", "descricao_cor": "DOURADO/BISCOITO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 19.048, "mini_fabricas_destino": ["Mini Fabrica - 6", "Mini Fabrica - 24"], "destinos": [{"mini_fabrica": "Mini Fabrica - 6", "deve_abast": -1.628, "necessidade": 1.628, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 24", "deve_abast": -17.42, "necessidade": 17.42, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "48926", "item_desc": "CAMURCA FLEX 0.30+BASE FLEX 1.0 (P/V 12/13)", "tipo_unidade": "", "codigo_cor": "96142", "descricao_cor": "CAMEL 1165/BISCOITO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 1.301, "mini_fabricas_destino": ["Mini Fabrica - 9", "Mini Fabrica - 30"], "destinos": [{"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -0.759, "necessidade": 0.759, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -0.542, "necessidade": 0.542, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "60121", "item_desc": "CAMURCA FLEX 0.30+FLANELA 475/11 0.40", "tipo_unidade": "", "codigo_cor": "95810", "descricao_cor": "CAMEL 1165/CRU 20", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 0.477, "mini_fabricas_destino": ["Mini Fabrica - 9", "Mini Fabrica - 30"], "destinos": [{"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -0.293, "necessidade": 0.293, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -0.184, "necessidade": 0.184, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "112853", "item_desc": "FORRO SOFT CONFORTO PU 0.7(MD P/V 18/19)+ESPUMA PU 6,5MM D.60+SPONLACE 30GR", "tipo_unidade": "", "codigo_cor": "29497", "descricao_cor": "BEGE 435/BRANCO 15", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 59.81, "mini_fabricas_destino": ["Mini Fabrica - 9", "Mini Fabrica - 10"], "destinos": [{"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -41.478, "necessidade": 41.478, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -18.332, "necessidade": 18.332, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "143760", "item_desc": "METALIZADO LONDON PU 0.9+BASE FLEX", "tipo_unidade": "", "codigo_cor": "15787", "descricao_cor": "PRETO 01/PRETO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 0.758, "mini_fabricas_destino": ["Mini Fabrica - 9", "Mini Fabrica - 26"], "destinos": [{"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -0.086, "necessidade": 0.086, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 26", "deve_abast": -0.672, "necessidade": 0.672, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "196770", "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)", "tipo_unidade": "", "codigo_cor": "96942", "descricao_cor": "MULTI CAMEL 1165", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 7.864, "mini_fabricas_destino": ["Mini Fabrica - 9", "Mini Fabrica - 40", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 9", "deve_abast": -7.386, "necessidade": 7.386, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -0.324, "necessidade": 0.324, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -0.154, "necessidade": 0.154, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "187654", "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BASE FLEX", "tipo_unidade": "", "codigo_cor": "37331", "descricao_cor": "BRANCO OFF 526/BISCOITO", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 41.032, "mini_fabricas_destino": ["Mini Fabrica - 10", "Mini Fabrica - 16", "Mini Fabrica - 43"], "destinos": [{"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -19.675, "necessidade": 19.675, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 16", "deve_abast": -11.88, "necessidade": 11.88, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 43", "deve_abast": -9.477, "necessidade": 9.477, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "187654", "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BASE FLEX", "tipo_unidade": "", "codigo_cor": "96142", "descricao_cor": "CAMEL 1165/BISCOITO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 10.454, "mini_fabricas_destino": ["Mini Fabrica - 10", "Mini Fabrica - 16"], "destinos": [{"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -8.474, "necessidade": 8.474, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 16", "deve_abast": -1.98, "necessidade": 1.98, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "188721", "item_desc": "TECIDO MARAGOGI(ACT 0/I 25)+ ESPUMA D23 2,5MM + TECIDO MEIA MALHA 100GR", "tipo_unidade": "", "codigo_cor": "32908", "descricao_cor": "PRETO 01/CINZA/PRETO 01", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 48.362, "mini_fabricas_destino": ["Mini Fabrica - 10", "Mini Fabrica - 34"], "destinos": [{"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -2.816, "necessidade": 2.816, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 34", "deve_abast": -45.546, "necessidade": 45.546, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "188721", "item_desc": "TECIDO MARAGOGI(ACT 0/I 25)+ ESPUMA D23 2,5MM + TECIDO MEIA MALHA 100GR", "tipo_unidade": "", "codigo_cor": "93368", "descricao_cor": "MARINHO 1128/CINZA/PRETO 01", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 6.548, "mini_fabricas_destino": ["Mini Fabrica - 10", "Mini Fabrica - 34"], "destinos": [{"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -4.216, "necessidade": 4.216, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 34", "deve_abast": -2.332, "necessidade": 2.332, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "202067", "item_desc": "TECIDO SUBLIME 160GR+ ESP D26 3MM+ JERSEY", "tipo_unidade": "", "codigo_cor": "16143", "descricao_cor": "PRETO 01/PRETO 01/PRETO 01", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 180.21, "mini_fabricas_destino": ["Mini Fabrica - 10", "Mini Fabrica - 34"], "destinos": [{"mini_fabrica": "Mini Fabrica - 10", "deve_abast": -18.056, "necessidade": 18.056, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 34", "deve_abast": -162.154, "necessidade": 162.154, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "92871", "item_desc": "MALHA ADTERM MA 140P CONFORFLEX 650C", "tipo_unidade": "", "codigo_cor": "23654", "descricao_cor": "CRU 20", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 11.144, "mini_fabricas_destino": ["Mini Fabrica - 16", "Mini Fabrica - 30", "Mini Fabrica - 43"], "destinos": [{"mini_fabrica": "Mini Fabrica - 16", "deve_abast": -0.964, "necessidade": 0.964, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -3.401, "necessidade": 3.401, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 43", "deve_abast": -6.779, "necessidade": 6.779, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "64664", "item_desc": "FORRO FACHETE PVC 0.8 (B O/I 2015)", "tipo_unidade": "", "codigo_cor": "15745", "descricao_cor": "PRETO 01", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 5.242, "mini_fabricas_destino": ["Mini Fabrica - 20", "Mini Fabrica - 30"], "destinos": [{"mini_fabrica": "Mini Fabrica - 20", "deve_abast": -4.084, "necessidade": 4.084, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -1.158, "necessidade": 1.158, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "67244", "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)", "tipo_unidade": "", "codigo_cor": "83517", "descricao_cor": "CREME 985", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 31.92, "mini_fabricas_destino": ["Mini Fabrica - 20", "Mini Fabrica - 30", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 20", "deve_abast": -18.402, "necessidade": 18.402, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -4.956, "necessidade": 4.956, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -8.562, "necessidade": 8.562, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "82290", "item_desc": "GLITER MINI SHINE(M/MK O/I 17)", "tipo_unidade": "", "codigo_cor": "41", "descricao_cor": "PRATA", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 12.753, "mini_fabricas_destino": ["Mini Fabrica - 20", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 20", "deve_abast": -8.093, "necessidade": 8.093, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -4.66, "necessidade": 4.66, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "82290", "item_desc": "GLITER MINI SHINE(M/MK O/I 17)", "tipo_unidade": "", "codigo_cor": "23146", "descricao_cor": "OURO ROSADO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 27.183, "mini_fabricas_destino": ["Mini Fabrica - 20", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 20", "deve_abast": -4.494, "necessidade": 4.494, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -22.689, "necessidade": 22.689, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "140345", "item_desc": "NAPA BERLIM PU 1.2- IMPORTADO", "tipo_unidade": "", "codigo_cor": "83508", "descricao_cor": "CAFE 987", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 15.214, "mini_fabricas_destino": ["Mini Fabrica - 20", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 20", "deve_abast": -9.624, "necessidade": 9.624, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -5.59, "necessidade": 5.59, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "97488", "item_desc": "PANO COURACA P/ REFORCO TX 007/B", "tipo_unidade": "", "codigo_cor": "1", "descricao_cor": "BRANCO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 34.6, "mini_fabricas_destino": ["Mini Fabrica - 26", "Mini Fabrica - 34"], "destinos": [{"mini_fabrica": "Mini Fabrica - 26", "deve_abast": -15.667, "necessidade": 15.667, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 34", "deve_abast": -18.933, "necessidade": 18.933, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "196437", "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+SARJA 7030/50", "tipo_unidade": "", "codigo_cor": "96662", "descricao_cor": "MULTI CAMEL 1165/PRETO 01", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 22.527, "mini_fabricas_destino": ["Mini Fabrica - 26", "Mini Fabrica - 30", "Mini Fabrica - 38"], "destinos": [{"mini_fabrica": "Mini Fabrica - 26", "deve_abast": -13.89, "necessidade": 13.89, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -5.745, "necessidade": 5.745, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 38", "deve_abast": -2.892, "necessidade": 2.892, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "67244", "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)", "tipo_unidade": "", "codigo_cor": "105828", "descricao_cor": "CORAL 1435", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 3.885, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -2.179, "necessidade": 2.179, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -1.706, "necessidade": 1.706, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "67244", "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)", "tipo_unidade": "", "codigo_cor": "107610", "descricao_cor": "OLIVE 1469", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 7.347, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 38", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -4.493, "necessidade": 4.493, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 38", "deve_abast": -0.479, "necessidade": 0.479, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -2.375, "necessidade": 2.375, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "183768", "item_desc": "NAPA GARDA PU 1.0 + SARJA 7030/40 0.40", "tipo_unidade": "", "codigo_cor": "35324", "descricao_cor": "BRANCO OFF 526/CRU 20", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 100.041, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 38"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -97.751, "necessidade": 97.751, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 38", "deve_abast": -2.29, "necessidade": 2.29, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "184004", "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO", "tipo_unidade": "", "codigo_cor": "101878", "descricao_cor": "CHOCOLATE 1271/PRETO 01/PRETO 01", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 18.973, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 43"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -14.392, "necessidade": 14.392, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 43", "deve_abast": -4.581, "necessidade": 4.581, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "184004", "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO", "tipo_unidade": "", "codigo_cor": "108445", "descricao_cor": "OLIVE 1469/BRANCO 15/NATURAL", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 2.282, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -0.316, "necessidade": 0.316, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -1.966, "necessidade": 1.966, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "197406", "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+VELVET", "tipo_unidade": "", "codigo_cor": "96673", "descricao_cor": "MULTI CAMEL 1165/PRETO", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 16.079, "mini_fabricas_destino": ["Mini Fabrica - 30", "Mini Fabrica - 40"], "destinos": [{"mini_fabrica": "Mini Fabrica - 30", "deve_abast": -15.673, "necessidade": 15.673, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -0.406, "necessidade": 0.406, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "183344", "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)", "tipo_unidade": "", "codigo_cor": "105704", "descricao_cor": "OSTRA 1431", "tam": "", "qtd_mini_fabricas": 3, "total_necessidade": 13.127, "mini_fabricas_destino": ["Mini Fabrica - 38", "Mini Fabrica - 40", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 38", "deve_abast": -4.81, "necessidade": 4.81, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 40", "deve_abast": -3.48, "necessidade": 3.48, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -4.837, "necessidade": 4.837, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "197280", "item_desc": "CAMURCAO LONDON PU 1.2 (V O/I 25) -IMPORTADO.", "tipo_unidade": "", "codigo_cor": "106596", "descricao_cor": "CARAMELO 1450", "tam": "", "qtd_mini_fabricas": 2, "total_necessidade": 30.661, "mini_fabricas_destino": ["Mini Fabrica - 43", "Mini Fabrica - 50"], "destinos": [{"mini_fabrica": "Mini Fabrica - 43", "deve_abast": -6.992, "necessidade": 6.992, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 50", "deve_abast": -23.669, "necessidade": 23.669, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}, {"item_code": "196484", "item_desc": "PECA VISTA IMPRESSAO ACTVITTA (PVC AUSTRALIA)L.4853.108", "tipo_unidade": "PAR", "codigo_cor": "104361", "descricao_cor": "PRETO 01/TURQUESA 1315- VIOLETA 1221", "tam": "4", "qtd_mini_fabricas": 2, "total_necessidade": 13.0, "mini_fabricas_destino": ["Mini Fabrica - 68", "Mini Fabrica - 69"], "destinos": [{"mini_fabrica": "Mini Fabrica - 68", "deve_abast": -12.0, "necessidade": 12.0, "saldo_casa": "0.00000", "saldo_origem": "nacional"}, {"mini_fabrica": "Mini Fabrica - 69", "deve_abast": -1.0, "necessidade": 1.0, "saldo_casa": "0.00000", "saldo_origem": "nacional"}]}];
+    const dispatchRows = document.getElementById('dispatch-rows');
+    const dispatchEmpty = document.getElementById('dispatch-empty');
+    const grupos = document.getElementById('groups');
+    const groupsEmpty = document.getElementById('groups-empty');
+    const destinosCount = document.getElementById('destinos-count');
+    const coverageOverall = document.getElementById('coverage-overall');
+    const q = document.getElementById('q');
+    const mini = document.getElementById('mini');
+    const sort = document.getElementById('sort');
+    const coverage = document.getElementById('coverage');
+    const onlyMulti = document.getElementById('onlyMulti');
+
+    function esc(v) {
+      return String(v ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    function parseNum(v) {
+      if (v === null || v === undefined || v === '') return 0;
+      if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+      const s = String(v).trim();
+      const normalized = s.includes(',') && s.includes('.')
+        ? s.replace(/\./g, '').replace(',', '.')
+        : s.replace(',', '.');
+      const n = Number(normalized);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function populateMiniFilter() {
+      const minis = Array.from(new Set(DATA.flatMap(g => g.mini_fabricas_destino || []))).sort((a,b)=>a.localeCompare(b));
+      mini.innerHTML = '<option value="">Todas as mini fábricas</option>' + minis.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join('');
+    }
+
+    function getStatus(covered, need) {
+      const eps = 1e-9;
+      if (need <= eps) return 'ok';
+      if (covered >= need - eps) return 'ok';
+      if (covered > eps) return 'partial';
+      return 'none';
+    }
+
+    function enrichGroup(g) {
+      const destinosOrdenados = (g.destinos || []).slice().sort((a,b)=> parseNum(b.necessidade) - parseNum(a.necessidade));
+      const saldoBase = destinosOrdenados.length
+        ? Math.max(...destinosOrdenados.map(d => parseNum(d.saldo_casa)))
+        : 0;
+      let saldoRestante = saldoBase;
+      const destinos = destinosOrdenados.map(d => {
+        const need = parseNum(d.necessidade);
+        const covered = Math.min(Math.max(saldoRestante, 0), need);
+        saldoRestante -= covered;
+        return {
+          ...d,
+          necessidade_num: need,
+          saldo_base: saldoBase,
+          covered,
+          saldo_restante: Math.max(saldoRestante, 0),
+          status: getStatus(covered, need),
+          shortfall: Math.max(need - covered, 0),
+          coverage_pct: need > 0 ? (covered / need) * 100 : 100
+        };
+      });
+      const totalNeed = parseNum(g.total_necessidade);
+      const coveredTotal = destinos.reduce((acc, d) => acc + d.covered, 0);
+      const groupStatus = getStatus(coveredTotal, totalNeed);
+      return {
+        ...g,
+        saldo_base: saldoBase,
+        total_need_num: totalNeed,
+        covered_total: coveredTotal,
+        uncovered_total: Math.max(totalNeed - coveredTotal, 0),
+        coverage_pct: totalNeed > 0 ? (coveredTotal / totalNeed) * 100 : 100,
+        group_status: groupStatus,
+        destinos_enriched: destinos
+      };
+    }
+
+    function statusBadge(status) {
+      if (status === 'ok') return '<span class="status-pill status-ok">Saldo cobre</span>';
+      if (status === 'partial') return '<span class="status-pill status-partial">Cobertura parcial</span>';
+      return '<span class="status-pill status-none">Sem cobertura</span>';
+    }
+
+    function sortGroups(arr) {
+      const x = arr.slice();
+      if (sort.value === 'mini') x.sort((a,b)=> (b.qtd_mini_fabricas||0) - (a.qtd_mini_fabricas||0));
+      else if (sort.value === 'item') x.sort((a,b)=>(a.item_code||'').localeCompare(b.item_code||''));
+      else if (sort.value === 'need') x.sort((a,b)=> parseNum(b.total_necessidade) - parseNum(a.total_necessidade));
+      else {
+        x.sort((a,b)=> {
+          const pa = (parseNum(a.total_necessidade) * 10) + (a.qtd_mini_fabricas || 0);
+          const pb = (parseNum(b.total_necessidade) * 10) + (b.qtd_mini_fabricas || 0);
+          return pb - pa;
+        });
+      }
+      return x;
+    }
+
+    function filterGroups() {
+      const term = (q.value||'').toLowerCase();
+      const miniSel = (mini.value || '').toLowerCase();
+      const coverageSel = coverage.value || '';
+      return sortGroups(DATA).map(enrichGroup).filter(g => {
+        const base = [
+          g.item_code, g.item_desc, g.codigo_cor, g.descricao_cor, g.tipo_unidade, g.tam,
+          ...(g.mini_fabricas_destino || []),
+          ...(g.destinos || []).map(d => d.mini_fabrica)
+        ].join(' ').toLowerCase();
+        const okTerm = base.includes(term);
+        const okMini = !miniSel || (g.mini_fabricas_destino || []).some(m => String(m).toLowerCase() === miniSel);
+        const okMulti = !onlyMulti.checked || (g.qtd_mini_fabricas || 0) >= 2;
+        const okCoverage = coverageSel === ''
+          || (coverageSel === 'short' && g.uncovered_total > 0)
+          || (coverageSel === 'ok' && g.uncovered_total <= 1e-9)
+          || (coverageSel === 'zero' && g.saldo_base <= 1e-9);
+        return okTerm && okMini && okMulti && okCoverage;
+      });
+    }
+
+    function renderDispatch(groups) {
+      const rows = [];
+      let sumNeed = 0;
+      let sumCovered = 0;
+      groups.forEach(g => {
+        sumNeed += g.total_need_num || 0;
+        sumCovered += g.covered_total || 0;
+        const groupPrio = (parseNum(g.total_necessidade) * 10) + (g.qtd_mini_fabricas || 0);
+        (g.destinos_enriched || []).forEach(d => {
+          const rowPrio = (d.shortfall * 100) + (d.necessidade_num * 10) + (g.qtd_mini_fabricas || 0);
+          rows.push({
+            ...d,
+            item_code: g.item_code,
+            item_desc: g.item_desc,
+            tipo_unidade: g.tipo_unidade || '',
+            codigo_cor: g.codigo_cor,
+            descricao_cor: g.descricao_cor,
+            tam: g.tam || '',
+            qtd_mini_fabricas: g.qtd_mini_fabricas || 0,
+            total_necessidade: g.total_necessidade || 0,
+            group_prio: groupPrio + d.shortfall * 100,
+            row_prio: rowPrio
+          });
+        });
+      });
+      rows.sort((a,b)=> b.row_prio - a.row_prio);
+      destinosCount.textContent = `Destinos visíveis: ${rows.length}`;
+      const pct = sumNeed > 0 ? (sumCovered / sumNeed) * 100 : 100;
+      coverageOverall.textContent = `Cobertura geral: ${pct.toFixed(1)}%`;
+      if (!rows.length) {
+        dispatchRows.innerHTML = '';
+        dispatchEmpty.style.display = 'block';
+        return;
+      }
+      dispatchEmpty.style.display = 'none';
+      dispatchRows.innerHTML = rows.map(r => `
+        <tr>
+          <td class="prio">${r.row_prio.toFixed(1)}</td>
+          <td>
+            <div><strong>${esc(r.item_code)} - ${esc(r.item_desc)}</strong></div>
+            <div class="muted">Tipo: ${esc(r.tipo_unidade || '-')}</div>
+          </td>
+          <td>
+            <div><strong>${esc(r.codigo_cor)} - ${esc(r.descricao_cor)}</strong></div>
+            <div class="muted">Tam: ${esc(r.tam || '-')}</div>
+          </td>
+          <td class="dest">${esc(r.mini_fabrica || '')}</td>
+          <td>${esc(r.deve_abast ?? '')}</td>
+          <td>${esc(r.saldo_casa ?? '')}</td>
+          <td>${esc(r.saldo_origem ?? '')}</td>
+          <td><strong>${esc(r.necessidade ?? '')}</strong></td>
+          <td>${statusBadge(r.status)} ${esc(r.coverage_pct.toFixed(0))}%</td>
+          <td>${esc(r.saldo_restante.toFixed(3))}</td>
+          <td>${esc(String(r.qtd_mini_fabricas))} minis</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderGroups(groups) {
+      if (!groups.length) {
+        grupos.innerHTML = '';
+        groupsEmpty.style.display = 'block';
+        return;
+      }
+      groupsEmpty.style.display = 'none';
+      grupos.innerHTML = groups.map((g, idx) => `
+        <article class="group-card" data-idx="${idx}">
+          <div class="group-head">
+            <div>
+              <div class="group-title">${esc(g.item_code)} - ${esc(g.item_desc)}</div>
+              <div class="group-meta">
+                Cor: ${esc(g.codigo_cor)} - ${esc(g.descricao_cor)} | Tam: ${esc(g.tam || '-')} |
+                Atende ${esc(String(g.qtd_mini_fabricas))} mini(s) | Necessidade total: ${esc(String(g.total_necessidade))} |
+                Saldo Casa: ${esc(g.saldo_base.toFixed(3))} | Falta: ${esc(g.uncovered_total.toFixed(3))}
+              </div>
+            </div>
+            <span class="badge">Prioridade ${((parseNum(g.total_necessidade) * 10) + (g.qtd_mini_fabricas || 0) + (g.uncovered_total * 100)).toFixed(1)} • ${g.coverage_pct.toFixed(0)}%</span>
+          </div>
+          <div class="details">
+            <table>
+              <thead><tr><th>Mini Fábrica</th><th>Deve (Abast)</th><th>Saldo em Casa</th><th>Origem do Saldo</th><th>Necessidade</th><th>Cobertura</th><th>Saldo Após</th></tr></thead>
+              <tbody>
+                ${(g.destinos_enriched || []).map(d=>`
+                  <tr>
+                    <td><strong>${esc(d.mini_fabrica ?? '')}</strong></td>
+                    <td>${esc(d.deve_abast ?? '')}</td>
+                    <td>${esc(d.saldo_casa ?? '')}</td>
+                    <td>${esc(d.saldo_origem ?? '')}</td>
+                    <td><strong>${esc(d.necessidade ?? '')}</strong></td>
+                    <td>${statusBadge(d.status)} ${esc(d.coverage_pct.toFixed(0))}%</td>
+                    <td>${esc(d.saldo_restante.toFixed(3))}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </article>
+      `).join('');
+      Array.from(document.querySelectorAll('.group-head')).forEach(head => {
+        head.onclick = () => head.closest('.group-card').classList.toggle('open');
+      });
+    }
+
+    function render() {
+      const groups = filterGroups();
+      renderDispatch(groups);
+      renderGroups(groups);
+    }
+
+    populateMiniFilter();
+    q.addEventListener('input', render);
+    mini.addEventListener('change', render);
+    sort.addEventListener('change', render);
+    coverage.addEventListener('change', render);
+    onlyMulti.addEventListener('change', render);
+    render();
+  </script>
+</body>
+</html>
