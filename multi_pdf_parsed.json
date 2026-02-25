@@ -1,0 +1,4214 @@
+[
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.896,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67345",
+    "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40 0.40",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "101602",
+        "color_desc": "CHOCOLATE 1271/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.724,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "73034",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BASE FLEX 1.0",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "101646",
+        "color_desc": "CHOCOLATE 1271/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.602,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "73824",
+    "item_desc": "SARJA 220 GR 100% ALGODAO+ FILME 50 MICRAS",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.085,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "17228",
+        "color_desc": "CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.028,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "128938",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21)",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "128939",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21) + SARJA 7030/40",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "104066",
+        "color_desc": "AZUL SKY 1395/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.415,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "145635",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0+VELVET+FORRO SOFT CONFORTO PU 0.7",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "101182",
+        "color_desc": "VERDE 1270/CREME 516/BEGE 435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.07,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "149602",
+    "item_desc": "CAMURCA STRECH DUO + VELVET (MD O/I /23)",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.038,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187451",
+    "item_desc": "NYLON KANSAS(ACT O/I22)+ESPUMA D501 3MM+CACHAREL 120GR",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "106860",
+        "color_desc": "AVELA 1248/BRANCO 15/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -16.76,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192842",
+    "item_desc": "BRILHO ITALIA PU 0.9 (P/V 25/26)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "34788",
+        "color_desc": "DOURADO/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.628,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195876",
+    "item_desc": "NAPA TRESSE BERLIM PU 1.2 (MD O/I 26)",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "100196",
+        "color_desc": "AVELA 1248",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202378",
+    "item_desc": "NAPA ESSELENCE PU 0.9+SARJA 7030+SPO40G+ESP.PU2,5 D30+CACHAREL CONFORT",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "16143",
+        "color_desc": "PRETO 01/PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.5,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202643",
+    "item_desc": "NAPA SOFT MADRI PU 1.0 (V O/I 23/24)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 6",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.362,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "48926",
+    "item_desc": "CAMURCA FLEX 0.30+BASE FLEX 1.0 (P/V 12/13)",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "96142",
+        "color_desc": "CAMEL 1165/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.759,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56427",
+    "item_desc": "PELICA PU 1.0 (V O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -32.424,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.178,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "104068",
+        "color_desc": "MOCCA 1398",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.63,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "60121",
+    "item_desc": "CAMURCA FLEX 0.30+FLANELA 475/11 0.40",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "95810",
+        "color_desc": "CAMEL 1165/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.293,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67345",
+    "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40 0.40",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "101602",
+        "color_desc": "CHOCOLATE 1271/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -35.307,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101992",
+        "color_desc": "VERDE LUNA 1256/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -8.573,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "73034",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BASE FLEX 1.0",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "107768",
+        "color_desc": "TERRACOTA 1477/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.706,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "84549",
+    "item_desc": "VERNIZ PREMIUM PU 1.0 (M/MD O/I 2017)",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "101321",
+        "color_desc": "CHOCOLATE 1271",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.246,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "112853",
+    "item_desc": "FORRO SOFT CONFORTO PU 0.7(MD P/V 18/19)+ESPUMA PU 6,5MM D.60+SPONLACE 30GR",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "29497",
+        "color_desc": "BEGE 435/BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -41.478,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "128939",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21) + SARJA 7030/40",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "18215",
+        "color_desc": "BRANCO 99/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.263,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "73437",
+        "color_desc": "CAFE 856/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.027,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "138672",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "36126",
+        "color_desc": "BRANCO OFF 526/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.917,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "53180",
+        "color_desc": "NUDE 658/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -27.831,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "143760",
+    "item_desc": "METALIZADO LONDON PU 0.9+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.086,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "169103",
+    "item_desc": "NAPA CALF PU 0.9 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "104323",
+        "color_desc": "MOCCA 1398/BRANCO 15/CAMEL 408",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.012,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196639",
+    "item_desc": "NAPA VELUNA 0.9 (MD O/I 26) - IMPORTADO+ SARJA 7030/40",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.808,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196770",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 9",
+    "colors": [
+      {
+        "color_code": "96942",
+        "color_desc": "MULTI CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.386,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "58623",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)+FILME TPU SC 50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.485,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "80451",
+    "item_desc": "CAMURCAO PU 1.2 (M O/I 2016)+FILME SC 50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "93249",
+        "color_desc": "AREIA 1137",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -21.592,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "81298",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK O/I 17)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "93249",
+        "color_desc": "AREIA 1137",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.712,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "112853",
+    "item_desc": "FORRO SOFT CONFORTO PU 0.7(MD P/V 18/19)+ESPUMA PU 6,5MM D.60+SPONLACE 30GR",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "29497",
+        "color_desc": "BEGE 435/BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -18.332,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "157751",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)+FILME PA 102/18",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.477,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "166687",
+    "item_desc": "NAPA FLOATHER CLASSIC NEO 1.45(ACT P/V 22/23)+VELVET 0.50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.969,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "168353",
+    "item_desc": "FILME PVC AUSTRALIA 0.60MM(ACT P/V 21/22)+FILME FA7300 100 MICRAS",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "106717",
+        "color_desc": "IRON 1452",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.362,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "170196",
+    "item_desc": "NYLON FREE SPORT+DUPLAFRONTURA SPACER SOLAR STR XX I8U 245G",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "101082",
+        "color_desc": "AREIA 1137/BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.976,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172896",
+    "item_desc": "NAPA BERLIM PU 1.2+TECIDO LECCE",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "84081",
+        "color_desc": "CAFE 987/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -176.179,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187352",
+    "item_desc": "NAPA FLOATHER VENEZIA PU 0.9 (MD O/I 25)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "36126",
+        "color_desc": "BRANCO OFF 526/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -20.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187571",
+    "item_desc": "TECIDO XANGAI(ACT 0/I 25)+ ESPUMA D23 2,5MM + TECIDO MEIA MALHA 100GR",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "103332",
+        "color_desc": "CHUMBO 1321/CINZA/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -47.381,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187654",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -19.675,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "96142",
+        "color_desc": "CAMEL 1165/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -8.474,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "188721",
+    "item_desc": "TECIDO MARAGOGI(ACT 0/I 25)+ ESPUMA D23 2,5MM + TECIDO MEIA MALHA 100GR",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "32908",
+        "color_desc": "PRETO 01/CINZA/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.816,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93368",
+        "color_desc": "MARINHO 1128/CINZA/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.216,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192017",
+    "item_desc": "CAMURCAO LONDON PU 1.2(M O/I 2016)+TECIDO VELVET",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.322,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192734",
+    "item_desc": "TECIDO XANGAI(ACT O/I 25)+SARJA 7030/50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -106.104,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "201688",
+    "item_desc": "TECIDO GAIA (ACT O/I25)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "16072",
+        "color_desc": "BRANCO 99",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.358,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202067",
+    "item_desc": "TECIDO SUBLIME 160GR+ ESP D26 3MM+ JERSEY",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "16143",
+        "color_desc": "PRETO 01/PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -18.056,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93518",
+        "color_desc": "MARINHO 1128/PRETO/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.784,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202295",
+    "item_desc": "NAPA MICRO PERFUROS GALY P.U 1.0 (MD P/V 23/24)+CACHAREL SOFT",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "29693",
+        "color_desc": "BEGE 435/BEGE 435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.972,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "204119",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK O/I 17)+FILME SC 50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "16072",
+        "color_desc": "BRANCO 99",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.434,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "204339",
+    "item_desc": "TECIDO GAIA (ACT O/I25)+VELVET 0.50",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "66355",
+        "color_desc": "CAMEL 778/CAPUCCINO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -16.472,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "25567",
+    "item_desc": "AVESSO VELUR",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "3",
+        "color_desc": "PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -27.767,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "92871",
+    "item_desc": "MALHA ADTERM MA 140P CONFORFLEX 650C",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "23654",
+        "color_desc": "CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.964,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "93492",
+    "item_desc": "NYLON FREE SPORT (B P/V 17/18)+BASE FLEX 1.0",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -11.993,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "101702",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+FILME TACK 40GR",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.048,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.802,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "108850",
+    "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2019)",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "89673",
+        "color_desc": "TAN 1080",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.353,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "140345",
+    "item_desc": "NAPA BERLIM PU 1.2- IMPORTADO",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "100196",
+        "color_desc": "AVELA 1248",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.428,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "162659",
+    "item_desc": "NAPA GENEBRA PU 1.2 (B O/I 2020)+CACHAREL SOFT",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "73437",
+        "color_desc": "CAFE 856/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -12.166,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "168873",
+    "item_desc": "NAPA CALF PU 0.9 ( P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "107613",
+        "color_desc": "TERRACOTA 1477",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.4,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184017",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+TECIDO VELVET",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "101646",
+        "color_desc": "CHOCOLATE 1271/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.51,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187654",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -11.88,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "96142",
+        "color_desc": "CAMEL 1165/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.98,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107628",
+        "color_desc": "OLIVE 1469/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.66,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "193461",
+    "item_desc": "BRILHO ITALIA PU 0.9 +FILME TACK 40 GR",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "104337",
+        "color_desc": "BRONZE 1402",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.836,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195421",
+    "item_desc": "METALIZADO FLOATHER VENEZIA PU 0.9+VELVET+FORRO SOFT CONFORTO PU 0.7",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "88632",
+        "color_desc": "DOURADO/CREME 516/BEGE 435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.93,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195710",
+    "item_desc": "CAMURCAO LONDON PU 1.2 (V O/I 25)-IMPORTADO+FILME TACK 40GR",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "101439",
+        "color_desc": "CACAU 1277",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -12.199,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "106596",
+        "color_desc": "CARAMELO 1450",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.813,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196091",
+    "item_desc": "CAMURCAO LONDON PU 1.2 (V O/I 25) -IMPORTADO+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "101724",
+        "color_desc": "CACAU 1277/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -66.473,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202643",
+    "item_desc": "NAPA SOFT MADRI PU 1.0 (V O/I 23/24)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 16",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.81,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.724,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "64664",
+    "item_desc": "FORRO FACHETE PVC 0.8 (B O/I 2015)",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.084,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67244",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "83517",
+        "color_desc": "CREME 985",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -18.402,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "74934",
+    "item_desc": "NAPA TURIM PU 1.0 + POLINYLON 11HM 2 L+FORRO MILANO PU 0.7",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "40278",
+        "color_desc": "BRANCO OFF 526/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.07,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "96674",
+        "color_desc": "CAMEL 1165/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.402,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101878",
+        "color_desc": "CHOCOLATE 1271/PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.181,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "74934",
+    "item_desc": "NAPA TURIM PU 1.0 + POLINYLON 11HM 2 L+FORRO MILANO PU 0.7",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "108445",
+        "color_desc": "OLIVE 1469/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.586,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "82290",
+    "item_desc": "GLITER MINI SHINE(M/MK O/I 17)",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "41",
+        "color_desc": "PRATA",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -8.093,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "23146",
+        "color_desc": "OURO ROSADO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.494,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "135523",
+    "item_desc": "NAPA GENEBRA PU 1.2 (B O/I 2020) - IMPORTADO",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "72374",
+        "color_desc": "CAFE 856",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -10.454,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "140206",
+    "item_desc": "NAPA FLOATHER ZURIQUE PU 1.2- IMPORTADO",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -12.858,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "140345",
+    "item_desc": "NAPA BERLIM PU 1.2- IMPORTADO",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -10.506,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "83508",
+        "color_desc": "CAFE 987",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.624,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172898",
+    "item_desc": "NAPA FLOATHER ZURIQUE PU 1.2+TECIDO LECCE",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "95740",
+        "color_desc": "CARAMELO 1170/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -21.012,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "190938",
+    "item_desc": "NAPA TURIM CROCO MILAO PU 1.0 (B P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.5,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195460",
+    "item_desc": "NAPA TRAME GRECIA PU 0.9 (B P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 20",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.076,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "81298",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK O/I 17)",
+    "mini_fabrica": "Mini Fabrica - 24",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.144,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "170822",
+    "item_desc": "NAPA MOSCOU NEO 1.2 (BRS O/I25) + BASE FLEX 1.0",
+    "mini_fabrica": "Mini Fabrica - 24",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.664,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172591",
+    "item_desc": "NOBUCK LISBOA PU 0.9 ( V PV 24/25)+TECIDO VELVET",
+    "mini_fabrica": "Mini Fabrica - 24",
+    "colors": [
+      {
+        "color_code": "41492",
+        "color_desc": "BEGE 435/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.05,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192842",
+    "item_desc": "BRILHO ITALIA PU 0.9 (P/V 25/26)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 24",
+    "colors": [
+      {
+        "color_code": "34788",
+        "color_desc": "DOURADO/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -17.42,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "38551",
+        "color_desc": "OURO ROSADO/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.583,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "78556",
+        "color_desc": "GRAFITE 914/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.516,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "97488",
+    "item_desc": "PANO COURACA P/ REFORCO TX 007/B",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "1",
+        "color_desc": "BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -15.667,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "143760",
+    "item_desc": "METALIZADO LONDON PU 0.9+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.672,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196437",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+SARJA 7030/50",
+    "mini_fabrica": "Mini Fabrica - 26",
+    "colors": [
+      {
+        "color_code": "96662",
+        "color_desc": "MULTI CAMEL 1165/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -13.89,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "25567",
+    "item_desc": "AVESSO VELUR",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "23041",
+        "color_desc": "CARAMELO 310",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.596,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "35313",
+        "color_desc": "CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.252,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "48926",
+    "item_desc": "CAMURCA FLEX 0.30+BASE FLEX 1.0 (P/V 12/13)",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "96142",
+        "color_desc": "CAMEL 1165/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.542,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "104045",
+        "color_desc": "AZUL SKY 1395",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.562,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "105829",
+        "color_desc": "ROSE 1434",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.235,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "60121",
+    "item_desc": "CAMURCA FLEX 0.30+FLANELA 475/11 0.40",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "95810",
+        "color_desc": "CAMEL 1165/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.184,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "64664",
+    "item_desc": "FORRO FACHETE PVC 0.8 (B O/I 2015)",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "50",
+        "color_desc": "NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -13.654,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.158,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67244",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "83517",
+        "color_desc": "CREME 985",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.956,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "105828",
+        "color_desc": "CORAL 1435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.179,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.493,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "74934",
+    "item_desc": "NAPA TURIM PU 1.0 + POLINYLON 11HM 2 L+FORRO MILANO PU 0.7",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "100874",
+        "color_desc": "CAMEL 1165/BRANCO 15/CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.725,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "92871",
+    "item_desc": "MALHA ADTERM MA 140P CONFORFLEX 650C",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.203,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "23654",
+        "color_desc": "CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.401,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "97488",
+    "item_desc": "PANO COURACA P/ REFORCO TX 007/B",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "3",
+        "color_desc": "PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -35.226,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183768",
+    "item_desc": "NAPA GARDA PU 1.0 + SARJA 7030/40 0.40",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "35324",
+        "color_desc": "BRANCO OFF 526/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -97.751,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184004",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "101878",
+        "color_desc": "CHOCOLATE 1271/PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -14.392,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108445",
+        "color_desc": "OLIVE 1469/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.316,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195460",
+    "item_desc": "NAPA TRAME GRECIA PU 0.9 (B P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "101646",
+        "color_desc": "CHOCOLATE 1271/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.39,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196437",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+SARJA 7030/50",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "96662",
+        "color_desc": "MULTI CAMEL 1165/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.745,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "197406",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "96673",
+        "color_desc": "MULTI CAMEL 1165/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -15.673,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "200353",
+    "item_desc": "NAPA TRESSE TORONTO PU 0.9 (B P/V 25/26)",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.874,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "200476",
+    "item_desc": "NAPA TRESSE TORONTO PU 0.9 (B",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "101602",
+        "color_desc": "CHOCOLATE",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.983,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "201811",
+    "item_desc": "NAPA COW PRINT PU 0.9 (B P/V 25/26)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 30",
+    "colors": [
+      {
+        "color_code": "108776",
+        "color_desc": "BRANCO OFF 526-MULTI CAMEL 1165/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.235,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "70730",
+    "item_desc": "CAMURCAO PU 1.2 (M O/I 2016)+VELVET 0.50",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.9,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "36126",
+        "color_desc": "BRANCO OFF 526/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.794,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "70892",
+    "item_desc": "TECIDO VELVET (M O/I 15) + MICROPONTO",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "19161",
+        "color_desc": "BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.503,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "97488",
+    "item_desc": "PANO COURACA P/ REFORCO TX 007/B",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "1",
+        "color_desc": "BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -18.933,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "144069",
+    "item_desc": "NYLON SLEEK(ACT O/I 2022)+COLA+ESPUMA 1,5MM D26+FORRO WAVE",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "53728",
+        "color_desc": "ROSA 671/BRANCO 15/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.148,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "144137",
+    "item_desc": "FILME CATALUNA 0.3MM NEW(ACT O/I22)",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.914,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93244",
+        "color_desc": "BRANCO OFF 1132",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.046,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "145601",
+    "item_desc": "NYLON KANSAS(ACT O/I22)",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.335,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "152117",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK O/I 17)+FILME TACK 40GR",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "103072",
+        "color_desc": "COBALTO 1319",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.64,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "166815",
+    "item_desc": "GASPEA LOC VANILA(ACT 0/I 24) L.4842.101",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "39218",
+        "color_desc": "PRETO 01- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -155.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "39218",
+        "color_desc": "PRETO 01- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -127.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "95048",
+        "color_desc": "BRANCO OFF 1132-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -65.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "95048",
+        "color_desc": "BRANCO OFF 1132-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -104.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "95048",
+        "color_desc": "BRANCO OFF 1132-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -39.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98069",
+        "color_desc": "GRAFITE 1223-VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -72.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98069",
+        "color_desc": "GRAFITE 1223-VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -140.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98069",
+        "color_desc": "GRAFITE 1223-VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -59.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98069",
+        "color_desc": "GRAFITE 1223-VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -12.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172305",
+    "item_desc": "GASPEA LOC BELGA(ACT 0/I 24) L.4914.220",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -61.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "188721",
+    "item_desc": "TECIDO MARAGOGI(ACT 0/I 25)+ ESPUMA D23 2,5MM + TECIDO MEIA MALHA 100GR",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "32908",
+        "color_desc": "PRETO 01/CINZA/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -45.546,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93368",
+        "color_desc": "MARINHO 1128/CINZA/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.332,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "193740",
+    "item_desc": "GASPEA+LINGUETA LOC SORELLE(ACT O/I 25)L.4858.101",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "106044",
+        "color_desc": "ROSA ANTIGO 1329-PINK 1332-CREME 1318",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -152.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "106045",
+        "color_desc": "BRANCO 99- ROSA ANTIGO 1329- CINZA CLARO 1322",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -162.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "106045",
+        "color_desc": "BRANCO 99- ROSA ANTIGO 1329- CINZA CLARO 1322",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -72.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202067",
+    "item_desc": "TECIDO SUBLIME 160GR+ ESP D26 3MM+ JERSEY",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "16143",
+        "color_desc": "PRETO 01/PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -162.154,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93484",
+        "color_desc": "BRANCO OFF 1132/BRANCO 15/BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -12.978,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108934",
+        "color_desc": "ALFAZEMA 1497/BRANCO 15/BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.575,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109367",
+        "color_desc": "CAMEL 778/BRANCO 15/BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -200.975,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67244",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+    "mini_fabrica": "Mini Fabrica - 38",
+    "colors": [
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.479,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "149602",
+    "item_desc": "CAMURCA STRECH DUO + VELVET (MD O/I /23)",
+    "mini_fabrica": "Mini Fabrica - 38",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.846,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183344",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 38",
+    "colors": [
+      {
+        "color_code": "105704",
+        "color_desc": "OSTRA 1431",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.81,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183768",
+    "item_desc": "NAPA GARDA PU 1.0 + SARJA 7030/40 0.40",
+    "mini_fabrica": "Mini Fabrica - 38",
+    "colors": [
+      {
+        "color_code": "35324",
+        "color_desc": "BRANCO OFF 526/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.29,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101602",
+        "color_desc": "CHOCOLATE 1271/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -11.827,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196437",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+SARJA 7030/50",
+    "mini_fabrica": "Mini Fabrica - 38",
+    "colors": [
+      {
+        "color_code": "96662",
+        "color_desc": "MULTI CAMEL 1165/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.892,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67345",
+    "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40 0.40",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "101602",
+        "color_desc": "CHOCOLATE 1271/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.26,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "73034",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BASE FLEX 1.0",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "101646",
+        "color_desc": "CHOCOLATE 1271/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.828,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "82290",
+    "item_desc": "GLITER MINI SHINE(M/MK O/I 17)",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "41",
+        "color_desc": "PRATA",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.66,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "66",
+        "color_desc": "DOURADO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.824,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "23146",
+        "color_desc": "OURO ROSADO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -22.689,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "108850",
+    "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2019)",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "83517",
+        "color_desc": "CREME 985",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.299,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "103102",
+        "color_desc": "CHERRY 1335",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.299,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183344",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "105704",
+        "color_desc": "OSTRA 1431",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.48,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184004",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "108445",
+        "color_desc": "OLIVE 1469/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.966,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184017",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+TECIDO VELVET",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "107769",
+        "color_desc": "TERRACOTA 1477/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -18.58,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196770",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "96942",
+        "color_desc": "MULTI CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.324,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "197406",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 40",
+    "colors": [
+      {
+        "color_code": "96673",
+        "color_desc": "MULTI CAMEL 1165/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.406,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "92871",
+    "item_desc": "MALHA ADTERM MA 140P CONFORFLEX 650C",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "23654",
+        "color_desc": "CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.779,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "94157",
+    "item_desc": "NAPA TURIM PU 1.0+VELVET",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "106143",
+        "color_desc": "OSTRA 1431/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.086,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184004",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+POLINYLON 11HML 2L+FORRO MILANO",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "101878",
+        "color_desc": "CHOCOLATE 1271/PRETO 01/PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.581,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187654",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "37331",
+        "color_desc": "BRANCO OFF 526/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.477,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192017",
+    "item_desc": "CAMURCAO LONDON PU 1.2(M O/I 2016)+TECIDO VELVET",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "101724",
+        "color_desc": "CACAU 1277/PRETO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -42.72,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107133",
+        "color_desc": "CARAMELO 1450/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -10.98,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "193245",
+    "item_desc": "NAPA TURIM CROCO MILAO PU 1.0 (B P/V 24/25)+VELVET",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "95701",
+        "color_desc": "CAMEL 1165/CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -19.531,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195460",
+    "item_desc": "NAPA TRAME GRECIA PU 0.9 (B P/V 24/25)+BASE FLEX",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "96142",
+        "color_desc": "CAMEL 1165/BISCOITO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.809,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196639",
+    "item_desc": "NAPA VELUNA 0.9 (MD O/I 26) - IMPORTADO+ SARJA 7030/40",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "107559",
+        "color_desc": "CASTANHO 1455/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.063,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "197280",
+    "item_desc": "CAMURCAO LONDON PU 1.2 (V O/I 25) -IMPORTADO.",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "106596",
+        "color_desc": "CARAMELO 1450",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -6.992,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "205224",
+    "item_desc": "GLITER MINI SHINE(M/MK O/I 17)+SARJA 7030/40.",
+    "mini_fabrica": "Mini Fabrica - 43",
+    "colors": [
+      {
+        "color_code": "23801",
+        "color_desc": "OURO ROSADO/CRU 20",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -19.857,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "35312",
+        "color_desc": "BRANCO OFF 526",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.113,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67244",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "83517",
+        "color_desc": "CREME 985",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -8.562,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "100983",
+        "color_desc": "VERDE LUNA 1256",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.563,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "105828",
+        "color_desc": "CORAL 1435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.706,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.375,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "128938",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.668,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "140345",
+    "item_desc": "NAPA BERLIM PU 1.2- IMPORTADO",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "83508",
+        "color_desc": "CAFE 987",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.59,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "163149",
+    "item_desc": "NAPA SOFT MADRI PU 1.0 (V O/I 23/24)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.058,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172773",
+    "item_desc": "NOBUCK ULTRA SOFT PU 0.8 (MD O/I 25) IMPORTACAO",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "83517",
+        "color_desc": "CREME 985",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.806,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183344",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "101321",
+        "color_desc": "CHOCOLATE 1271",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -37.256,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "105704",
+        "color_desc": "OSTRA 1431",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -4.837,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196770",
+    "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "96942",
+        "color_desc": "MULTI CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.154,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "197280",
+    "item_desc": "CAMURCAO LONDON PU 1.2 (V O/I 25) -IMPORTADO.",
+    "mini_fabrica": "Mini Fabrica - 50",
+    "colors": [
+      {
+        "color_code": "106596",
+        "color_desc": "CARAMELO 1450",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -23.669,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "86583",
+    "item_desc": "VERNIZ PREMIUM PU 1.0+POLINYLON 11 HM 2L+FORRO MILANO PU",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "53607",
+        "color_desc": "NUDE 658/BRANCO 15/NATURAL",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -7.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "166846",
+    "item_desc": "PECA TRAS+VISTA+IMPRESSAO ACTVITTA(FILME AUSTRALIA)L.4842.101",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "98070",
+        "color_desc": "GRAFITE 1223/BRANCO 99- VIOLETA 1221- GRAFITE 1223",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -72.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98070",
+        "color_desc": "GRAFITE 1223/BRANCO 99- VIOLETA 1221- GRAFITE 1223",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -140.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "166846",
+    "item_desc": "PECA TRAS+VISTA+IMPRESSAO ACTVITTA(FILME AUSTRALIA)L.4842.101",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "98070",
+        "color_desc": "GRAFITE 1223/BRANCO 99- VIOLETA 1221- GRAFITE 1223",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -80.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98070",
+        "color_desc": "GRAFITE 1223/BRANCO 99- VIOLETA 1221- GRAFITE 1223",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -12.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98071",
+        "color_desc": "BRANCO 99/PEACH 1216- VIOLETA 1221- BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -61.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98072",
+        "color_desc": "PRETO 01/BRANCO 99-PRETO 01-BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -123.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98072",
+        "color_desc": "PRETO 01/BRANCO 99-PRETO 01-BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -229.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98072",
+        "color_desc": "PRETO 01/BRANCO 99-PRETO 01-BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -127.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "98072",
+        "color_desc": "PRETO 01/BRANCO 99-PRETO 01-BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -21.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101077",
+        "color_desc": "BRANCO OFF1 1132/BEGE 1174- AREIA 1137-BEGE 1174",
+        "par_tipo": "PAR",
+        "tam": "",
+        "abast": -65.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101077",
+        "color_desc": "BRANCO OFF2 1132/BEGE 1174- AREIA 1137-BEGE 1174",
+        "par_tipo": "PAR",
+        "tam": "",
+        "abast": -104.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "101077",
+        "color_desc": "BRANCO OFF3 1132/BEGE 1174- AREIA 1137-BEGE 1174",
+        "par_tipo": "PAR",
+        "tam": "",
+        "abast": -39.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172315",
+    "item_desc": "PECA TRAS EXT+ETIQ IMPRESSAO ACTVITTA(NP FLOT RUST)L.4914.220",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "100093",
+        "color_desc": "PRETO 01/GRAFITE 989- CINZA 1240",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -10.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184731",
+    "item_desc": "PECA ETIQUETA+IMPRESSAO ACTVITTA(PVC AUSTRALIA L.4836.113",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "104694",
+        "color_desc": "PRETO 01/PRATA 1320",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -349.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "186850",
+    "item_desc": "PECA DET+IMPRESSAO ACTVITTA(FILME AUSTRALIA)L.4853.100(ACT 0/I 25)",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "107716",
+        "color_desc": "CHUMBO 1321/ROSA ANTIGO 1329",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -25.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107716",
+        "color_desc": "CHUMBO 1321/ROSA ANTIGO 1329",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -18.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109942",
+        "color_desc": "HIBISCO 1496/BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -3.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109942",
+        "color_desc": "HIBISCO 1496/BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -6.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109942",
+        "color_desc": "HIBISCO 1496/BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -3.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "190730",
+    "item_desc": "PECA VISTA LAT EXT IMPRESSAO ACTVITTA(NP FLOT RUST NEO+TACK)L.4829.527",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "104701",
+        "color_desc": "COBALTO 1319/TURQUESA 1315- VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -128.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "104701",
+        "color_desc": "COBALTO 1319/TURQUESA 1315- VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -457.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "104701",
+        "color_desc": "COBALTO 1319/TURQUESA 1315- VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -422.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196153",
+    "item_desc": "PECA VISTA+LATERAL IMPRESSAO ACTVITTA(PVC AUSTRALIA)L.4946.101",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "107408",
+        "color_desc": "PRETO 01/CORAL NEON 957- CHUMBO 1321",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -24.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107408",
+        "color_desc": "PRETO 01/CORAL NEON 957- CHUMBO 1321",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -51.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196366",
+    "item_desc": "PECA VISTA+LAT.+ET. IMPRESSAO ACTVITTA (PVC AUSTRALIA)L.4829.331",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "107483",
+        "color_desc": "PRETO 01/VIOLETA 1221- TURQUESA 1315",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -5.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196484",
+    "item_desc": "PECA VISTA IMPRESSAO ACTVITTA (PVC AUSTRALIA)L.4853.108",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "104361",
+        "color_desc": "PRETO 01/TURQUESA 1315- VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -12.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "201729",
+    "item_desc": "PECA LATERAL IMPRESSAO ACTVITTA(PVC AUSTRALIA)L.4853.109",
+    "mini_fabrica": "Mini Fabrica - 68",
+    "colors": [
+      {
+        "color_code": "103671",
+        "color_desc": "CHUMBO 1321/PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -284.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108584",
+        "color_desc": "CAMEL 778/BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -152.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109008",
+        "color_desc": "BRANCO OFF 1132/HIBISCO 1496",
+        "par_tipo": "PAR",
+        "tam": "",
+        "abast": -32.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "184731",
+    "item_desc": "PECA ETIQUETA+IMPRESSAO ACTVITTA(PVC AUSTRALIA L.4836.113",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "21007",
+        "color_desc": "BRANCO 99/PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -6.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "103570",
+        "color_desc": "PRETO 01/DOURADO 1334",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -1025.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192470",
+    "item_desc": "GASPEA LOC BAFFIN(ACT O/I 25)L.4935.108+SARJA 7030",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "103560",
+        "color_desc": "PRETO 01- CHUMBO 1321",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -264.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "103560",
+        "color_desc": "PRETO 01-",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -35.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192470",
+    "item_desc": "GASPEA LOC BAFFIN(ACT O/I 25)L.4935.108+SARJA 7030",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "107848",
+        "color_desc": "IRON 1452- MARINHO 1128",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -5.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107848",
+        "color_desc": "IRON 1452- MARINHO 1128",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -10.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107848",
+        "color_desc": "IRON 1452- MARINHO 1128",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -8.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107848",
+        "color_desc": "IRON 1452- MARINHO 1128",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -1.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "110119",
+        "color_desc": "CAMEL 1528- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -4.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "110119",
+        "color_desc": "CAMEL 1528- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -10.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "110119",
+        "color_desc": "CAMEL 1528- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -5.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "110119",
+        "color_desc": "CAMEL 1528- PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -1.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "192552",
+    "item_desc": "PECA VISTA+IMPRESSAO ACTVITTA(PVC AUSTRALIA)L.4917.118",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "94023",
+        "color_desc": "PRETO 01/AREIA 1137",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -305.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "94023",
+        "color_desc": "PRETO 01/AREIA 1137",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -164.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "193828",
+    "item_desc": "PECA VISTA+LAT EXT IMPRESSAO ACTVITTA(PVC AUSTRALIA)L.4946.102",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "103675",
+        "color_desc": "PRETO 01/CHUMBO 1321- BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -138.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196153",
+    "item_desc": "PECA VISTA+LATERAL IMPRESSAO ACTVITTA(PVC AUSTRALIA)L.4946.101",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "107408",
+        "color_desc": "PRETO 01/CORAL NEON 957- CHUMBO 1321",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -92.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196187",
+    "item_desc": "PECA ETIQ.+IMP.ACTVITTA(PVC AUSTRALIA S/FILME)L.4859.202",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "103640",
+        "color_desc": "PRETO 01/CINZA CLARO 1322",
+        "par_tipo": "PAR",
+        "tam": "0",
+        "abast": -240.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "196484",
+    "item_desc": "PECA VISTA IMPRESSAO ACTVITTA (PVC AUSTRALIA)L.4853.108",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "104361",
+        "color_desc": "PRETO 01/TURQUESA 1315- VIOLETA 1221",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -1.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "202019",
+    "item_desc": "LAT.+VISTA DIR/ESQ. IMPRES.ACTVITTA(NAP.FLOT RUST.NEO 1.4+VELVET)L.4917.119",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "108833",
+        "color_desc": "PTO 01/PTO 01-CHUM.1321- CAM.778- CARAM.1202-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -34.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108833",
+        "color_desc": "PTO 01/PTO 01-CHUM.1321- CAM.778- CARAM.1202-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -71.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108833",
+        "color_desc": "PTO 01/PTO 01-CHUM.1321- CAM.778- CARAM.1202-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -78.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108833",
+        "color_desc": "PTO 01/PTO 01-CHUM.1321- CAM.778- CARAM.1202-BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -33.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109806",
+        "color_desc": "MARINHO1128/MAR.11 28-IRON1452- CAR.1202-BRCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -4.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109806",
+        "color_desc": "MARINHO1128/MAR.11 28-IRON1452- CAR.1202-BRCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -8.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109806",
+        "color_desc": "MARINHO1128/MAR.11 28-IRON1452- CAR.1202-BRCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -8.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109806",
+        "color_desc": "MARINHO1128/MAR.11 28-IRON1452- CAR.1202-BRCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -4.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109807",
+        "color_desc": "CAFE 569/CAFE 569-AREIA 1137-PRETO01- CARAM.1202-BCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "1",
+        "abast": -6.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109807",
+        "color_desc": "CAFE 569/CAFE 569-AREIA 1137-PRETO01- CARAM.1202-BCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -11.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109807",
+        "color_desc": "CAFE 569/CAFE 569-AREIA 1137-PRETO01- CARAM.1202-BCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "3",
+        "abast": -11.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109807",
+        "color_desc": "CAFE 569/CAFE 569-AREIA 1137-PRETO01- CARAM.1202-BCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -4.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "203227",
+    "item_desc": "ETIQ.+IMPR.ACTVITTA (AUSTRALIA",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "21007",
+        "color_desc": "BRANCO",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -6.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "203227",
+    "item_desc": "ETIQ.+IMPR.ACTVITTA (AUSTRALIA S/FILME)TAM2:37/40 TAM4:41/44 L.4935.111",
+    "mini_fabrica": "Mini Fabrica - 69",
+    "colors": [
+      {
+        "color_code": "21007",
+        "color_desc": "BRANCO 99/PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -10.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93562",
+        "color_desc": "MARINHO 1128/BRANCO 99",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -71.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93718",
+        "color_desc": "PRETO 01/BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -176.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93718",
+        "color_desc": "PRETO 01/BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -148.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108584",
+        "color_desc": "CAMEL 778/BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -108.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "108584",
+        "color_desc": "CAMEL 778/BRANCO OFF 1132",
+        "par_tipo": "PAR",
+        "tam": "4",
+        "abast": -112.0,
+        "saldo_casa": "0.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "34062",
+    "item_desc": "PANO P/ REFORCO CR 150",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "0",
+        "color_desc": "SEM COR",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -843.95995,
+        "saldo_casa": "3824.10000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "44187",
+    "item_desc": "CACHAREL SOFT(B P/V 11/12)+ESP PU",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -863.795,
+        "saldo_casa": "173.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "56577",
+    "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -11.1226,
+        "saldo_casa": "496",
+        "saldo_origem": "substituto"
+      },
+      {
+        "color_code": "29452",
+        "color_desc": "BEGE 435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -14.3707,
+        "saldo_casa": "251",
+        "saldo_origem": "substituto"
+      }
+    ]
+  },
+  {
+    "item_code": "58702",
+    "item_desc": "FORRO CACHAREL CONFORT(MD O/I",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -672.4116,
+        "saldo_casa": "337.90000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "29452",
+        "color_desc": "BEGE 435",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -809.3716,
+        "saldo_casa": "553.60000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "67244",
+    "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "101321",
+        "color_desc": "CHOCOLATE",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.5496,
+        "saldo_casa": "40.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "105704",
+        "color_desc": "OSTRA 1431",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.5496,
+        "saldo_casa": "68.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "70727",
+    "item_desc": "CAMURCAO PU 1.2 (M O/I 2016)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "33300",
+        "color_desc": "MARINHO 488",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -3.5328,
+        "saldo_casa": "30",
+        "saldo_origem": "substituto"
+      },
+      {
+        "color_code": "65835",
+        "color_desc": "CINZA 788",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.218,
+        "saldo_casa": "30",
+        "saldo_origem": "substituto"
+      }
+    ]
+  },
+  {
+    "item_code": "81554",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -27.8164,
+        "saldo_casa": "16.40000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93868",
+        "color_desc": "BRANCO OFF",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.86,
+        "saldo_casa": "1.70000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "108850",
+    "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -361.1552,
+        "saldo_casa": "717",
+        "saldo_origem": "substituto"
+      },
+      {
+        "color_code": "101321",
+        "color_desc": "CHOCOLATE",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -112.0288,
+        "saldo_casa": "32",
+        "saldo_origem": "substituto"
+      }
+    ]
+  },
+  {
+    "item_code": "111581",
+    "item_desc": "FORRO PELE STRECH P.U 0.7+ESPU",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "65193",
+        "color_desc": "BEGE 435/ BRA",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.1184,
+        "saldo_casa": "6.50000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "112008",
+    "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -127.52917,
+        "saldo_casa": "3.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "90037",
+        "color_desc": "TAN 1080/CRU",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -45.5408,
+        "saldo_casa": "25.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "120736",
+    "item_desc": "ESPUMA PU 6,5MM D.60",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "1",
+        "color_desc": "BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -87.86332,
+        "saldo_casa": "104.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "128939",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (M",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -34.88852,
+        "saldo_casa": "14.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "35324",
+        "color_desc": "BRANCO OFF",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.8212,
+        "saldo_casa": "77.80000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "52568",
+        "color_desc": "NUDE 658/CRU",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -2.3524,
+        "saldo_casa": "18.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "84042",
+        "color_desc": "CREME 985/CR",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.298,
+        "saldo_casa": "49.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "138672",
+    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (M",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -120.12363,
+        "saldo_casa": "18.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "41492",
+        "color_desc": "BEGE 435/CREM",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -116.2308,
+        "saldo_casa": "30.10000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "100604",
+        "color_desc": "AVELA 1248/C",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -17.04223,
+        "saldo_casa": "4.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "151481",
+    "item_desc": "CACHAREL RUN (MLK)+ESP PU 1,5 D",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "59778",
+        "color_desc": "PRETO/BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -294.96226,
+        "saldo_casa": "238.50000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93368",
+        "color_desc": "MARINHO 1128",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -12.87639,
+        "saldo_casa": "46.50000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "152117",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(ML",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "93244",
+        "color_desc": "BRANCO OFF",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.5473,
+        "saldo_casa": "1.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "153726",
+    "item_desc": "BIDIN CB 2030/R",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "19161",
+        "color_desc": "BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -219.5783,
+        "saldo_casa": "29.5676",
+        "saldo_origem": "substituto"
+      }
+    ]
+  },
+  {
+    "item_code": "157666",
+    "item_desc": "TECIDO ADTERM CH 180 C CONFOR",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -78.188,
+        "saldo_casa": "341.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "161023",
+    "item_desc": "TECIDO VELVET (M O/I 15)+FILME 38",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -81.9096,
+        "saldo_casa": "147.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "35313",
+        "color_desc": "CREME 516",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.8016,
+        "saldo_casa": "70.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "164097",
+    "item_desc": "NAPA FLOATHER CLASSIC NEO 1.45",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.8316,
+        "saldo_casa": "7.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "172896",
+    "item_desc": "NAPA BERLIM PU 1.2+TECIDO LECC",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15758",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -360.7273,
+        "saldo_casa": "390.30000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "173406",
+    "item_desc": "GASPEA LOC PESARO(ACT 0/I 24) L.",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "PAR",
+        "tam": "2",
+        "abast": -95.0,
+        "saldo_casa": "210.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "174077",
+    "item_desc": "NAPA SUPREMA PU 0.9 (MD O/I 25)+E",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "25405",
+        "color_desc": "PRETO 01/BRAN",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -235.598,
+        "saldo_casa": "20.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "26485",
+        "color_desc": "BRANCO 99/BR",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -66.774,
+        "saldo_casa": "5.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183344",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -32.1248,
+        "saldo_casa": "31.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "183344",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "95373",
+        "color_desc": "CAMEL 1165",
+        "par_tipo": "",
+        "tam": "",
+        "abast": null,
+        "saldo_casa": null,
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "107610",
+        "color_desc": "OLIVE 1469",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.5372,
+        "saldo_casa": "3.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187571",
+    "item_desc": "TECIDO XANGAI(ACT 0/I 25)+ ESPUM",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "32908",
+        "color_desc": "PRETO 01/CINZ",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -11.2695,
+        "saldo_casa": "45.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "187654",
+    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)+BA",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "101646",
+        "color_desc": "CHOCOLATE",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -5.8958,
+        "saldo_casa": "14.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "194041",
+    "item_desc": "TECIDO ADTERM CH 120 C CB CONF",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -123.9413,
+        "saldo_casa": "8.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "195878",
+    "item_desc": "NAPA VELUNA 0.9 (MD O/I 26) - IMPO",
+    "mini_fabrica": "Mini Fabrica - 10",
+    "colors": [
+      {
+        "color_code": "106878",
+        "color_desc": "CHOCOLATE",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -53.4108,
+        "saldo_casa": "4.00000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "109066",
+        "color_desc": "CASTANHO 14",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -65.4004,
+        "saldo_casa": "28.40000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "81379",
+    "item_desc": "CACHAREL SPORT (MLK O/I 17)+ESP",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -1.6822,
+        "saldo_casa": "360.10000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93237",
+        "color_desc": "MARINHO 1128",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -96.54948,
+        "saldo_casa": "60.20000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "81554",
+    "item_desc": "NAPA FLOTER RUSTICO NEO 1.4(MLK",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15787",
+        "color_desc": "PRETO 01/PRET",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -0.6022,
+        "saldo_casa": "16.40000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "120736",
+    "item_desc": "ESPUMA PU 6,5MM D.60",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "1",
+        "color_desc": "BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -44.1224,
+        "saldo_casa": "104.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "151481",
+    "item_desc": "CACHAREL RUN (MLK)+ESP PU 1,5 D",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "59778",
+        "color_desc": "PRETO/BRANCO",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -863.11635,
+        "saldo_casa": "238.50000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93368",
+        "color_desc": "MARINHO 1128",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -9.5536,
+        "saldo_casa": "46.50000",
+        "saldo_origem": "nacional"
+      },
+      {
+        "color_code": "93484",
+        "color_desc": "BRANCO OFF",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -53.11759,
+        "saldo_casa": "5.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  },
+  {
+    "item_code": "153726",
+    "item_desc": "BIDIN CB 2030/R",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "19161",
+        "color_desc": "BRANCO 15",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -467.6253,
+        "saldo_casa": "29.5676",
+        "saldo_origem": "substituto"
+      }
+    ]
+  },
+  {
+    "item_code": "194041",
+    "item_desc": "TECIDO ADTERM CH 120 C CB CONF",
+    "mini_fabrica": "Mini Fabrica - 34",
+    "colors": [
+      {
+        "color_code": "15745",
+        "color_desc": "PRETO 01",
+        "par_tipo": "",
+        "tam": "",
+        "abast": -41.6957,
+        "saldo_casa": "8.00000",
+        "saldo_origem": "nacional"
+      }
+    ]
+  }
+]

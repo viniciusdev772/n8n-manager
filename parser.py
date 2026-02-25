@@ -715,24 +715,25 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       const saldoBase = destinosOrdenados.length
         ? Math.max(...destinosOrdenados.map(d => parseNum(d.saldo_casa)))
         : 0;
-      let saldoRestante = saldoBase;
       const destinos = destinosOrdenados.map(d => {{
         const need = parseNum(d.necessidade);
-        const covered = Math.min(Math.max(saldoRestante, 0), need);
-        saldoRestante -= covered;
+        // Cobertura por mini: compara a necessidade da própria mini com o saldo em casa do item.
+        // Não "consome" saldo de outras minis nesta visão para evitar interpretação errada no operacional.
+        const covered = Math.min(Math.max(saldoBase, 0), need);
+        const saldoDepoisDaMini = Math.max(saldoBase - need, 0);
         return {{
           ...d,
           necessidade_num: need,
           saldo_base: saldoBase,
           covered,
-          saldo_restante: Math.max(saldoRestante, 0),
+          saldo_restante: saldoDepoisDaMini,
           status: getStatus(covered, need),
           shortfall: Math.max(need - covered, 0),
           coverage_pct: need > 0 ? (covered / need) * 100 : 100
         }};
       }});
       const totalNeed = parseNum(g.total_necessidade);
-      const coveredTotal = destinos.reduce((acc, d) => acc + d.covered, 0);
+      const coveredTotal = Math.min(Math.max(saldoBase, 0), totalNeed);
       const groupStatus = getStatus(coveredTotal, totalNeed);
       return {{
         ...g,
@@ -750,6 +751,36 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       if (status === 'ok') return '<span class="status-pill status-ok">Saldo cobre</span>';
       if (status === 'partial') return '<span class="status-pill status-partial">Cobertura parcial</span>';
       return '<span class="status-pill status-none">Sem cobertura</span>';
+    }}
+
+    function rowMatchesCoverage(row, coverageSel) {{
+      const eps = 1e-9;
+      if (!coverageSel) return true;
+      if (coverageSel === 'short') return row.shortfall > eps;
+      if (coverageSel === 'ok') return row.shortfall <= eps;
+      if (coverageSel === 'zero') return row.saldo_base <= eps;
+      return true;
+    }}
+
+    function withContext(g, miniSel) {{
+      const contextDestinos = (g.destinos_enriched || []).filter(
+        d => !miniSel || String(d.mini_fabrica || '').toLowerCase() === miniSel
+      );
+      const contextNeed = contextDestinos.reduce((acc, d) => acc + parseNum(d.necessidade_num), 0);
+      const contextCovered = contextDestinos.reduce((acc, d) => acc + parseNum(d.covered), 0);
+      const contextUncovered = Math.max(contextNeed - contextCovered, 0);
+      const contextSaldo = contextDestinos.length
+        ? Math.max(...contextDestinos.map(d => parseNum(d.saldo_base)))
+        : 0;
+      return {{
+        ...g,
+        context_destinos: contextDestinos,
+        context_need: contextNeed,
+        context_covered: contextCovered,
+        context_uncovered: contextUncovered,
+        context_coverage_pct: contextNeed > 0 ? (contextCovered / contextNeed) * 100 : 100,
+        context_saldo: contextSaldo
+      }};
     }}
 
     function sortGroups(arr) {{
@@ -771,32 +802,34 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       const term = (q.value||'').toLowerCase();
       const miniSel = (mini.value || '').toLowerCase();
       const coverageSel = coverage.value || '';
-      return sortGroups(DATA).map(enrichGroup).filter(g => {{
+      return sortGroups(DATA).map(enrichGroup).map(g => withContext(g, miniSel)).filter(g => {{
         const base = [
           g.item_code, g.item_desc, g.codigo_cor, g.descricao_cor, g.tipo_unidade, g.tam,
           ...(g.mini_fabricas_destino || []),
           ...(g.destinos || []).map(d => d.mini_fabrica)
         ].join(' ').toLowerCase();
         const okTerm = base.includes(term);
-        const okMini = !miniSel || (g.mini_fabricas_destino || []).some(m => String(m).toLowerCase() === miniSel);
+        const okMini = g.context_destinos.length > 0;
         const okMulti = !onlyMulti.checked || (g.qtd_mini_fabricas || 0) >= 2;
         const okCoverage = coverageSel === ''
-          || (coverageSel === 'short' && g.uncovered_total > 0)
-          || (coverageSel === 'ok' && g.uncovered_total <= 1e-9)
-          || (coverageSel === 'zero' && g.saldo_base <= 1e-9);
+          || (coverageSel === 'short' && g.context_uncovered > 1e-9)
+          || (coverageSel === 'ok' && g.context_uncovered <= 1e-9)
+          || (coverageSel === 'zero' && g.context_saldo <= 1e-9);
         return okTerm && okMini && okMulti && okCoverage;
       }});
     }}
 
     function renderDispatch(groups) {{
+      const coverageSel = coverage.value || '';
       const rows = [];
       let sumNeed = 0;
       let sumCovered = 0;
       groups.forEach(g => {{
-        sumNeed += g.total_need_num || 0;
-        sumCovered += g.covered_total || 0;
+        sumNeed += g.context_need || 0;
+        sumCovered += g.context_covered || 0;
         const groupPrio = (parseNum(g.total_necessidade) * 10) + (g.qtd_mini_fabricas || 0);
-        (g.destinos_enriched || []).forEach(d => {{
+        (g.context_destinos || []).forEach(d => {{
+          if (!rowMatchesCoverage(d, coverageSel)) return;
           const rowPrio = (d.shortfall * 100) + (d.necessidade_num * 10) + (g.qtd_mini_fabricas || 0);
           rows.push({{
             ...d,
@@ -847,6 +880,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     }}
 
     function renderGroups(groups) {{
+      const coverageSel = coverage.value || '';
       if (!groups.length) {{
         grupos.innerHTML = '';
         groupsEmpty.style.display = 'block';
@@ -860,17 +894,18 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
               <div class="group-title">${{esc(g.item_code)}} - ${{esc(g.item_desc)}}</div>
               <div class="group-meta">
                 Cor: ${{esc(g.codigo_cor)}} - ${{esc(g.descricao_cor)}} | Tam: ${{esc(g.tam || '-')}} |
-                Atende ${{esc(String(g.qtd_mini_fabricas))}} mini(s) | Necessidade total: ${{esc(String(g.total_necessidade))}} |
-                Saldo Casa: ${{esc(g.saldo_base.toFixed(3))}} | Falta: ${{esc(g.uncovered_total.toFixed(3))}}
+                Atende ${{esc(String(g.context_destinos.length))}} mini(s) no filtro |
+                Necessidade: ${{esc(g.context_need.toFixed(3))}} |
+                Saldo Casa: ${{esc(g.context_saldo.toFixed(3))}} | Falta: ${{esc(g.context_uncovered.toFixed(3))}}
               </div>
             </div>
-            <span class="badge">Prioridade ${{((parseNum(g.total_necessidade) * 10) + (g.qtd_mini_fabricas || 0) + (g.uncovered_total * 100)).toFixed(1)}} • ${{g.coverage_pct.toFixed(0)}}%</span>
+            <span class="badge">Prioridade ${{((parseNum(g.context_need) * 10) + (g.qtd_mini_fabricas || 0) + (g.context_uncovered * 100)).toFixed(1)}} • ${{g.context_coverage_pct.toFixed(0)}}%</span>
           </div>
           <div class="details">
             <table>
               <thead><tr><th>Mini Fábrica</th><th>Deve (Abast)</th><th>Saldo em Casa</th><th>Origem do Saldo</th><th>Necessidade</th><th>Cobertura</th><th>Saldo Após</th></tr></thead>
               <tbody>
-                ${{(g.destinos_enriched || []).map(d=>`
+                ${{(g.context_destinos || []).filter(d => rowMatchesCoverage(d, coverageSel)).map(d=>`
                   <tr>
                     <td><strong>${{esc(d.mini_fabrica ?? '')}}</strong></td>
                     <td>${{esc(d.deve_abast ?? '')}}</td>
