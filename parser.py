@@ -18,10 +18,10 @@ Estrutura de colunas no PDF:
 """
 
 import sys, re, json, os, tempfile
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from html import escape
 import pdfplumber
 import pandas as pd
@@ -62,6 +62,7 @@ X_SALDO_CASA_MAX = 370    # coluna "em casa" termina ~364
 
 # ── Comportamento ─────────────────────────────────────────────────────────────
 INCLUDE_SUBSTITUTES = False  # True = inclui importados/substitutos no output
+INCLUDE_PAR_SINGLETONS_IN_COMMON = True  # True = inclui PAR no common mesmo em 1 mini
 
 SKIP_PATTERNS = re.compile(
     r"(Empresa:|Filial:|Usuário:|Tipo\s+Relatório|Grupo\s+de|Grupo\s+POI|"
@@ -133,10 +134,21 @@ def extract_color(color_zone):
         first = color_zone[i]["text"]
         second = color_zone[i + 1]["text"]
         if COLOR_CODE_RE.match(first) and second == "-":
-            par_tipo = "PAR" if first.startswith("PAR") else ""
-            code = first[3:] if par_tipo else first
+            prev_is_par = i > 0 and color_zone[i - 1]["text"] == "PAR"
+            par_tipo = "PAR" if first.startswith("PAR") or prev_is_par else ""
+            code = first[3:] if first.startswith("PAR") else first
             desc = " ".join(clean_color_word(w) for w in color_zone[i + 2:]).strip()
             return code, desc, par_tipo
+        # Alguns PDFs trazem PAR em token separado: "PAR 98071 - BRANCO"
+        if (
+            first == "PAR"
+            and i + 2 < len(color_zone)
+            and re.fullmatch(r"\d{1,6}", second)
+            and color_zone[i + 2]["text"] == "-"
+        ):
+            code = second
+            desc = " ".join(clean_color_word(w) for w in color_zone[i + 3:]).strip()
+            return code, desc, "PAR"
     return None, None, ""
 
 
@@ -177,6 +189,69 @@ def is_zero_saldo(value):
         return False
 
 
+def make_source_meta(page_number, row_words, row_text, color_zone=None):
+    """Metadados de origem da linha no PDF para auditoria no HTML."""
+    zone = color_zone or row_words
+    first = zone[0] if zone else (row_words[0] if row_words else None)
+    if first is None:
+        return {
+            "source_page": page_number,
+            "source_x": None,
+            "source_y": None,
+            "source_text": row_text,
+        }
+    return {
+        "source_page": page_number,
+        "source_x": round(float(first.get("x0", 0.0)), 1),
+        "source_y": round(float(first.get("top", 0.0)), 1),
+        "source_text": row_text,
+    }
+
+
+def row_bbox(row_words):
+    if not row_words:
+        return None
+    x0 = min(float(w.get("x0", 0.0)) for w in row_words)
+    x1 = max(float(w.get("x1", x0)) for w in row_words)
+    top = min(float(w.get("top", 0.0)) for w in row_words)
+    bottom = max(float(w.get("bottom", top)) for w in row_words)
+    return {"x0": x0, "x1": x1, "top": top, "bottom": bottom}
+
+
+def _debug_enabled():
+    return os.getenv("PARSER_EXPORT_DEBUG_IMAGES", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def save_extraction_debug_images(pdf, annotations_by_page: Dict[int, List[Dict[str, Any]]], pdf_path: str):
+    base = os.path.splitext(pdf_path)[0]
+    out_dir = Path(base + "_common_items_debug")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    for page_idx, page in enumerate(pdf.pages, start=1):
+        ann = annotations_by_page.get(page_idx, [])
+        if not ann:
+            continue
+        try:
+            img = page.to_image(resolution=140)
+            item_rects = [a["bbox"] for a in ann if a.get("kind") == "item" and a.get("bbox")]
+            color_rects = [a["bbox"] for a in ann if a.get("kind") == "color" and a.get("bbox")]
+            extra_rects = [a["bbox"] for a in ann if a.get("kind") == "extra" and a.get("bbox")]
+
+            if item_rects:
+                img.draw_rects(item_rects, stroke="blue", stroke_width=2)
+            if color_rects:
+                img.draw_rects(color_rects, stroke="red", stroke_width=2)
+            if extra_rects:
+                img.draw_rects(extra_rects, stroke="orange", stroke_width=2)
+
+            out_file = out_dir / f"page_{page_idx:03d}.png"
+            img.save(str(out_file), format="PNG")
+        except Exception as e:
+            print(f"[WARN] Debug image P{page_idx} não gerada: {e}")
+
+    print(f"[OK] Debug Imagens → {out_dir}")
+
+
 def parse_pdf(pdf_path):
     """
     Retorna lista de itens originais (falta), cada um com:
@@ -190,11 +265,13 @@ def parse_pdf(pdf_path):
     current_mini_fabrica = None
 
     with pdfplumber.open(pdf_path) as pdf:
-        for page in pdf.pages:
-            # x_tolerance=1 impede que o 'M' da coluna Unid
-            # seja fundido com o último char da descrição do item
-            words = page.extract_words()  # default x_tolerance=3
+        annotations_by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
+        for page_number, page in enumerate(pdf.pages, start=1):
+            # x_tolerance=1 reduz fusão indevida entre colunas vizinhas
+            # (ex.: última letra da descrição + "M/MT" da coluna Unid).
+            words = page.extract_words(x_tolerance=1, y_tolerance=2)
             rows  = group_rows(words)
+            first_data_row_checked = False
 
             for _y, row_words in rows.items():
                 row_words = sorted(row_words, key=lambda w: w["x0"])
@@ -222,6 +299,17 @@ def parse_pdf(pdf_path):
                 saldo_casa = extract_saldo_casa(row_words)
                 tam = extract_tam(row_words)
 
+                if not first_data_row_checked:
+                    first_data_row_checked = True
+                    # Guarda de continuidade entre páginas:
+                    # se a página começa com continuação mas não há item ativo,
+                    # essa linha fica órfã e precisa de revisão manual.
+                    if not is_new_code and first_x < X_ORIGINAL_MAX and current_item is None:
+                        print(
+                            f"[WARN] P{page_number}: início com continuação sem item ativo: "
+                            f"{row_text[:140]}"
+                        )
+
                 # ── ITEM ORIGINAL ─────────────────────────────────────────────
                 if is_new_code and first_x < X_ORIGINAL_MAX:
                     item_desc = strip_unid_bleed(item_zone)
@@ -234,9 +322,15 @@ def parse_pdf(pdf_path):
                     }
                     current_sub = False  # reset: não estamos em substituto
                     items.append(current_item)
+                    item_box = row_bbox(row_words)
+                    if item_box:
+                        annotations_by_page[page_number].append(
+                            {"kind": "item", "bbox": item_box, "item_code": first_item_word}
+                        )
 
                     code, desc, par_tipo = extract_color(color_orig)
                     if code:
+                        src = make_source_meta(page_number, row_words, row_text, color_orig)
                         current_item["colors"].append({
                             "color_code": code,
                             "color_desc": desc,
@@ -245,7 +339,13 @@ def parse_pdf(pdf_path):
                             "abast":      abast,
                             "saldo_casa": saldo_casa,
                             "saldo_origem": "nacional",
+                            **src,
                         })
+                        color_box = row_bbox(color_orig or row_words)
+                        if color_box:
+                            annotations_by_page[page_number].append(
+                                {"kind": "color", "bbox": color_box, "item_code": first_item_word, "color_code": code}
+                            )
 
                 # ── SUBSTITUTO — ignorar, só marcar flag ──────────────────────
                 elif is_new_code and X_ORIGINAL_MAX <= first_x < X_SUBSTITUTO_MAX:
@@ -269,6 +369,7 @@ def parse_pdf(pdf_path):
                     if not is_new_code and color_orig and current_item:
                         code, desc, par_tipo = extract_color(color_orig)
                         if code:
+                            src = make_source_meta(page_number, row_words, row_text, color_orig)
                             current_item["colors"].append({
                                 "color_code": code,
                                 "color_desc": desc,
@@ -277,10 +378,34 @@ def parse_pdf(pdf_path):
                                 "abast":      abast,
                                 "saldo_casa": saldo_casa,
                                 "saldo_origem": "nacional",
+                                **src,
                             })
+                            color_box = row_bbox(color_orig or row_words)
+                            if color_box:
+                                annotations_by_page[page_number].append(
+                                    {
+                                        "kind": "color",
+                                        "bbox": color_box,
+                                        "item_code": current_item.get("item_code"),
+                                        "color_code": code,
+                                    }
+                                )
                         elif current_item["colors"]:
                             extra = " ".join(clean_color_word(w) for w in color_orig).strip()
                             current_item["colors"][-1]["color_desc"] += " " + extra
+                            extra_box = row_bbox(color_orig)
+                            if extra_box:
+                                annotations_by_page[page_number].append(
+                                    {
+                                        "kind": "extra",
+                                        "bbox": extra_box,
+                                        "item_code": current_item.get("item_code"),
+                                        "color_code": current_item["colors"][-1].get("color_code"),
+                                    }
+                                )
+
+        if _debug_enabled():
+            save_extraction_debug_images(pdf, annotations_by_page, pdf_path)
 
     # Limpa espaços
     for it in items:
@@ -309,62 +434,6 @@ def save_json(items, path):
     print(f"[OK] JSON → {path}")
 
 
-def save_html(items, html_path, source_label="Arquivo PDF"):
-    template_path = os.getenv("PARSER_HTML_TEMPLATE", "templates/parser_report.html")
-    if not os.path.isabs(template_path):
-        template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), template_path)
-
-    total_colors = sum(len(it.get("colors", [])) for it in items)
-    generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
-
-    item_cards = []
-    for it in items:
-        item_code = escape(str(it.get("item_code", "")))
-        item_desc = escape(str(it.get("item_desc", "")))
-        mini_fabrica = escape(str(it.get("mini_fabrica", "Mini Fabrica - N/D")))
-        header = f"[{mini_fabrica}] {item_code} - {item_desc}"
-
-        color_rows = []
-        for c in it.get("colors", []):
-            par_tipo = escape(str(c.get("par_tipo", "")))
-            color_code = escape(str(c.get("color_code", "")))
-            color_desc = escape(str(c.get("color_desc", "")))
-            tam = escape(str(c.get("tam", "")))
-            abast = escape(str(c.get("abast", "")))
-            saldo = escape(str(c.get("saldo_casa", "")))
-            origem = escape(str(c.get("saldo_origem", "")))
-            color_rows.append(
-                f"<tr><td>{par_tipo}</td><td>{color_code}</td><td>{color_desc}</td><td>{tam}</td><td>{abast}</td><td>{saldo}</td><td>{origem}</td></tr>"
-            )
-
-        empty_row = '<tr><td colspan="7">Sem cores</td></tr>'
-        table_rows = "".join(color_rows) if color_rows else empty_row
-        colors_table = (
-            "<table><thead><tr>"
-            "<th>Tipo Unidade</th><th>Código da Cor</th><th>Descrição da Cor</th><th>Tam</th><th>Deve (Abast)</th><th>Saldo em Casa</th><th>Origem</th>"
-            "</tr></thead>"
-            f"<tbody>{table_rows}</tbody></table>"
-        )
-        item_cards.append(f"<section class=\"item-card\"><h3>{header}</h3>{colors_table}</section>")
-
-    with open(template_path, "r", encoding="utf-8") as f:
-        html_template = f.read()
-
-    html = (
-        html_template
-        .replace("__REPORT_TITLE__", "Relatório Parseado")
-        .replace("__SOURCE_FILE__", escape(source_label))
-        .replace("__GENERATED_AT__", generated_at)
-        .replace("__TOTAL_ITEMS__", str(len(items)))
-        .replace("__TOTAL_COLORS__", str(total_colors))
-        .replace("__ITEMS_HTML__", "".join(item_cards))
-    )
-
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(html)
-    print(f"[OK] HTML → {html_path}")
-
-
 def _build_common_distribution(common_items):
     distribution = []
     for it in common_items:
@@ -382,6 +451,10 @@ def _build_common_distribution(common_items):
                     "necessidade": need,
                     "saldo_casa": det.get("saldo_casa", ""),
                     "saldo_origem": det.get("saldo_origem", ""),
+                    "source_page": det.get("source_page"),
+                    "source_x": det.get("source_x"),
+                    "source_y": det.get("source_y"),
+                    "source_text": det.get("source_text", ""),
                 }
             )
         distribution.append(
@@ -470,18 +543,36 @@ def build_common_items(items):
                     "_first_seq": seq,
                     "_mini_fabricas_order": [],
                 }
+            else:
+                # Prefere descrições mais completas quando o mesmo item/cor/tam
+                # aparece em múltiplos PDFs com textos truncados.
+                current_item_desc = grouped[key].get("item_desc", "") or ""
+                new_item_desc = it.get("item_desc", "") or ""
+                if len(new_item_desc) > len(current_item_desc):
+                    grouped[key]["item_desc"] = new_item_desc
+
+                current_color_desc = grouped[key].get("color_desc", "") or ""
+                new_color_desc = c.get("color_desc", "") or ""
+                if len(new_color_desc) > len(current_color_desc):
+                    grouped[key]["color_desc"] = new_color_desc
             if mf not in grouped[key]["por_mini_fabrica"]:
                 grouped[key]["_mini_fabricas_order"].append(mf)
             grouped[key]["por_mini_fabrica"][mf] = {
                 "abast": c.get("abast"),
                 "saldo_casa": c.get("saldo_casa"),
                 "saldo_origem": c.get("saldo_origem", "nacional"),
+                "source_page": c.get("source_page"),
+                "source_x": c.get("source_x"),
+                "source_y": c.get("source_y"),
+                "source_text": c.get("source_text", ""),
             }
 
     commons = []
     for entry in grouped.values():
         mini_fabs = entry["_mini_fabricas_order"]
-        if len(mini_fabs) >= 2:
+        is_par = (entry.get("par_tipo") or "").upper() == "PAR"
+        include_single_par = INCLUDE_PAR_SINGLETONS_IN_COMMON and is_par and len(mini_fabs) >= 1
+        if len(mini_fabs) >= 2 or include_single_par:
             entry["mini_fabricas"] = mini_fabs
             del entry["_mini_fabricas_order"]
             commons.append(entry)
@@ -541,403 +632,674 @@ def save_common_csv(common_items, path):
 def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     distribution = _build_common_distribution(common_items)
     data_json = json.dumps(distribution, ensure_ascii=False)
-    generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    generated_at = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     html = f"""<!doctype html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Painel de Itens em Comum</title>
+  <title>Painel Compacto de Itens em Comum</title>
   <style>
     :root {{
-      --bg: #f4f6f8;
-      --panel: #ffffff;
-      --line: #dbe3ec;
-      --text: #102236;
-      --muted: #516277;
-      --accent: #0054a6;
-      --ok: #0f766e;
-      --warn: #b45309;
+      --bg: #f3f5f7;
+      --panel: #fff;
+      --line: #dbe2ea;
+      --text: #1c2733;
+      --muted: #627285;
+      --ok-bg: #e8f8f1;
+      --ok-tx: #0f766e;
+      --warn-bg: #fff7e8;
+      --warn-tx: #b45309;
+      --bad-bg: #ffe9e9;
+      --bad-tx: #b91c1c;
+      --tag-bg: #eef5ff;
+      --tag-tx: #184e8a;
     }}
-    body {{ font-family: "Segoe UI", Tahoma, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); }}
-    .wrap {{ max-width: 1400px; margin: 0 auto; padding: 16px; }}
-    .head {{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 12px; }}
-    h2 {{ margin: 0; font-size: 22px; }}
-    .sub {{ margin-top: 5px; color: var(--muted); font-size: 13px; }}
-    .stats {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }}
-    .pill {{ background: #edf4fb; border: 1px solid #c9ddef; color: #113c66; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 600; }}
-    .tools {{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr auto; gap: 10px; margin-bottom: 12px; }}
-    input, select {{ border: 1px solid #bfd0e2; border-radius: 10px; padding: 10px; font-size: 14px; background: #fff; }}
-    label {{ font-size: 12px; color: var(--muted); font-weight: 600; margin-bottom: 4px; display: block; }}
-    .toggle {{ display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }}
-    .panel {{ background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }}
-    .panel h3 {{ margin: 0; padding: 12px; border-bottom: 1px solid var(--line); font-size: 16px; }}
-    .empty {{ padding: 16px; color: var(--muted); }}
-    .note {{ font-size: 12px; color: var(--muted); padding: 0 12px 12px; }}
-    table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-    th, td {{ border-bottom: 1px solid #e7edf4; padding: 8px; text-align: left; vertical-align: top; }}
-    th {{ background: #f6f9fc; color: #294864; font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }}
-    .prio {{ font-weight: 700; color: var(--accent); }}
-    .dest {{ font-weight: 700; }}
-    .muted {{ color: var(--muted); }}
-    .status-pill {{ display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; border: 1px solid transparent; }}
-    .status-ok {{ background: #e6f7f2; color: #0f766e; border-color: #b7e7d9; }}
-    .status-partial {{ background: #fff7e6; color: #b45309; border-color: #f4d7a4; }}
-    .status-none {{ background: #fee2e2; color: #b91c1c; border-color: #fecaca; }}
-    .group-card {{ border-top: 1px solid #e7edf4; }}
-    .group-head {{ padding: 10px 12px; display: flex; justify-content: space-between; gap: 8px; cursor: pointer; background: #fcfdff; }}
-    .group-title {{ font-weight: 700; font-size: 14px; }}
-    .group-meta {{ color: var(--muted); font-size: 12px; margin-top: 2px; }}
-    .badge {{ font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 999px; border: 1px solid #d7e6f6; background: #eef6ff; color: #0b4a86; height: fit-content; }}
-    .details {{ display: none; padding: 0 12px 12px; }}
-    .open .details {{ display: block; }}
-    @media (max-width: 980px) {{
-      .tools {{ grid-template-columns: 1fr; }}
-    }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; background: var(--bg); color: var(--text); font: 13px/1.45 "Segoe UI", Tahoma, Arial, sans-serif; }}
+    .wrap {{ max-width: 1500px; margin: 0 auto; padding: 12px; }}
+    .panel {{ background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 10px; }}
+    h2, h3 {{ margin: 0; }}
+    h2 {{ font-size: 20px; }}
+    h3 {{ font-size: 15px; margin-bottom: 8px; }}
+    .sub {{ color: var(--muted); margin-top: 4px; }}
+    .kpis {{ display: grid; grid-template-columns: repeat(8, minmax(110px, 1fr)); gap: 8px; margin-top: 10px; }}
+    .kpi {{ border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fbfdff; }}
+    .kpi .lbl {{ color: var(--muted); font-size: 11px; text-transform: uppercase; }}
+    .kpi .val {{ font-size: 16px; font-weight: 700; margin-top: 2px; }}
+    .controls {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto; gap: 8px; align-items: end; }}
+    .controls label {{ display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }}
+    .controls input, .controls select, .controls button {{ width: 100%; border: 1px solid #c6d3e0; border-radius: 8px; padding: 8px; background: #fff; }}
+    .controls button {{ cursor: pointer; font-weight: 600; }}
+    .controls .inline {{ display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; padding-bottom: 2px; }}
+    table {{ width: 100%; border-collapse: collapse; }}
+    th, td {{ border-bottom: 1px solid #edf1f5; padding: 6px; text-align: left; vertical-align: top; }}
+    th {{ background: #f8fbfe; color: #274b6c; position: sticky; top: 0; z-index: 1; font-size: 11px; text-transform: uppercase; letter-spacing: .02em; }}
+    .status {{ display: inline-block; border-radius: 999px; padding: 2px 8px; font-size: 11px; font-weight: 700; border: 1px solid transparent; }}
+    .s-ok {{ background: var(--ok-bg); color: var(--ok-tx); border-color: #bce9d9; }}
+    .s-partial {{ background: var(--warn-bg); color: var(--warn-tx); border-color: #f2d9aa; }}
+    .s-none {{ background: var(--bad-bg); color: var(--bad-tx); border-color: #f7c7c7; }}
+    .mono {{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }}
+    .empty {{ color: var(--muted); padding: 10px; }}
+    .small {{ font-size: 12px; color: var(--muted); }}
+    .details {{ max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }}
+    .groups {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 10px; }}
+    .group {{ border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fcfdff; }}
+    .group-top {{ display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }}
+    .group-title {{ font-weight: 700; }}
+    .tags {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }}
+    .tag {{ background: var(--tag-bg); color: var(--tag-tx); border: 1px solid #d7e7fa; border-radius: 999px; padding: 2px 8px; font-size: 11px; }}
+    .mini-list {{ margin-top: 8px; font-size: 12px; }}
+    .mini-row {{ display: flex; justify-content: space-between; gap: 8px; border-top: 1px dashed #e6edf5; padding-top: 6px; margin-top: 6px; }}
+    .mini-name {{ font-weight: 600; }}
+    dialog.side-dialog {{ border: none; padding: 0; max-width: 920px; width: 92vw; margin: 0 0 0 auto; height: 100vh; max-height: 100vh; }}
+    dialog.side-dialog::backdrop {{ background: rgba(0, 0, 0, .35); }}
+    .dialog-wrap {{ height: 100%; display: grid; grid-template-rows: auto auto 1fr; background: #fff; border-left: 1px solid var(--line); }}
+    .dialog-head {{ padding: 12px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }}
+    .dialog-actions {{ padding: 10px 12px; border-bottom: 1px solid var(--line); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }}
+    .dialog-actions button {{ border: 1px solid #c6d3e0; border-radius: 8px; background: #fff; padding: 8px 10px; cursor: pointer; font-weight: 600; }}
+    .dialog-actions input, .dialog-actions select {{ border: 1px solid #cfd9e5; border-radius: 8px; background: #fff; padding: 8px 10px; min-width: 190px; }}
+    .mini-checks {{ display: flex; gap: 10px; flex-wrap: wrap; max-height: 120px; overflow: auto; }}
+    .mini-checks label {{ font-size: 12px; color: var(--text); display: inline-flex; align-items: center; gap: 5px; }}
+    .dialog-body {{ padding: 12px; overflow: auto; }}
+    .warn {{ color: #b45309; font-weight: 600; font-size: 12px; }}
+    .ok {{ color: #14532d; font-weight: 700; font-size: 12px; }}
+    .compare-summary {{ margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 6px; }}
+    .compare-chip {{ background: #f3f8ff; color: #12416e; border: 1px solid #d8e8f8; border-radius: 999px; padding: 4px 9px; font-size: 12px; }}
+    @media (max-width: 1200px) {{ .kpis {{ grid-template-columns: repeat(4, minmax(120px, 1fr)); }} .controls {{ grid-template-columns: 1fr; }} .groups {{ grid-template-columns: 1fr; }} }}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="head">
-      <h2>Painel de Distribuição de Itens em Comum</h2>
+    <section class="panel">
+      <h2>Itens em Comum - Painel Operacional</h2>
       <div class="sub">Fonte: {escape(source_label)} | Gerado em: {generated_at}</div>
-      <div class="stats">
-        <span class="pill">Grupos: {len(distribution)}</span>
-        <span class="pill">Itens em comum: {len(common_items)}</span>
-        <span class="pill" id="destinos-count">Destinos visíveis: 0</span>
-        <span class="pill" id="coverage-overall">Cobertura geral: 0%</span>
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Grupos</div><div class="val" id="kpi-groups">0</div></div>
+        <div class="kpi"><div class="lbl">Destinos</div><div class="val" id="kpi-dests">0</div></div>
+        <div class="kpi"><div class="lbl">Necessidade</div><div class="val" id="kpi-need">0</div></div>
+        <div class="kpi"><div class="lbl">Coberto</div><div class="val" id="kpi-covered">0</div></div>
+        <div class="kpi"><div class="lbl">Falta</div><div class="val" id="kpi-falta">0</div></div>
+        <div class="kpi"><div class="lbl">Cobertura</div><div class="val" id="kpi-cov">0%</div></div>
+        <div class="kpi"><div class="lbl">Sem Cobertura</div><div class="val" id="kpi-none">0</div></div>
+        <div class="kpi"><div class="lbl">Saldo Substituto</div><div class="val" id="kpi-sub">0</div></div>
       </div>
-    </div>
-    <div class="tools">
+    </section>
+
+    <section class="panel controls">
       <div>
-        <label for="q">Busca rápida</label>
-        <input id="q" placeholder="Item, descrição, cor ou mini fábrica...">
+        <label for="q">Busca</label>
+        <input id="q" placeholder="item, descrição, cor, mini fábrica">
       </div>
       <div>
-        <label for="mini">Filtrar mini fábrica</label>
-        <select id="mini"><option value="">Todas as mini fábricas</option></select>
+        <label for="mini">Mini fábrica</label>
+        <select id="mini"><option value="">Todas</option></select>
+      </div>
+      <div>
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="">Todos</option>
+          <option value="none">Sem cobertura</option>
+          <option value="partial">Parcial</option>
+          <option value="ok">Coberto</option>
+        </select>
+      </div>
+      <div>
+        <label for="minNeed">Necessidade mínima</label>
+        <input id="minNeed" type="number" min="0" step="0.001" value="0">
       </div>
       <div>
         <label for="sort">Ordenação</label>
         <select id="sort">
-          <option value="prio">Prioridade operacional</option>
+          <option value="prio">Prioridade</option>
+          <option value="falta">Maior falta</option>
           <option value="need">Maior necessidade</option>
-          <option value="item">Código do item</option>
-          <option value="mini">Mais mini fábricas</option>
+          <option value="item">Código item</option>
         </select>
       </div>
-      <div>
-        <label for="coverage">Filtro de Saldo Casa</label>
-        <select id="coverage">
-          <option value="">Todos</option>
-          <option value="short">Com falta de saldo</option>
-          <option value="ok">Saldo cobre total</option>
-          <option value="zero">Sem saldo em casa</option>
-        </select>
-      </div>
-      <label class="toggle"><input type="checkbox" id="onlyMulti"> Mostrar só itens que atendem 2+ minis</label>
-    </div>
-
-    <section class="panel">
-      <h3>Roteiro de Envio (uma linha por destino)</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Prioridade</th>
-            <th>Item</th>
-            <th>Cor / Tam</th>
-            <th>Mini Fábrica Destino</th>
-            <th>Deve</th>
-            <th>Saldo Casa</th>
-            <th>Origem</th>
-            <th>Necessidade</th>
-            <th>Cobertura</th>
-            <th>Saldo Após</th>
-            <th>Abrange</th>
-          </tr>
-        </thead>
-        <tbody id="dispatch-rows"></tbody>
-      </table>
-      <div class="empty" id="dispatch-empty" style="display:none">Nenhum destino encontrado com os filtros atuais.</div>
-      <div class="note">Prioridade operacional considera necessidade do destino e abrangência do item para múltiplas mini fábricas.</div>
+      <label class="inline"><input id="onlyFalta" type="checkbox"> Somente com falta</label>
+      <button id="compareMinisBtn" type="button">Comparar Minis</button>
+      <button id="exportCsv" type="button">Exportar CSV filtrado</button>
     </section>
 
     <section class="panel">
-      <h3>Conferência por Item em Comum</h3>
-      <div id="groups"></div>
-      <div class="empty" id="groups-empty" style="display:none">Nenhum item comum encontrado com os filtros atuais.</div>
+      <h3>Roteiro por Destino</h3>
+      <div class="small" id="scopeInfo">Carregando...</div>
+      <div class="details">
+        <table>
+          <thead>
+            <tr>
+              <th>Prio</th>
+              <th>Item / Cor</th>
+              <th>Destino</th>
+              <th>Abrange</th>
+              <th>Necess.</th>
+              <th>Saldo</th>
+              <th>Coberto</th>
+              <th>Falta</th>
+              <th>Cobertura</th>
+              <th>Status</th>
+              <th>Origem</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" style="display:none">Nenhum destino encontrado com os filtros atuais.</div>
+    </section>
+
+    <section class="panel">
+      <h3>Conferência por Item + Cor (multimini)</h3>
+      <div class="small" id="groupsInfo">Carregando...</div>
+      <div class="groups" id="groups"></div>
+      <div class="empty" id="groupsEmpty" style="display:none">Nenhum grupo encontrado com os filtros atuais.</div>
     </section>
   </div>
+
+  <dialog id="compareDialog" class="side-dialog">
+    <div class="dialog-wrap">
+      <div class="dialog-head">
+        <h3>Comparar Mini Fábricas</h3>
+        <button id="compareCloseBtn" type="button">Fechar</button>
+      </div>
+      <div class="dialog-actions">
+        <input id="compareMiniSearch" type="text" placeholder="Filtrar minis no dialog">
+        <button id="compareAllBtn" type="button">Marcar visíveis</button>
+        <button id="compareNoneBtn" type="button">Limpar seleção</button>
+        <select id="compareSort" title="Ordenação">
+          <option value="gap">Maior falta</option>
+          <option value="covAsc">Menor cobertura</option>
+          <option value="need">Maior necessidade</option>
+          <option value="mini">Mini (A-Z)</option>
+        </select>
+        <div class="mini-checks" id="compareMiniList"></div>
+        <button id="compareApplyBtn" type="button">Aplicar Comparação</button>
+        <span id="compareWarn" class="warn"></span>
+        <span id="compareOk" class="ok"></span>
+      </div>
+      <div class="dialog-body">
+        <div id="compareSummary" class="compare-summary"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>Mini</th>
+              <th>Em comum</th>
+              <th>Destinos</th>
+              <th>Sem cob.</th>
+              <th>Necessidade</th>
+              <th>Saldo</th>
+              <th>Coberto</th>
+              <th>Falta</th>
+              <th>Cobertura</th>
+            </tr>
+          </thead>
+          <tbody id="compareRows"></tbody>
+        </table>
+      </div>
+    </div>
+  </dialog>
+
   <script>
     const DATA = {data_json};
-    const dispatchRows = document.getElementById('dispatch-rows');
-    const dispatchEmpty = document.getElementById('dispatch-empty');
-    const grupos = document.getElementById('groups');
-    const groupsEmpty = document.getElementById('groups-empty');
-    const destinosCount = document.getElementById('destinos-count');
-    const coverageOverall = document.getElementById('coverage-overall');
-    const q = document.getElementById('q');
-    const mini = document.getElementById('mini');
-    const sort = document.getElementById('sort');
-    const coverage = document.getElementById('coverage');
-    const onlyMulti = document.getElementById('onlyMulti');
+    const rowsEl = document.getElementById('rows');
+    const emptyEl = document.getElementById('empty');
+    const groupsEl = document.getElementById('groups');
+    const groupsEmptyEl = document.getElementById('groupsEmpty');
+    const scopeInfo = document.getElementById('scopeInfo');
+    const groupsInfo = document.getElementById('groupsInfo');
+    const qEl = document.getElementById('q');
+    const miniEl = document.getElementById('mini');
+    const statusEl = document.getElementById('status');
+    const minNeedEl = document.getElementById('minNeed');
+    const sortEl = document.getElementById('sort');
+    const onlyFaltaEl = document.getElementById('onlyFalta');
+    const compareMinisBtn = document.getElementById('compareMinisBtn');
+    const exportCsvEl = document.getElementById('exportCsv');
+    const compareDialog = document.getElementById('compareDialog');
+    const compareCloseBtn = document.getElementById('compareCloseBtn');
+    const compareApplyBtn = document.getElementById('compareApplyBtn');
+    const compareAllBtn = document.getElementById('compareAllBtn');
+    const compareNoneBtn = document.getElementById('compareNoneBtn');
+    const compareMiniList = document.getElementById('compareMiniList');
+    const compareMiniSearch = document.getElementById('compareMiniSearch');
+    const compareSort = document.getElementById('compareSort');
+    const compareRows = document.getElementById('compareRows');
+    const compareWarn = document.getElementById('compareWarn');
+    const compareOk = document.getElementById('compareOk');
+    const compareSummary = document.getElementById('compareSummary');
+
+    const kpi = {{
+      groups: document.getElementById('kpi-groups'),
+      dests: document.getElementById('kpi-dests'),
+      need: document.getElementById('kpi-need'),
+      covered: document.getElementById('kpi-covered'),
+      falta: document.getElementById('kpi-falta'),
+      cov: document.getElementById('kpi-cov'),
+      none: document.getElementById('kpi-none'),
+      sub: document.getElementById('kpi-sub')
+    }};
 
     function esc(v) {{
-      return String(v ?? '').replace(/[&<>"]/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}}[c]));
+      return String(v ?? '').replace(/[&<>"']/g, c => ({{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}}[c]));
     }}
 
-    function parseNum(v) {{
+    function num(v) {{
       if (v === null || v === undefined || v === '') return 0;
       if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
       const s = String(v).trim();
-      const normalized = s.includes(',') && s.includes('.')
-        ? s.replace(/\\./g, '').replace(',', '.')
-        : s.replace(',', '.');
+      const normalized = s.includes(',') && s.includes('.') ? s.replace(/\\./g, '').replace(',', '.') : s.replace(',', '.');
       const n = Number(normalized);
       return Number.isFinite(n) ? n : 0;
     }}
 
-    function populateMiniFilter() {{
-      const minis = Array.from(new Set(DATA.flatMap(g => g.mini_fabricas_destino || []))).sort((a,b)=>a.localeCompare(b));
-      mini.innerHTML = '<option value="">Todas as mini fábricas</option>' + minis.map(m => `<option value="${{esc(m)}}">${{esc(m)}}</option>`).join('');
-    }}
+    function fmt(n, d=3) {{ return num(n).toFixed(d); }}
 
-    function getStatus(covered, need) {{
-      const eps = 1e-9;
-      if (need <= eps) return 'ok';
-      if (covered >= need - eps) return 'ok';
-      if (covered > eps) return 'partial';
+    function statusBy(covered, need) {{
+      if (need <= 1e-9) return 'ok';
+      if (covered >= need - 1e-9) return 'ok';
+      if (covered > 1e-9) return 'partial';
       return 'none';
     }}
 
-    function enrichGroup(g) {{
-      const destinosOrdenados = (g.destinos || []).slice().sort((a,b)=> parseNum(b.necessidade) - parseNum(a.necessidade));
-      const saldoBase = destinosOrdenados.length
-        ? Math.max(...destinosOrdenados.map(d => parseNum(d.saldo_casa)))
-        : 0;
-      const destinos = destinosOrdenados.map(d => {{
-        const need = parseNum(d.necessidade);
-        // Cobertura por mini: compara a necessidade da própria mini com o saldo em casa do item.
-        // Não "consome" saldo de outras minis nesta visão para evitar interpretação errada no operacional.
-        const covered = Math.min(Math.max(saldoBase, 0), need);
-        const saldoDepoisDaMini = Math.max(saldoBase - need, 0);
-        return {{
-          ...d,
-          necessidade_num: need,
-          saldo_base: saldoBase,
-          covered,
-          saldo_restante: saldoDepoisDaMini,
-          status: getStatus(covered, need),
-          shortfall: Math.max(need - covered, 0),
-          coverage_pct: need > 0 ? (covered / need) * 100 : 100
-        }};
-      }});
-      const totalNeed = parseNum(g.total_necessidade);
-      const coveredTotal = Math.min(Math.max(saldoBase, 0), totalNeed);
-      const groupStatus = getStatus(coveredTotal, totalNeed);
-      return {{
-        ...g,
-        saldo_base: saldoBase,
-        total_need_num: totalNeed,
-        covered_total: coveredTotal,
-        uncovered_total: Math.max(totalNeed - coveredTotal, 0),
-        coverage_pct: totalNeed > 0 ? (coveredTotal / totalNeed) * 100 : 100,
-        group_status: groupStatus,
-        destinos_enriched: destinos
-      }};
+    function statusBadge(st) {{
+      if (st === 'ok') return '<span class="status s-ok">Coberto</span>';
+      if (st === 'partial') return '<span class="status s-partial">Parcial</span>';
+      return '<span class="status s-none">Sem cobertura</span>';
     }}
 
-    function statusBadge(status) {{
-      if (status === 'ok') return '<span class="status-pill status-ok">Saldo cobre</span>';
-      if (status === 'partial') return '<span class="status-pill status-partial">Cobertura parcial</span>';
-      return '<span class="status-pill status-none">Sem cobertura</span>';
+    function sourceTooltip(r) {{
+      const page = r.source_page ?? '-';
+      const x = r.source_x ?? '-';
+      const y = r.source_y ?? '-';
+      const raw = String(r.source_text || '').trim();
+      return `Página: ${{page}} | x~${{x}} | y~${{y}}\\n${{raw}}`;
     }}
 
-    function rowMatchesCoverage(row, coverageSel) {{
-      const eps = 1e-9;
-      if (!coverageSel) return true;
-      if (coverageSel === 'short') return row.shortfall > eps;
-      if (coverageSel === 'ok') return row.shortfall <= eps;
-      if (coverageSel === 'zero') return row.saldo_base <= eps;
-      return true;
-    }}
-
-    function withContext(g, miniSel) {{
-      const contextDestinos = (g.destinos_enriched || []).filter(
-        d => !miniSel || String(d.mini_fabrica || '').toLowerCase() === miniSel
-      );
-      const contextNeed = contextDestinos.reduce((acc, d) => acc + parseNum(d.necessidade_num), 0);
-      const contextCovered = contextDestinos.reduce((acc, d) => acc + parseNum(d.covered), 0);
-      const contextUncovered = Math.max(contextNeed - contextCovered, 0);
-      const contextSaldo = contextDestinos.length
-        ? Math.max(...contextDestinos.map(d => parseNum(d.saldo_base)))
-        : 0;
-      return {{
-        ...g,
-        context_destinos: contextDestinos,
-        context_need: contextNeed,
-        context_covered: contextCovered,
-        context_uncovered: contextUncovered,
-        context_coverage_pct: contextNeed > 0 ? (contextCovered / contextNeed) * 100 : 100,
-        context_saldo: contextSaldo
-      }};
-    }}
-
-    function sortGroups(arr) {{
-      const x = arr.slice();
-      if (sort.value === 'mini') x.sort((a,b)=> (b.qtd_mini_fabricas||0) - (a.qtd_mini_fabricas||0));
-      else if (sort.value === 'item') x.sort((a,b)=>(a.item_code||'').localeCompare(b.item_code||''));
-      else if (sort.value === 'need') x.sort((a,b)=> parseNum(b.total_necessidade) - parseNum(a.total_necessidade));
-      else {{
-        x.sort((a,b)=> {{
-          const pa = (parseNum(a.total_necessidade) * 10) + (a.qtd_mini_fabricas || 0);
-          const pb = (parseNum(b.total_necessidade) * 10) + (b.qtd_mini_fabricas || 0);
-          return pb - pa;
-        }});
-      }}
-      return x;
-    }}
-
-    function filterGroups() {{
-      const term = (q.value||'').toLowerCase();
-      const miniSel = (mini.value || '').toLowerCase();
-      const coverageSel = coverage.value || '';
-      return sortGroups(DATA).map(enrichGroup).map(g => withContext(g, miniSel)).filter(g => {{
-        const base = [
-          g.item_code, g.item_desc, g.codigo_cor, g.descricao_cor, g.tipo_unidade, g.tam,
-          ...(g.mini_fabricas_destino || []),
-          ...(g.destinos || []).map(d => d.mini_fabrica)
-        ].join(' ').toLowerCase();
-        const okTerm = base.includes(term);
-        const okMini = g.context_destinos.length > 0;
-        const okMulti = !onlyMulti.checked || (g.qtd_mini_fabricas || 0) >= 2;
-        const okCoverage = coverageSel === ''
-          || (coverageSel === 'short' && g.context_uncovered > 1e-9)
-          || (coverageSel === 'ok' && g.context_uncovered <= 1e-9)
-          || (coverageSel === 'zero' && g.context_saldo <= 1e-9);
-        return okTerm && okMini && okMulti && okCoverage;
-      }});
-    }}
-
-    function renderDispatch(groups) {{
-      const coverageSel = coverage.value || '';
+    function flattenRows(groups) {{
       const rows = [];
-      let sumNeed = 0;
-      let sumCovered = 0;
-      groups.forEach(g => {{
-        sumNeed += g.context_need || 0;
-        sumCovered += g.context_covered || 0;
-        const groupPrio = (parseNum(g.total_necessidade) * 10) + (g.qtd_mini_fabricas || 0);
-        (g.context_destinos || []).forEach(d => {{
-          if (!rowMatchesCoverage(d, coverageSel)) return;
-          const rowPrio = (d.shortfall * 100) + (d.necessidade_num * 10) + (g.qtd_mini_fabricas || 0);
+      for (const g of groups) {{
+        const destinos = (g.destinos || []).slice().sort((a,b)=> num(b.necessidade) - num(a.necessidade));
+        const groupKey = `${{g.item_code}}|${{g.codigo_cor}}|${{g.tam || ''}}|${{g.tipo_unidade || ''}}`;
+        for (const d of destinos) {{
+          const need = num(d.necessidade);
+          // Cobertura por destino: usa o saldo da própria mini fábrica.
+          const saldoDestino = num(d.saldo_casa);
+          const covered = Math.min(Math.max(saldoDestino, 0), need);
+          const gap = Math.max(need - covered, 0);
+          const coveragePct = need > 0 ? (covered / need) * 100 : 100;
+          // Prioridade operacional:
+          // 1) destinos com falta (>0) vêm primeiro;
+          // 2) entre eles, maior falta e maior necessidade sobem;
+          // 3) destinos totalmente cobertos vão para o fim.
+          const hasGap = gap > 1e-9;
+          const prio = hasGap
+            ? (gap * 100) + (need * 10) + num(g.qtd_mini_fabricas || 0)
+            : (need * 0.01) + (num(g.qtd_mini_fabricas || 0) * 0.001);
           rows.push({{
-            ...d,
+            group_key: groupKey,
             item_code: g.item_code,
             item_desc: g.item_desc,
             tipo_unidade: g.tipo_unidade || '',
             codigo_cor: g.codigo_cor,
             descricao_cor: g.descricao_cor,
             tam: g.tam || '',
-            qtd_mini_fabricas: g.qtd_mini_fabricas || 0,
-            total_necessidade: g.total_necessidade || 0,
-            group_prio: groupPrio + d.shortfall * 100,
-            row_prio: rowPrio
+            mini_fabrica: d.mini_fabrica || '',
+            deve_abast: d.deve_abast,
+            saldo_casa: d.saldo_casa,
+            saldo_origem: d.saldo_origem || '',
+            source_page: d.source_page,
+            source_x: d.source_x,
+            source_y: d.source_y,
+            source_text: d.source_text || '',
+            need,
+            covered,
+            gap,
+            coveragePct,
+            status: statusBy(covered, need),
+            prio,
+            q_mini: num(g.qtd_mini_fabricas || 0)
           }});
-        }});
+        }}
+      }}
+      return rows;
+    }}
+
+    function populateMinis(rows) {{
+      const minis = Array.from(new Set(rows.map(r => r.mini_fabrica).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+      miniEl.innerHTML = '<option value="">Todas</option>' + minis.map(m => `<option value="${{esc(m)}}">${{esc(m)}}</option>`).join('');
+    }}
+
+    const ALL_ROWS = flattenRows(DATA);
+    populateMinis(ALL_ROWS);
+
+    function filterBaseRows(ignoreMini = false) {{
+      const term = (qEl.value || '').toLowerCase();
+      const mini = (miniEl.value || '').toLowerCase();
+      const status = statusEl.value || '';
+      const minNeed = Math.max(num(minNeedEl.value || 0), 0);
+      const onlyFalta = onlyFaltaEl.checked;
+      return ALL_ROWS.filter(r => {{
+        const hay = [r.item_code, r.item_desc, r.codigo_cor, r.descricao_cor, r.tipo_unidade, r.tam, r.mini_fabrica].join(' ').toLowerCase();
+        if (term && !hay.includes(term)) return false;
+        if (!ignoreMini && mini && r.mini_fabrica.toLowerCase() !== mini) return false;
+        if (status && r.status !== status) return false;
+        if (r.need < minNeed) return false;
+        if (onlyFalta && r.gap <= 1e-9) return false;
+        return true;
       }});
-      rows.sort((a,b)=> b.row_prio - a.row_prio);
-      destinosCount.textContent = `Destinos visíveis: ${{rows.length}}`;
-      const pct = sumNeed > 0 ? (sumCovered / sumNeed) * 100 : 100;
-      coverageOverall.textContent = `Cobertura geral: ${{pct.toFixed(1)}}%`;
-      if (!rows.length) {{
-        dispatchRows.innerHTML = '';
-        dispatchEmpty.style.display = 'block';
+    }}
+
+    function buildCompareMiniOptions() {{
+      const minis = Array.from(new Set(ALL_ROWS.map(r => r.mini_fabrica).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+      compareMiniList.innerHTML = minis.map(m => `<label><input type="checkbox" name="compareMini" value="${{esc(m)}}"> ${{esc(m)}}</label>`).join('');
+    }}
+
+    function getSelectedCompareMinis() {{
+      return Array.from(compareMiniList.querySelectorAll('input[name="compareMini"]:checked')).map(i => i.value);
+    }}
+
+    function filterCompareMiniList() {{
+      const t = (compareMiniSearch.value || '').toLowerCase().trim();
+      const labels = Array.from(compareMiniList.querySelectorAll('label'));
+      for (const lb of labels) {{
+        const visible = !t || lb.textContent.toLowerCase().includes(t);
+        lb.style.display = visible ? 'inline-flex' : 'none';
+      }}
+    }}
+
+    function renderMiniCompare() {{
+      const selected = getSelectedCompareMinis();
+      if (selected.length < 2) {{
+        compareWarn.textContent = 'Selecione pelo menos 2 mini fábricas.';
+        compareOk.textContent = '';
+        compareSummary.innerHTML = '';
+        compareRows.innerHTML = '';
         return;
       }}
-      dispatchEmpty.style.display = 'none';
-      dispatchRows.innerHTML = rows.map(r => `
+      compareWarn.textContent = '';
+      compareOk.textContent = `Comparando ${{selected.length}} minis.`;
+      const base = filterBaseRows(true);
+      const keyFreq = new Map();
+      for (const r of base) {{
+        if (!selected.includes(r.mini_fabrica)) continue;
+        const k = `${{r.mini_fabrica}}|${{r.group_key}}`;
+        if (!keyFreq.has(k)) keyFreq.set(k, true);
+      }}
+      const groupCountByMini = new Map();
+      const globalGroupFreq = new Map();
+      for (const k of keyFreq.keys()) {{
+        const [mini, gk] = k.split('|');
+        if (!groupCountByMini.has(mini)) groupCountByMini.set(mini, new Set());
+        groupCountByMini.get(mini).add(gk);
+        globalGroupFreq.set(gk, (globalGroupFreq.get(gk) || 0) + 1);
+      }}
+      const out = [];
+      for (const mini of selected) {{
+        const rows = base.filter(r => r.mini_fabrica === mini);
+        const need = rows.reduce((acc, r) => acc + r.need, 0);
+        const saldo = rows.reduce((acc, r) => acc + num(r.saldo_casa), 0);
+        const covered = rows.reduce((acc, r) => acc + r.covered, 0);
+        const gap = rows.reduce((acc, r) => acc + r.gap, 0);
+        const cov = need > 0 ? (covered / need) * 100 : 100;
+        const noneCount = rows.filter(r => r.status === 'none').length;
+        const miniGroups = groupCountByMini.get(mini) || new Set();
+        let commonGroups = 0;
+        for (const gk of miniGroups) {{
+          if ((globalGroupFreq.get(gk) || 0) > 1) commonGroups += 1;
+        }}
+        out.push({{ mini, commonGroups, destinos: rows.length, noneCount, need, saldo, covered, gap, cov }});
+      }}
+      if (compareSort.value === 'mini') out.sort((a,b)=> a.mini.localeCompare(b.mini));
+      else if (compareSort.value === 'need') out.sort((a,b)=> b.need - a.need);
+      else if (compareSort.value === 'covAsc') out.sort((a,b)=> a.cov - b.cov || b.gap - a.gap);
+      else out.sort((a,b)=> b.gap - a.gap || b.need - a.need);
+
+      const totalNeed = out.reduce((a,r)=>a+r.need, 0);
+      const totalGap = out.reduce((a,r)=>a+r.gap, 0);
+      const totalCovered = out.reduce((a,r)=>a+r.covered, 0);
+      const totalCov = totalNeed > 0 ? (totalCovered / totalNeed) * 100 : 100;
+      compareSummary.innerHTML = [
+        `<span class="compare-chip">Necessidade total: ${{fmt(totalNeed, 1)}}</span>`,
+        `<span class="compare-chip">Falta total: ${{fmt(totalGap, 1)}}</span>`,
+        `<span class="compare-chip">Cobertura média: ${{totalCov.toFixed(1)}}%</span>`
+      ].join('');
+      compareRows.innerHTML = out.map(r => `
         <tr>
-          <td class="prio">${{r.row_prio.toFixed(1)}}</td>
-          <td>
-            <div><strong>${{esc(r.item_code)}} - ${{esc(r.item_desc)}}</strong></div>
-            <div class="muted">Tipo: ${{esc(r.tipo_unidade || '-')}}</div>
-          </td>
-          <td>
-            <div><strong>${{esc(r.codigo_cor)}} - ${{esc(r.descricao_cor)}}</strong></div>
-            <div class="muted">Tam: ${{esc(r.tam || '-')}}</div>
-          </td>
-          <td class="dest">${{esc(r.mini_fabrica || '')}}</td>
-          <td>${{esc(r.deve_abast ?? '')}}</td>
-          <td>${{esc(r.saldo_casa ?? '')}}</td>
-          <td>${{esc(r.saldo_origem ?? '')}}</td>
-          <td><strong>${{esc(r.necessidade ?? '')}}</strong></td>
-          <td>${{statusBadge(r.status)}} ${{esc(r.coverage_pct.toFixed(0))}}%</td>
-          <td>${{esc(r.saldo_restante.toFixed(3))}}</td>
-          <td>${{esc(String(r.qtd_mini_fabricas))}} minis</td>
+          <td><strong>${{esc(r.mini)}}</strong></td>
+          <td class="mono">${{r.commonGroups}}</td>
+          <td class="mono">${{r.destinos}}</td>
+          <td class="mono">${{r.noneCount}}</td>
+          <td class="mono">${{fmt(r.need, 1)}}</td>
+          <td class="mono">${{fmt(r.saldo, 1)}}</td>
+          <td class="mono">${{fmt(r.covered, 1)}}</td>
+          <td class="mono">${{fmt(r.gap, 1)}}</td>
+          <td class="mono">${{r.cov.toFixed(1)}}%</td>
         </tr>
       `).join('');
     }}
 
-    function renderGroups(groups) {{
-      const coverageSel = coverage.value || '';
-      if (!groups.length) {{
-        grupos.innerHTML = '';
-        groupsEmpty.style.display = 'block';
-        return;
-      }}
-      groupsEmpty.style.display = 'none';
-      grupos.innerHTML = groups.map((g, idx) => `
-        <article class="group-card" data-idx="${{idx}}">
-          <div class="group-head">
-            <div>
-              <div class="group-title">${{esc(g.item_code)}} - ${{esc(g.item_desc)}}</div>
-              <div class="group-meta">
-                Cor: ${{esc(g.codigo_cor)}} - ${{esc(g.descricao_cor)}} | Tam: ${{esc(g.tam || '-')}} |
-                Atende ${{esc(String(g.context_destinos.length))}} mini(s) no filtro |
-                Necessidade: ${{esc(g.context_need.toFixed(3))}} |
-                Saldo Casa: ${{esc(g.context_saldo.toFixed(3))}} | Falta: ${{esc(g.context_uncovered.toFixed(3))}}
-              </div>
-            </div>
-            <span class="badge">Prioridade ${{((parseNum(g.context_need) * 10) + (g.qtd_mini_fabricas || 0) + (g.context_uncovered * 100)).toFixed(1)}} • ${{g.context_coverage_pct.toFixed(0)}}%</span>
-          </div>
-          <div class="details">
-            <table>
-              <thead><tr><th>Mini Fábrica</th><th>Deve (Abast)</th><th>Saldo em Casa</th><th>Origem do Saldo</th><th>Necessidade</th><th>Cobertura</th><th>Saldo Após</th></tr></thead>
-              <tbody>
-                ${{(g.context_destinos || []).filter(d => rowMatchesCoverage(d, coverageSel)).map(d=>`
-                  <tr>
-                    <td><strong>${{esc(d.mini_fabrica ?? '')}}</strong></td>
-                    <td>${{esc(d.deve_abast ?? '')}}</td>
-                    <td>${{esc(d.saldo_casa ?? '')}}</td>
-                    <td>${{esc(d.saldo_origem ?? '')}}</td>
-                    <td><strong>${{esc(d.necessidade ?? '')}}</strong></td>
-                    <td>${{statusBadge(d.status)}} ${{esc(d.coverage_pct.toFixed(0))}}%</td>
-                    <td>${{esc(d.saldo_restante.toFixed(3))}}</td>
-                  </tr>
-                `).join('')}}
-              </tbody>
-            </table>
-          </div>
-        </article>
-      `).join('');
-      Array.from(document.querySelectorAll('.group-head')).forEach(head => {{
-        head.onclick = () => head.closest('.group-card').classList.toggle('open');
+    function applyFilters() {{
+      const term = (qEl.value || '').toLowerCase();
+      const mini = (miniEl.value || '').toLowerCase();
+      const status = statusEl.value || '';
+      const minNeed = Math.max(num(minNeedEl.value || 0), 0);
+      const onlyFalta = onlyFaltaEl.checked;
+
+      let rows = ALL_ROWS.filter(r => {{
+        const hay = [r.item_code, r.item_desc, r.codigo_cor, r.descricao_cor, r.tipo_unidade, r.tam, r.mini_fabrica].join(' ').toLowerCase();
+        if (term && !hay.includes(term)) return false;
+        if (mini && r.mini_fabrica.toLowerCase() !== mini) return false;
+        if (status && r.status !== status) return false;
+        if (r.need < minNeed) return false;
+        if (onlyFalta && r.gap <= 1e-9) return false;
+        return true;
       }});
+
+      if (sortEl.value === 'item') rows.sort((a,b)=> String(a.item_code).localeCompare(String(b.item_code)));
+      else if (sortEl.value === 'need') rows.sort((a,b)=> b.need - a.need);
+      else if (sortEl.value === 'falta') rows.sort((a,b)=> b.gap - a.gap);
+      else rows.sort((a,b)=> b.prio - a.prio);
+
+      return rows;
+    }}
+
+    function summarizeGroups(rows) {{
+      const map = new Map();
+      for (const r of rows) {{
+        if (!map.has(r.group_key)) {{
+          map.set(r.group_key, {{
+            group_key: r.group_key,
+            item_code: r.item_code,
+            item_desc: r.item_desc,
+            codigo_cor: r.codigo_cor,
+            descricao_cor: r.descricao_cor,
+            tipo_unidade: r.tipo_unidade,
+            tam: r.tam,
+            q_mini: r.q_mini,
+            need: 0,
+            covered: 0,
+            gap: 0,
+            prio: 0,
+            has_sub: false,
+            destinos: []
+          }});
+        }}
+        const g = map.get(r.group_key);
+        g.need += r.need;
+        g.covered += r.covered;
+        g.gap += r.gap;
+        g.prio += r.prio;
+        g.has_sub = g.has_sub || String(r.saldo_origem || '').toLowerCase() === 'substituto';
+        g.destinos.push(r);
+      }}
+
+      const groups = Array.from(map.values()).map(g => {{
+        g.coveragePct = g.need > 0 ? (g.covered / g.need) * 100 : 100;
+        g.status = statusBy(g.covered, g.need);
+        g.destinos.sort((a,b)=> b.gap - a.gap);
+        return g;
+      }});
+
+      if (sortEl.value === 'item') groups.sort((a,b)=> String(a.item_code).localeCompare(String(b.item_code)));
+      else if (sortEl.value === 'need') groups.sort((a,b)=> b.need - a.need);
+      else if (sortEl.value === 'falta') groups.sort((a,b)=> b.gap - a.gap);
+      else groups.sort((a,b)=> b.prio - a.prio);
+      return groups;
     }}
 
     function render() {{
-      const groups = filterGroups();
-      renderDispatch(groups);
-      renderGroups(groups);
+      const rows = applyFilters();
+      const groups = summarizeGroups(rows);
+      const totalNeed = rows.reduce((acc, r) => acc + r.need, 0);
+      const totalCovered = rows.reduce((acc, r) => acc + r.covered, 0);
+      const totalGap = Math.max(totalNeed - totalCovered, 0);
+      const covPct = totalNeed > 0 ? (totalCovered / totalNeed) * 100 : 100;
+
+      kpi.groups.textContent = String(groups.length);
+      kpi.dests.textContent = String(rows.length);
+      kpi.need.textContent = fmt(totalNeed, 1);
+      kpi.covered.textContent = fmt(totalCovered, 1);
+      kpi.falta.textContent = fmt(totalGap, 1);
+      kpi.cov.textContent = `${{covPct.toFixed(1)}}%`;
+      kpi.none.textContent = String(rows.filter(r => r.status === 'none').length);
+      kpi.sub.textContent = String(rows.filter(r => String(r.saldo_origem || '').toLowerCase() === 'substituto').length);
+      scopeInfo.textContent = `Visão filtrada: ${{rows.length}} destino(s), ${{groups.length}} grupo(s), falta total ${{fmt(totalGap,1)}}.`;
+      groupsInfo.textContent = `Conferência: mesmos item+cor atendendo múltiplas mini fábricas no recorte atual.`;
+
+      if (!rows.length) {{
+        rowsEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+      }} else {{
+        emptyEl.style.display = 'none';
+        rowsEl.innerHTML = rows.map(r => `
+          <tr>
+            <td class="mono">${{r.prio.toFixed(1)}}</td>
+            <td>
+              <div><strong>${{esc(r.item_code)}} - ${{esc(r.item_desc)}}</strong></div>
+              <div class="small">Cor: ${{esc(r.codigo_cor)}} - ${{esc(r.descricao_cor)}} | Tipo: ${{esc(r.tipo_unidade || '-')}} | Tam: ${{esc(r.tam || '-')}}</div>
+              <div class="small"><span class="tag" title="${{esc(sourceTooltip(r))}}">Origem PDF</span></div>
+            </td>
+            <td><strong>${{esc(r.mini_fabrica)}}</strong></td>
+            <td class="mono">${{r.q_mini}}</td>
+            <td class="mono">${{fmt(r.need)}}</td>
+            <td class="mono">${{fmt(r.saldo_casa)}}</td>
+            <td class="mono">${{fmt(r.covered)}}</td>
+            <td class="mono">${{fmt(r.gap)}}</td>
+            <td class="mono">${{r.coveragePct.toFixed(0)}}%</td>
+            <td>${{statusBadge(r.status)}}</td>
+            <td>${{esc(r.saldo_origem || '-')}}</td>
+          </tr>
+        `).join('');
+      }}
+
+      if (!groups.length) {{
+        groupsEl.innerHTML = '';
+        groupsEmptyEl.style.display = 'block';
+      }} else {{
+        groupsEmptyEl.style.display = 'none';
+        groupsEl.innerHTML = groups.map(g => `
+          <article class="group">
+            <div class="group-top">
+              <div>
+                <div class="group-title">${{esc(g.item_code)}} - ${{esc(g.item_desc)}}</div>
+                <div class="small">Cor: ${{esc(g.codigo_cor)}} - ${{esc(g.descricao_cor)}} | Tipo: ${{esc(g.tipo_unidade || '-')}} | Tam: ${{esc(g.tam || '-')}}</div>
+              </div>
+              <div>${{statusBadge(g.status)}}</div>
+            </div>
+            <div class="tags">
+              <span class="tag">Minis: ${{g.q_mini}}</span>
+              <span class="tag">Necessidade: ${{fmt(g.need, 1)}}</span>
+              <span class="tag">Falta: ${{fmt(g.gap, 1)}}</span>
+              <span class="tag">Cobertura: ${{g.coveragePct.toFixed(1)}}%</span>
+              <span class="tag">Prio: ${{g.prio.toFixed(1)}}</span>
+              ${{g.has_sub ? '<span class="tag">Tem saldo de substituto</span>' : ''}}
+            </div>
+            <div class="mini-list">
+              ${{g.destinos.map(d => `
+                <div class="mini-row">
+                  <div class="mini-name">${{esc(d.mini_fabrica)}}</div>
+                  <div class="mono">nec ${{fmt(d.need)}} | falta ${{fmt(d.gap)}} | cob ${{d.coveragePct.toFixed(0)}}%</div>
+                </div>
+              `).join('')}}
+            </div>
+          </article>
+        `).join('');
+      }}
     }}
 
-    populateMiniFilter();
-    q.addEventListener('input', render);
-    mini.addEventListener('change', render);
-    sort.addEventListener('change', render);
-    coverage.addEventListener('change', render);
-    onlyMulti.addEventListener('change', render);
+    [qEl, miniEl, statusEl, minNeedEl, sortEl, onlyFaltaEl].forEach(el => {{
+      const evt = el.tagName === 'INPUT' && el.type !== 'checkbox' ? 'input' : 'change';
+      el.addEventListener(evt, render);
+    }});
+    compareMinisBtn.addEventListener('click', () => {{
+      buildCompareMiniOptions();
+      compareWarn.textContent = '';
+      compareOk.textContent = '';
+      compareMiniSearch.value = '';
+      filterCompareMiniList();
+      compareSummary.innerHTML = '';
+      compareRows.innerHTML = '';
+      compareDialog.showModal();
+    }});
+    compareCloseBtn.addEventListener('click', () => compareDialog.close());
+    compareApplyBtn.addEventListener('click', renderMiniCompare);
+    compareMiniSearch.addEventListener('input', filterCompareMiniList);
+    compareSort.addEventListener('change', renderMiniCompare);
+    compareAllBtn.addEventListener('click', () => {{
+      for (const cb of compareMiniList.querySelectorAll('input[name="compareMini"]')) {{
+        const label = cb.closest('label');
+        if (label && label.style.display === 'none') continue;
+        cb.checked = true;
+      }}
+    }});
+    compareNoneBtn.addEventListener('click', () => {{
+      for (const cb of compareMiniList.querySelectorAll('input[name="compareMini"]')) cb.checked = false;
+      compareSummary.innerHTML = '';
+      compareRows.innerHTML = '';
+      compareWarn.textContent = '';
+      compareOk.textContent = '';
+    }});
+
+    function exportFilteredCsv() {{
+      const rows = applyFilters();
+      const header = [
+        "prioridade","codigo_item","descricao_item","tipo_unidade","codigo_cor","descricao_cor","tam",
+        "mini_fabrica_destino","qtd_mini_fabricas","necessidade","saldo_casa","coberto","falta","cobertura_pct","status","origem_saldo"
+      ];
+      const csvRows = [header];
+      for (const r of rows) {{
+        csvRows.push([
+          r.prio.toFixed(1),
+          r.item_code,
+          r.item_desc,
+          r.tipo_unidade || "",
+          r.codigo_cor,
+          r.descricao_cor,
+          r.tam || "",
+          r.mini_fabrica,
+          r.q_mini,
+          fmt(r.need),
+          fmt(r.saldo_casa),
+          fmt(r.covered),
+          fmt(r.gap),
+          r.coveragePct.toFixed(2),
+          r.status,
+          r.saldo_origem || ""
+        ]);
+      }}
+      const escCell = (v) => `"${{String(v ?? "").replace(/"/g, '""')}}"`;
+      const csvText = csvRows.map(row => row.map(escCell).join(",")).join("\\n");
+      const blob = new Blob([csvText], {{ type: "text/csv;charset=utf-8;" }});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "common_items_filtrado.csv";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }}
+    exportCsvEl.addEventListener("click", exportFilteredCsv);
     render();
   </script>
 </body>
@@ -945,8 +1307,6 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     with open(html_path, "w", encoding="utf-8") as f:
         f.write(html)
     print(f"[OK] HTML Comuns → {html_path}")
-
-
 def print_common_summary(common_items):
     distribution = _build_common_distribution(common_items)
     print(f"\n{'='*65}")
@@ -1140,7 +1500,7 @@ if FASTAPI_AVAILABLE:
                     "name": path.name,
                     "relative_path": rel,
                     "size_bytes": path.stat().st_size,
-                    "updated_at": datetime.utcfromtimestamp(path.stat().st_mtime).isoformat() + "Z",
+                    "updated_at": datetime.fromtimestamp(path.stat().st_mtime, UTC).isoformat().replace("+00:00", "Z"),
                     "direct_url": f"{base_url}/files/{quote(rel)}",
                 }
             )
@@ -1182,8 +1542,8 @@ if FASTAPI_AVAILABLE:
             "- `file`: envio de 1 PDF\n"
             "- `files`: envio de múltiplos PDFs no mesmo request\n\n"
             "Saídas geradas:\n"
-            "- Parse principal: JSON, CSV e HTML\n"
-            "- Itens comuns (distribuição): JSON, CSV e HTML\n\n"
+            "- Parse principal: JSON e CSV\n"
+            "- Itens comuns (distribuição): JSON, CSV e HTML (painel único)\n\n"
             "Links diretos:\n"
             "- O campo `outputs` retorna links diretos de todos os arquivos gerados (`json/csv/html` e `common_*`).\n"
             "- O endpoint `/files` lista cada arquivo com `direct_url` pronto para download/abertura.\n\n"
@@ -1231,15 +1591,15 @@ if FASTAPI_AVAILABLE:
                 temp_paths.append(temp_path)
                 all_items.extend(parse_pdf(str(temp_path)))
 
-            stamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            stamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
             if len(upload_files) == 1:
                 base_name = Path(upload_files[0].filename or "arquivo").stem
                 json_name = f"{base_name}_{stamp}_parsed.json"
                 csv_name = f"{base_name}_{stamp}_parsed.csv"
-                html_name = f"{base_name}_{stamp}_parsed.html"
                 common_json_name = f"{base_name}_{stamp}_common_items.json"
                 common_csv_name = f"{base_name}_{stamp}_common_items.csv"
                 common_html_name = f"{base_name}_{stamp}_common_items.html"
+                html_name = common_html_name
                 json_path = output_dir / json_name
                 csv_path = output_dir / csv_name
                 html_path = output_dir / html_name
@@ -1248,7 +1608,6 @@ if FASTAPI_AVAILABLE:
                 common_html_path = output_dir / common_html_name
                 save_json(all_items, str(json_path))
                 save_csv(all_items, str(csv_path))
-                save_html(all_items, str(html_path), source_label=uploaded_names[0])
                 common_items = build_common_items(all_items)
                 save_common_json(common_items, str(common_json_path))
                 save_common_csv(common_items, str(common_csv_path))
@@ -1256,10 +1615,10 @@ if FASTAPI_AVAILABLE:
             else:
                 json_name = f"multi_pdf_{stamp}_parsed.json"
                 csv_name = f"multi_pdf_{stamp}_parsed.csv"
-                html_name = f"multi_pdf_{stamp}_parsed.html"
                 common_json_name = f"multi_pdf_{stamp}_common_items.json"
                 common_csv_name = f"multi_pdf_{stamp}_common_items.csv"
                 common_html_name = f"multi_pdf_{stamp}_common_items.html"
+                html_name = common_html_name
                 json_path = output_dir / json_name
                 csv_path = output_dir / csv_name
                 html_path = output_dir / html_name
@@ -1268,7 +1627,6 @@ if FASTAPI_AVAILABLE:
                 common_html_path = output_dir / common_html_name
                 save_json(all_items, str(json_path))
                 save_csv(all_items, str(csv_path))
-                save_html(all_items, str(html_path), source_label=f"{len(uploaded_names)} PDFs")
                 common_items = build_common_items(all_items)
                 save_common_json(common_items, str(common_json_path))
                 save_common_csv(common_items, str(common_csv_path))
@@ -1321,7 +1679,7 @@ if __name__ == "__main__":
 
     pdf_paths = sys.argv[1:]
 
-    # Modo único: preserva comportamento atual (1 PDF -> 1 par de saída).
+    # Modo único: 1 PDF -> saídas parse (JSON/CSV) + comuns (JSON/CSV/HTML).
     if len(pdf_paths) == 1:
         pdf_path = pdf_paths[0]
         print(f"Processando: {pdf_path}\n")
@@ -1330,7 +1688,6 @@ if __name__ == "__main__":
         base = os.path.splitext(pdf_path)[0]
         save_json(items, base + "_parsed.json")
         save_csv(items,  base + "_parsed.csv")
-        save_html(items, base + "_parsed.html", source_label=os.path.basename(pdf_path))
         print_summary(items)
         common_items = build_common_items(items)
         save_common_json(common_items, base + "_common_items.json")
@@ -1338,7 +1695,7 @@ if __name__ == "__main__":
         save_common_html(common_items, base + "_common_items.html", source_label=os.path.basename(pdf_path))
         print_common_summary(common_items)
     else:
-        # Modo consolidado: 2+ PDFs -> somente 1 JSON + 1 CSV.
+        # Modo consolidado: 2+ PDFs -> 1 JSON/CSV parse + 1 JSON/CSV/HTML comuns.
         all_items = []
         for idx, pdf_path in enumerate(pdf_paths, start=1):
             if idx > 1:
@@ -1349,7 +1706,6 @@ if __name__ == "__main__":
         first_dir = os.path.dirname(os.path.abspath(pdf_paths[0]))
         out_json = os.path.join(first_dir, "multi_pdf_parsed.json")
         out_csv = os.path.join(first_dir, "multi_pdf_parsed.csv")
-        out_html = os.path.join(first_dir, "multi_pdf_parsed.html")
         out_common_json = os.path.join(first_dir, "multi_pdf_common_items.json")
         out_common_csv = os.path.join(first_dir, "multi_pdf_common_items.csv")
         out_common_html = os.path.join(first_dir, "multi_pdf_common_items.html")
@@ -1357,7 +1713,6 @@ if __name__ == "__main__":
         print(f"\nGerando saída consolidada de {len(pdf_paths)} PDFs...\n")
         save_json(all_items, out_json)
         save_csv(all_items, out_csv)
-        save_html(all_items, out_html, source_label=f"{len(pdf_paths)} PDFs")
         print_summary(all_items)
 
         common_items = build_common_items(all_items)
