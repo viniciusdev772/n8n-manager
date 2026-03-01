@@ -4,8 +4,6 @@ import json
 import ssl
 import threading
 import time
-import urllib.error
-from urllib.parse import urljoin
 import urllib.request
 
 import docker
@@ -118,10 +116,6 @@ def _process_job(ch, method, properties, body):
                 host_header = f"{name}.{BASE_DOMAIN}"
             check_url = "http://127.0.0.1"
 
-        # WAHA Core: usar endpoint de status (docs Observability).
-        if instance_type == "waha":
-            check_url = urljoin(check_url.rstrip("/") + "/", "api/server/status")
-
         logger.info("Health check URL: %s (Host: %s)", check_url, host_header)
 
         for i in range(READINESS_MAX_ATTEMPTS):
@@ -138,19 +132,19 @@ def _process_job(ch, method, properties, body):
             if ct.status != "running":
                 continue
 
+            # Para WAHA, considerar pronto assim que o container estiver em running.
+            if instance_type == "waha":
+                service_ready = True
+                push_event(job_id, {"status": "info", "message": f"{service_label} em running em {public_url}"})
+                break
+
             # HTTP check via Traefik (sem validar SSL)
             try:
                 req = urllib.request.Request(check_url, method="GET")
                 if host_header:
                     req.add_header("Host", host_header)
-                if instance_type == "waha":
-                    req.add_header("X-Api-Key", secret)
-
-                try:
-                    resp = urllib.request.urlopen(req, timeout=5, context=no_ssl_ctx)
-                    status_code = resp.status
-                except urllib.error.HTTPError as http_err:
-                    status_code = http_err.code
+                resp = urllib.request.urlopen(req, timeout=5, context=no_ssl_ctx)
+                status_code = resp.status
 
                 ready_http_statuses = {200, 201, 202, 204}
                 if status_code in ready_http_statuses:
