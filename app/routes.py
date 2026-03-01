@@ -210,10 +210,55 @@ async def list_jobs():
     return {"jobs": jobs}
 
 
+def _enqueue_waha_job_from_body(body: dict):
+    name = body.get("name", "").strip()
+    version = body.get("version", DEFAULT_WAHA_VERSION).strip()
+    location = body.get("location", "vinhedo").strip()
+
+    if not name:
+        raise HTTPException(400, "Nome obrigatório")
+
+    try:
+        name = validate_waha_instance_name(name)
+        version = validate_waha_version(version)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    cap = calculate_waha_capacity()
+    if not cap["can_create"]:
+        raise HTTPException(
+            409,
+            f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias WAHA ativas.",
+        )
+
+    try:
+        get_waha_container(name)
+        raise HTTPException(400, f"Instância WAHA '{name}' já existe")
+    except docker.errors.NotFound:
+        pass
+
+    job_id = str(uuid.uuid4())
+    init_job(job_id)
+    publish_job(job_id, {
+        "job_id": job_id,
+        "name": name,
+        "instance_type": "waha",
+        "version": version,
+        "location": location,
+    })
+    return {"job_id": job_id, "name": name, "instance_type": "waha"}
+
+
 @router.post("/enqueue-instance", dependencies=[Depends(verify_token)])
 async def enqueue_instance(request: Request):
     """Enfileira criação de instância e retorna job_id imediatamente."""
     body = await request.json()
+    instance_type = (body.get("instance_type", "n8n") or "n8n").strip().lower()
+
+    # Fallback para clients antigos que ainda chamam /enqueue-instance para WAHA.
+    if instance_type == "waha":
+        return _enqueue_waha_job_from_body(body)
+
     name = body.get("name", "").strip()
     version = body.get("version", DEFAULT_N8N_VERSION).strip()
     location = body.get("location", "vinhedo").strip()
@@ -251,50 +296,14 @@ async def enqueue_instance(request: Request):
         "location": location,
     })
 
-    return {"job_id": job_id, "name": name}
+    return {"job_id": job_id, "name": name, "instance_type": "n8n"}
 
 
 @router.post("/waha/enqueue-instance", dependencies=[Depends(verify_token)])
 async def enqueue_waha_instance(request: Request):
     """Enfileira criação de instância WAHA e retorna job_id imediatamente."""
     body = await request.json()
-    name = body.get("name", "").strip()
-    version = body.get("version", DEFAULT_WAHA_VERSION).strip()
-    location = body.get("location", "vinhedo").strip()
-
-    if not name:
-        raise HTTPException(400, "Nome obrigatório")
-
-    try:
-        name = validate_waha_instance_name(name)
-        version = validate_waha_version(version)
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-
-    cap = calculate_waha_capacity()
-    if not cap["can_create"]:
-        raise HTTPException(
-            409,
-            f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias WAHA ativas.",
-        )
-
-    try:
-        get_waha_container(name)
-        raise HTTPException(400, f"Instância WAHA '{name}' já existe")
-    except docker.errors.NotFound:
-        pass
-
-    job_id = str(uuid.uuid4())
-    init_job(job_id)
-    publish_job(job_id, {
-        "job_id": job_id,
-        "name": name,
-        "instance_type": "waha",
-        "version": version,
-        "location": location,
-    })
-
-    return {"job_id": job_id, "name": name, "instance_type": "waha"}
+    return _enqueue_waha_job_from_body(body)
 
 
 @router.get("/job/{job_id}/events", dependencies=[Depends(verify_token)])

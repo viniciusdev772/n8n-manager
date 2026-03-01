@@ -503,8 +503,13 @@ async function pollJob(jobId, fill, msg, resultEl, btn, requestedType = null) {
           const finalType = ((ev.instance_type || requestedType || 'n8n') + '').toLowerCase();
           if (finalType === 'waha') {
             const apiKey = ev.credentials && ev.credentials.api_key ? ev.credentials.api_key : '';
-            const apiKeyHtml = apiKey ? '<br><small>API Key: <code>' + esc(apiKey) + '</code></small>' : '';
-            resultEl.innerHTML = 'Instancia WAHA criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>' + apiKeyHtml;
+            const dashboardUser = ev.credentials && ev.credentials.dashboard_username ? ev.credentials.dashboard_username : '';
+            const dashboardPass = ev.credentials && ev.credentials.dashboard_password ? ev.credentials.dashboard_password : '';
+            const apiKeyHtml = apiKey ? '<br><small>WAHA_API_KEY: <code>' + esc(apiKey) + '</code></small>' : '';
+            const dashboardHtml = (dashboardUser && dashboardPass)
+              ? '<br><small>Dashboard: <code>' + esc(dashboardUser) + '</code> / <code>' + esc(dashboardPass) + '</code></small>'
+              : '';
+            resultEl.innerHTML = 'Instancia WAHA criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>' + apiKeyHtml + dashboardHtml;
           } else {
             resultEl.innerHTML = 'Instancia N8N criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>';
           }
@@ -651,6 +656,13 @@ async function recreateTraefik() {
 }
 
 /* ── Init ────────────────────────────────────── */
+
+const createTypeEl = document.getElementById('create-type');
+if (createTypeEl) {
+  createTypeEl.addEventListener('change', () => onCreateTypeChange());
+}
+// Compatibilidade com HTML legado que ainda usa onchange inline.
+window.onCreateTypeChange = onCreateTypeChange;
 
 document.getElementById('token-input').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();

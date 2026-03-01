@@ -61,7 +61,8 @@ def waha_container_name(instance_name: str) -> str:
 
 
 def waha_instance_url(instance_name: str) -> str:
-    return f"{PROTOCOL}://{instance_name}-waha.{BASE_DOMAIN}"
+    # Dashboard é o ponto de entrada humano recomendado na doc oficial.
+    return f"{PROTOCOL}://{instance_name}-waha.{BASE_DOMAIN}/dashboard"
 
 
 def generate_waha_api_key() -> str:
@@ -70,13 +71,20 @@ def generate_waha_api_key() -> str:
 
 def build_waha_env(name: str, api_key: str) -> dict:
     host = f"{name}-waha.{BASE_DOMAIN}"
+    dashboard_username = "admin"
+    dashboard_password = api_key
     return {
         "WAHA_API_KEY": api_key,
         "WAHA_BASE_URL": f"{PROTOCOL}://{host}",
         "WHATSAPP_DEFAULT_ENGINE": WAHA_DEFAULT_ENGINE,
-        "WAHA_DASHBOARD_ENABLED": "False",
-        "WHATSAPP_SWAGGER_ENABLED": "False",
-        "WAHA_PRINT_QR": "False",
+        # Persistir credenciais evita geração automática diferente a cada restart.
+        "WAHA_DASHBOARD_ENABLED": "true",
+        "WAHA_DASHBOARD_USERNAME": dashboard_username,
+        "WAHA_DASHBOARD_PASSWORD": dashboard_password,
+        "WHATSAPP_SWAGGER_ENABLED": "true",
+        "WHATSAPP_SWAGGER_USERNAME": dashboard_username,
+        "WHATSAPP_SWAGGER_PASSWORD": dashboard_password,
+        "WAHA_PRINT_QR": "false",
     }
 
 
