@@ -367,17 +367,34 @@ async function loadCreateForm() {
   document.getElementById('create-progress').classList.add('hidden');
   document.getElementById('create-result').classList.add('hidden');
   document.getElementById('create-btn').disabled = false;
+  const typeSelect = document.getElementById('create-type');
+  if (typeSelect) typeSelect.value = 'n8n';
+  await onCreateTypeChange();
+}
+
+async function onCreateTypeChange() {
+  const type = document.getElementById('create-type')?.value || 'n8n';
+  const versionLabel = document.getElementById('create-version-label');
+  const versionSelect = document.getElementById('create-version');
+
+  if (type === 'waha') {
+    if (versionLabel) versionLabel.textContent = 'VERSAO WAHA';
+    versionSelect.innerHTML = '<option value="latest">latest</option>';
+    return;
+  }
+
+  if (versionLabel) versionLabel.textContent = 'VERSAO N8N';
   try {
     const data = await api('/versions');
-    const select = document.getElementById('create-version');
-    select.innerHTML = data.versions.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
+    versionSelect.innerHTML = data.versions.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
   } catch {
-    document.getElementById('create-version').innerHTML = '<option value="latest">latest</option>';
+    versionSelect.innerHTML = '<option value="latest">latest</option>';
   }
 }
 
 async function doCreate() {
   const name = document.getElementById('create-name').value.trim();
+  const instanceType = document.getElementById('create-type')?.value || 'n8n';
   const version = document.getElementById('create-version').value;
   if (!name) { toast('Nome obrigatorio', 'error'); return; }
 
@@ -393,7 +410,8 @@ async function doCreate() {
   msg.textContent = 'Enfileirando...';
 
   try {
-    const job = await api('/enqueue-instance', {
+    const endpoint = instanceType === 'waha' ? '/waha/enqueue-instance' : '/enqueue-instance';
+    const job = await api(endpoint, {
       method: 'POST',
       body: JSON.stringify({ name, version }),
     });
@@ -421,7 +439,13 @@ async function pollJob(jobId, fill, msg, resultEl, btn) {
         if (ev.status === 'complete') {
           fill.style.width = '100%';
           resultEl.className = 'success';
-          resultEl.innerHTML = 'Instancia criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>';
+          if (ev.instance_type === 'waha') {
+            const apiKey = ev.credentials && ev.credentials.api_key ? ev.credentials.api_key : '';
+            const apiKeyHtml = apiKey ? '<br><small>API Key: <code>' + esc(apiKey) + '</code></small>' : '';
+            resultEl.innerHTML = 'Instancia WAHA criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>' + apiKeyHtml;
+          } else {
+            resultEl.innerHTML = 'Instancia criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>';
+          }
           resultEl.classList.remove('hidden');
           btn.disabled = false;
           return;

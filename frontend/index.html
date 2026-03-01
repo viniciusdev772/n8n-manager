@@ -267,7 +267,7 @@
       <section id="page-create" class="page hidden">
         <div class="page-intro stagger-in">
           <h1>Nova Instancia</h1>
-          <p class="page-desc">Provisionar uma nova instancia N8N</p>
+          <p class="page-desc">Provisionar uma nova instancia N8N ou WAHA</p>
         </div>
         <div class="form-card stagger-in" style="--delay:1">
           <div class="form-group">
@@ -279,7 +279,14 @@
             <span class="field-hint">Apenas letras minusculas, numeros e hifens</span>
           </div>
           <div class="form-group">
-            <label for="create-version">VERSAO</label>
+            <label for="create-type">TIPO</label>
+            <select id="create-type" onchange="onCreateTypeChange()">
+              <option value="n8n">N8N</option>
+              <option value="waha">WAHA</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="create-version" id="create-version-label">VERSAO</label>
             <select id="create-version"><option value="latest">Carregando...</option></select>
           </div>
           <button class="btn btn-primary btn-full" id="create-btn" onclick="doCreate()">

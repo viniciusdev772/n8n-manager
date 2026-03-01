@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 
 from .auth import verify_token
-from .config import BASE_DOMAIN, CLEANUP_MAX_AGE_DAYS, DEFAULT_N8N_VERSION, SSE_MAX_DURATION
+from .config import CLEANUP_MAX_AGE_DAYS, DEFAULT_N8N_VERSION, DEFAULT_WAHA_VERSION, SSE_MAX_DURATION
 from .docker_client import get_client
 from .job_status import cleanup_job, get_events_since, get_state, init_job
 from .n8n import (
@@ -28,7 +28,16 @@ from .n8n import (
     validate_version,
 )
 from .queue import publish_job
-from .config import DOCKER_NETWORK, N8N_IMAGE
+from .config import DOCKER_NETWORK
+from .waha import (
+    calculate_waha_capacity,
+    get_waha_container,
+    list_waha_containers,
+    remove_waha_container,
+    validate_waha_instance_name,
+    validate_waha_version,
+    waha_instance_url,
+)
 
 router = APIRouter()
 
@@ -118,10 +127,21 @@ async def list_instances():
     return {"instances": list_n8n_containers()}
 
 
+@router.get("/waha/instances", dependencies=[Depends(verify_token)])
+async def list_waha_instances():
+    return {"instances": list_waha_containers()}
+
+
 @router.get("/capacity", dependencies=[Depends(verify_token)])
 async def get_capacity():
     """Retorna capacidade da VPS e instâncias ativas."""
     return calculate_max_instances()
+
+
+@router.get("/waha/capacity", dependencies=[Depends(verify_token)])
+async def get_waha_capacity():
+    """Retorna capacidade da VPS e instâncias WAHA ativas."""
+    return calculate_waha_capacity()
 
 
 @router.get("/cleanup-preview", dependencies=[Depends(verify_token)])
@@ -210,11 +230,55 @@ async def enqueue_instance(request: Request):
     publish_job(job_id, {
         "job_id": job_id,
         "name": name,
+        "instance_type": "n8n",
         "version": version,
         "location": location,
     })
 
     return {"job_id": job_id, "name": name}
+
+
+@router.post("/waha/enqueue-instance", dependencies=[Depends(verify_token)])
+async def enqueue_waha_instance(request: Request):
+    """Enfileira criação de instância WAHA e retorna job_id imediatamente."""
+    body = await request.json()
+    name = body.get("name", "").strip()
+    version = body.get("version", DEFAULT_WAHA_VERSION).strip()
+    location = body.get("location", "vinhedo").strip()
+
+    if not name:
+        raise HTTPException(400, "Nome obrigatório")
+
+    try:
+        name = validate_waha_instance_name(name)
+        version = validate_waha_version(version)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    cap = calculate_waha_capacity()
+    if not cap["can_create"]:
+        raise HTTPException(
+            409,
+            f"VPS sem recursos. {cap['active_instances']}/{cap['max_instances']} instâncias WAHA ativas.",
+        )
+
+    try:
+        get_waha_container(name)
+        raise HTTPException(400, f"Instância WAHA '{name}' já existe")
+    except docker.errors.NotFound:
+        pass
+
+    job_id = str(uuid.uuid4())
+    init_job(job_id)
+    publish_job(job_id, {
+        "job_id": job_id,
+        "name": name,
+        "instance_type": "waha",
+        "version": version,
+        "location": location,
+    })
+
+    return {"job_id": job_id, "name": name, "instance_type": "waha"}
 
 
 @router.get("/job/{job_id}/events", dependencies=[Depends(verify_token)])
@@ -322,6 +386,7 @@ async def create_instance_stream(
         publish_job(job_id, {
             "job_id": job_id,
             "name": name,
+            "instance_type": "n8n",
             "version": version,
             "location": location,
         })
@@ -380,6 +445,16 @@ async def delete_instance(instance_id: str):
     return {"message": "Instância excluída com sucesso", "instance_id": instance_id}
 
 
+@router.delete("/waha/instance/{instance_id}", dependencies=[Depends(verify_token)])
+async def delete_waha_instance(instance_id: str):
+    try:
+        remove_waha_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, f"Instância WAHA '{instance_id}' não encontrada")
+
+    return {"message": "Instância WAHA excluída com sucesso", "instance_id": instance_id}
+
+
 # ─── Operações ────────────────────────────────────────────
 
 
@@ -400,6 +475,32 @@ async def instance_status(instance_id: str):
         "instance_id": instance_id,
         "status": container.status,
         "url": instance_url(instance_id),
+        "location": "vinhedo",
+        "version": container.image.tags[0].split(":")[-1] if container.image.tags else "unknown",
+        "uptime": container.attrs.get("State", {}).get("StartedAt", ""),
+        "memory": {
+            "usage_mb": round(mem_usage / 1024 / 1024, 1),
+            "limit_mb": round(mem_limit / 1024 / 1024, 1),
+        },
+    }
+
+
+@router.get("/waha/instance/{instance_id}/status", dependencies=[Depends(verify_token)])
+async def waha_instance_status(instance_id: str):
+    try:
+        container = get_waha_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância WAHA não encontrada")
+
+    container.reload()
+    stats = container.stats(stream=False)
+    mem_usage = stats.get("memory_stats", {}).get("usage", 0)
+    mem_limit = stats.get("memory_stats", {}).get("limit", 0)
+
+    return {
+        "instance_id": instance_id,
+        "status": container.status,
+        "url": waha_instance_url(instance_id),
         "location": "vinhedo",
         "version": container.image.tags[0].split(":")[-1] if container.image.tags else "unknown",
         "uptime": container.attrs.get("State", {}).get("StartedAt", ""),
@@ -480,6 +581,17 @@ async def instance_logs(instance_id: str, tail: int = Query(50)):
         container = get_container(instance_id)
     except docker.errors.NotFound:
         raise HTTPException(404, "Instância não encontrada")
+
+    logs = container.logs(tail=min(tail, 200)).decode("utf-8", errors="replace")
+    return {"instance_id": instance_id, "logs": logs}
+
+
+@router.get("/waha/instance/{instance_id}/logs", dependencies=[Depends(verify_token)])
+async def waha_instance_logs(instance_id: str, tail: int = Query(50)):
+    try:
+        container = get_waha_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância WAHA não encontrada")
 
     logs = container.logs(tail=min(tail, 200)).decode("utf-8", errors="replace")
     return {"instance_id": instance_id, "logs": logs}
@@ -677,10 +789,16 @@ async def get_config(request: Request):
         "ALLOWED_ORIGINS": "*",
         "API_AUTH_TOKEN": "",
         "DEFAULT_N8N_VERSION": "1.123.20",
+        "DEFAULT_WAHA_VERSION": "latest",
+        "WAHA_IMAGE": "devlikeapro/waha",
+        "WAHA_DEFAULT_ENGINE": "NOWEB",
         "DEFAULT_TIMEZONE": "America/Sao_Paulo",
         "INSTANCE_MEM_LIMIT": "384m",
         "INSTANCE_MEM_RESERVATION": "192m",
         "INSTANCE_CPU_SHARES": "512",
+        "WAHA_MEM_LIMIT": "512m",
+        "WAHA_MEM_RESERVATION": "256m",
+        "WAHA_CPU_SHARES": "512",
         "CLEANUP_MAX_AGE_DAYS": "5",
         "CLEANUP_INTERVAL_SECONDS": "3600",
         "DOCKER_NETWORK": "n8n-public",
@@ -745,6 +863,14 @@ async def update_config(request: Request):
         except (ValueError, TypeError):
             raise HTTPException(400, "INSTANCE_CPU_SHARES deve ser entre 128 e 4096")
 
+    if "WAHA_CPU_SHARES" in updates:
+        try:
+            shares = int(updates["WAHA_CPU_SHARES"])
+            if shares < 128 or shares > 4096:
+                raise ValueError
+        except (ValueError, TypeError):
+            raise HTTPException(400, "WAHA_CPU_SHARES deve ser entre 128 e 4096")
+
     env_path = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), ".env")
 
     # Ler .env existente preservando comentários e ordem
@@ -783,6 +909,7 @@ async def update_config(request: Request):
         "SERVER_PORT", "API_AUTH_TOKEN", "BASE_DOMAIN", "CF_DNS_API_TOKEN",
         "ACME_EMAIL", "DOCKER_NETWORK", "RABBITMQ_HOST", "RABBITMQ_PORT",
         "RABBITMQ_USER", "RABBITMQ_PASSWORD", "REDIS_HOST", "REDIS_PORT",
+        "WAHA_IMAGE", "DEFAULT_WAHA_VERSION", "WAHA_DEFAULT_ENGINE",
         "ALLOWED_ORIGINS",
     }
     needs_restart = bool(set(updates.keys()) & restart_fields)

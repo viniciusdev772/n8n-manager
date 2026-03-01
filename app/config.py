@@ -38,10 +38,20 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 N8N_IMAGE = "docker.n8n.io/n8nio/n8n"
 DEFAULT_N8N_VERSION = "1.123.20"
 
+# WAHA (WhatsApp HTTP API)
+WAHA_IMAGE = os.getenv("WAHA_IMAGE", "devlikeapro/waha")
+DEFAULT_WAHA_VERSION = os.getenv("DEFAULT_WAHA_VERSION", "latest")
+WAHA_DEFAULT_ENGINE = os.getenv("WAHA_DEFAULT_ENGINE", "NOWEB")
+
 # Recursos por instância (otimizado — N8N idle ~100MB, CPU não-intensivo)
 INSTANCE_MEM_LIMIT = os.getenv("INSTANCE_MEM_LIMIT", "384m")
 INSTANCE_MEM_RESERVATION = os.getenv("INSTANCE_MEM_RESERVATION", "192m")
 INSTANCE_CPU_SHARES = int(os.getenv("INSTANCE_CPU_SHARES", "512"))
+
+# Recursos por instância WAHA
+WAHA_MEM_LIMIT = os.getenv("WAHA_MEM_LIMIT", "512m")
+WAHA_MEM_RESERVATION = os.getenv("WAHA_MEM_RESERVATION", "256m")
+WAHA_CPU_SHARES = int(os.getenv("WAHA_CPU_SHARES", "512"))
 
 # Worker — readiness probe
 READINESS_MAX_ATTEMPTS = int(os.getenv("READINESS_MAX_ATTEMPTS", "90"))  # 90 x 2s = 3 min

@@ -526,6 +526,17 @@ def _pre_pull_n8n_image():
     logger.info("Imagem %s pronta", image_tag)
 
 
+def _pre_pull_waha_image():
+    """Pré-baixa a imagem WAHA para acelerar criação de instâncias."""
+    from .config import DEFAULT_WAHA_VERSION, WAHA_IMAGE
+
+    client = get_client()
+    image_tag = f"{WAHA_IMAGE}:{DEFAULT_WAHA_VERSION}"
+    logger.info("Pre-pull da imagem %s...", image_tag)
+    client.images.pull(WAHA_IMAGE, tag=DEFAULT_WAHA_VERSION)
+    logger.info("Imagem %s pronta", image_tag)
+
+
 # ─── Bootstrap ───────────────────────────────────────────
 
 
@@ -538,7 +549,8 @@ def bootstrap_infra():
         ("rabbitmq", ensure_rabbitmq),
         ("parser-api", _run_parser_api_compose),
         ("fallback", ensure_fallback),
-        ("image-pull", _pre_pull_n8n_image),
+        ("image-pull-n8n", _pre_pull_n8n_image),
+        ("image-pull-waha", _pre_pull_waha_image),
     ]:
         try:
             fn()

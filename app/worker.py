@@ -1,4 +1,4 @@
-"""Worker — consome jobs de criacao de instancia do RabbitMQ."""
+"""Worker — consome jobs de criacao de instancia (N8N/WAHA) do RabbitMQ."""
 
 import json
 import ssl
@@ -19,6 +19,7 @@ from .config import (
     READINESS_POLL_INTERVAL,
     SSL_ENABLED,
     SSL_WAIT_SECONDS,
+    WAHA_DEFAULT_ENGINE,
 )
 from .job_status import push_event, set_state
 from .logger import get_logger
@@ -28,6 +29,12 @@ from .n8n import (
     get_container,
     instance_url,
 )
+from .waha import (
+    create_waha_container,
+    generate_waha_api_key,
+    get_waha_container,
+    waha_instance_url,
+)
 
 logger = get_logger("worker")
 
@@ -36,19 +43,41 @@ _stop_event = threading.Event()
 
 
 def _process_job(ch, method, properties, body):
-    """Executa a criacao de uma instancia N8N."""
+    """Executa a criacao de uma instancia N8N ou WAHA."""
     job = json.loads(body)
     job_id = job["job_id"]
     name = job["name"]
+    instance_type = job.get("instance_type", "n8n")
     version = job.get("version", "latest")
 
-    logger.info("Processando job %s: instancia '%s' v%s", job_id, name, version)
+    logger.info(
+        "Processando job %s: instancia '%s' (%s) v%s",
+        job_id,
+        name,
+        instance_type,
+        version,
+    )
     set_state(job_id, "running")
 
     try:
+        if instance_type == "waha":
+            get_container_fn = get_waha_container
+            create_container_fn = create_waha_container
+            public_url_fn = waha_instance_url
+            secret = generate_waha_api_key()
+            success_message = "Instancia WAHA criada com sucesso!"
+            service_label = "WAHA"
+        else:
+            get_container_fn = get_container
+            create_container_fn = create_container
+            public_url_fn = instance_url
+            secret = generate_encryption_key()
+            success_message = "Instancia N8N criada com sucesso!"
+            service_label = "N8N"
+
         # 1. Verificar duplicata
         try:
-            get_container(name)
+            get_container_fn(name)
             push_event(job_id, {"status": "error", "message": f"Instancia '{name}' ja existe"})
             set_state(job_id, "error")
             ch.basic_ack(delivery_tag=method.delivery_tag)
@@ -56,23 +85,21 @@ def _process_job(ch, method, properties, body):
         except docker.errors.NotFound:
             pass
 
-        encryption_key = generate_encryption_key()
-
-        # 2. Criar container (pull + run via n8n.create_container)
+        # 2. Criar container (pull + run)
         push_event(job_id, {"status": "info", "message": "Baixando imagem e criando container..."})
         try:
-            ct = create_container(name, version, encryption_key)
+            ct = create_container_fn(name, version, secret)
         except Exception as e:
             push_event(job_id, {"status": "error", "message": f"Erro ao criar container: {e}"})
             set_state(job_id, "error")
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
 
-        push_event(job_id, {"status": "info", "message": "Container criado, aguardando N8N..."})
+        push_event(job_id, {"status": "info", "message": f"Container criado, aguardando {service_label}..."})
 
         # 3. Aguardar startup — testa via Traefik
-        n8n_ready = False
-        public_url = instance_url(name)
+        service_ready = False
+        public_url = public_url_fn(name)
         no_ssl_ctx = ssl.create_default_context()
         no_ssl_ctx.check_hostname = False
         no_ssl_ctx.verify_mode = ssl.CERT_NONE
@@ -83,7 +110,10 @@ def _process_job(ch, method, properties, body):
             check_url = public_url
             host_header = None
         else:
-            host_header = f"{name}.{BASE_DOMAIN}"
+            if instance_type == "waha":
+                host_header = f"{name}-waha.{BASE_DOMAIN}"
+            else:
+                host_header = f"{name}.{BASE_DOMAIN}"
             check_url = "http://127.0.0.1"
 
         logger.info("Health check URL: %s (Host: %s)", check_url, host_header)
@@ -108,9 +138,9 @@ def _process_job(ch, method, properties, body):
                 if host_header:
                     req.add_header("Host", host_header)
                 resp = urllib.request.urlopen(req, timeout=5, context=no_ssl_ctx)
-                if resp.status == 200:
-                    n8n_ready = True
-                    push_event(job_id, {"status": "info", "message": f"N8N acessivel em {public_url}"})
+                if resp.status < 500:
+                    service_ready = True
+                    push_event(job_id, {"status": "info", "message": f"{service_label} acessivel em {public_url}"})
                     break
             except Exception as exc:
                 if i % 10 == 0:
@@ -118,10 +148,10 @@ def _process_job(ch, method, properties, body):
 
             # Feedback a cada 20s
             if i % 10 == 0:
-                push_event(job_id, {"status": "info", "message": f"Aguardando N8N ({i * READINESS_POLL_INTERVAL}s)..."})
+                push_event(job_id, {"status": "info", "message": f"Aguardando {service_label} ({i * READINESS_POLL_INTERVAL}s)..."})
 
-        if not n8n_ready:
-            push_event(job_id, {"status": "error", "message": "Timeout: N8N nao ficou acessivel em 3 minutos"})
+        if not service_ready:
+            push_event(job_id, {"status": "error", "message": f"Timeout: {service_label} nao ficou acessivel em 3 minutos"})
             set_state(job_id, "error")
             ch.basic_ack(delivery_tag=method.delivery_tag)
             return
@@ -132,16 +162,20 @@ def _process_job(ch, method, properties, body):
             time.sleep(SSL_WAIT_SECONDS)
 
         # 5. Sucesso
-        push_event(job_id, {
+        complete_event = {
             "status": "complete",
-            "message": "Instancia N8N criada com sucesso!",
+            "message": success_message,
+            "instance_type": instance_type,
             "instance_id": name,
-            "url": instance_url(name),
+            "url": public_url_fn(name),
             "location": "vinhedo",
             "container_status": "running",
-        })
+        }
+        if instance_type == "waha":
+            complete_event["credentials"] = {"api_key": secret, "engine": WAHA_DEFAULT_ENGINE}
+        push_event(job_id, complete_event)
         set_state(job_id, "complete")
-        logger.info("Job %s concluido: instancia '%s' criada", job_id, name)
+        logger.info("Job %s concluido: instancia '%s' (%s) criada", job_id, name, instance_type)
 
     except Exception as e:
         push_event(job_id, {"status": "error", "message": f"Erro inesperado: {e}"})
@@ -149,7 +183,7 @@ def _process_job(ch, method, properties, body):
         logger.error("Job %s falhou: %s", job_id, e)
         # Limpar container parcialmente criado
         try:
-            get_container(name).remove(force=True)
+            get_container_fn(name).remove(force=True)
         except Exception:
             pass
 
