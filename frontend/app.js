@@ -2,6 +2,7 @@
 
 const API = '';
 let currentInstance = null;
+let currentInstanceType = 'n8n';
 
 /* ── Helpers ─────────────────────────────────── */
 
@@ -50,6 +51,25 @@ function openModal(msg, onConfirm) {
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+async function fetchAllInstances() {
+  const [n8nData, wahaData] = await Promise.all([
+    api('/instances'),
+    api('/waha/instances').catch(() => ({ instances: [] })),
+  ]);
+
+  const n8nInstances = (n8nData.instances || []).map(i => ({ ...i, instance_type: 'n8n' }));
+  const wahaInstances = (wahaData.instances || []).map(i => ({ ...i, instance_type: 'waha' }));
+  const all = [...n8nInstances, ...wahaInstances];
+
+  all.sort((a, b) => {
+    const ad = a.created_at ? Date.parse(a.created_at) : 0;
+    const bd = b.created_at ? Date.parse(b.created_at) : 0;
+    return bd - ad;
+  });
+
+  return all;
 }
 
 /* ── Auth ────────────────────────────────────── */
@@ -108,10 +128,11 @@ function navigate(page) {
 
 async function loadDashboard() {
   try {
-    const [health, capacity, instances] = await Promise.all([
+    const [health, capacity, wahaCapacity, instances] = await Promise.all([
       api('/health'),
       api('/capacity'),
-      api('/instances'),
+      api('/waha/capacity').catch(() => ({ active_instances: 0, max_instances: 0 })),
+      fetchAllInstances(),
     ]);
 
     document.getElementById('dash-status').textContent = health.status;
@@ -120,10 +141,13 @@ async function loadDashboard() {
     document.getElementById('dash-redis').style.color = health.checks.redis === 'ok' ? 'var(--green)' : 'var(--red)';
     document.getElementById('dash-docker').textContent = health.checks.docker;
     document.getElementById('dash-docker').style.color = health.checks.docker === 'ok' ? 'var(--green)' : 'var(--red)';
-    document.getElementById('dash-active').textContent = capacity.active_instances;
-    document.getElementById('dash-capacity').textContent = capacity.active_instances + '/' + capacity.max_instances;
+    const activeCombined = (capacity.active_instances || 0) + (wahaCapacity.active_instances || 0);
+    document.getElementById('dash-active').textContent = activeCombined;
+    document.getElementById('dash-capacity').textContent =
+      (capacity.active_instances || 0) + '/' + (capacity.max_instances || 0) + ' n8n | ' +
+      (wahaCapacity.active_instances || 0) + '/' + (wahaCapacity.max_instances || 0) + ' waha';
 
-    renderInstancesTable('dash-instances-list', instances.instances.slice(0, 8));
+    renderInstancesTable('dash-instances-list', instances.slice(0, 8));
 
     // Jobs ativos no dashboard
     try {
@@ -218,8 +242,8 @@ function watchJob(jobId) {
 
 async function loadInstances() {
   try {
-    const data = await api('/instances');
-    renderInstancesTable('instances-list', data.instances);
+    const instances = await fetchAllInstances();
+    renderInstancesTable('instances-list', instances);
   } catch (e) {
     toast('Erro ao carregar instancias: ' + e.message, 'error');
   }
@@ -233,15 +257,16 @@ function renderInstancesTable(containerId, instances) {
   }
   el.innerHTML = `
     <table>
-      <thead><tr><th>Nome</th><th>Status</th><th>Versao</th><th>Idade</th><th>URL</th><th></th></tr></thead>
+      <thead><tr><th>Nome</th><th>Tipo</th><th>Status</th><th>Versao</th><th>Idade</th><th>URL</th><th></th></tr></thead>
       <tbody>${instances.map(i => `
         <tr>
           <td><strong>${esc(i.name || i.instance_id || '--')}</strong></td>
+          <td><span style="font-family:var(--font-mono);font-size:.78rem">${esc((i.instance_type || 'n8n').toUpperCase())}</span></td>
           <td>${statusBadge(i.status || 'unknown')}</td>
           <td><code style="font-size:.8rem">${esc(i.version || '--')}</code></td>
           <td>${i.age_days != null ? '<span style="font-family:var(--font-mono);font-size:.82rem">' + i.age_days + 'd</span>' : '--'}</td>
           <td>${i.url ? `<a href="${esc(i.url)}" target="_blank">${esc(i.url)}</a>` : '--'}</td>
-          <td><button class="btn btn-outline btn-sm" onclick="openInstance('${esc(i.name || i.instance_id)}')">Detalhes</button></td>
+          <td><button class="btn btn-outline btn-sm" onclick="openInstance('${esc(i.name || i.instance_id)}','${esc(i.instance_type || 'n8n')}')">Detalhes</button></td>
         </tr>
       `).join('')}</tbody>
     </table>`;
@@ -255,15 +280,24 @@ function esc(s) {
 
 /* ── Instance Detail ─────────────────────────── */
 
-async function openInstance(id) {
+async function openInstance(id, type = 'n8n') {
   currentInstance = id;
+  currentInstanceType = type || 'n8n';
   document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
   document.getElementById('page-instance-detail').classList.remove('hidden');
-  document.getElementById('detail-title').textContent = id;
+  document.getElementById('detail-title').textContent = id + ' (' + currentInstanceType.toUpperCase() + ')';
   document.getElementById('version-update-form').classList.add('hidden');
 
+  const isN8n = currentInstanceType === 'n8n';
+  document.getElementById('detail-restart-btn').classList.toggle('hidden', !isN8n);
+  document.getElementById('detail-reset-btn').classList.toggle('hidden', !isN8n);
+  document.getElementById('detail-update-btn').classList.toggle('hidden', !isN8n);
+
   try {
-    const data = await api('/instance/' + encodeURIComponent(id) + '/status');
+    const statusEndpoint = isN8n
+      ? '/instance/' + encodeURIComponent(id) + '/status'
+      : '/waha/instance/' + encodeURIComponent(id) + '/status';
+    const data = await api(statusEndpoint);
     document.getElementById('detail-status').innerHTML = statusBadge(data.status);
     document.getElementById('detail-version').textContent = data.version || '--';
     document.getElementById('detail-memory').textContent = data.memory ? data.memory.usage_mb + ' / ' + data.memory.limit_mb + ' MB' : '--';
@@ -277,7 +311,10 @@ async function openInstance(id) {
 async function loadInstanceEnv() {
   if (!currentInstance) return;
   try {
-    const data = await api('/instance/' + encodeURIComponent(currentInstance) + '/env');
+    const envEndpoint = currentInstanceType === 'n8n'
+      ? '/instance/' + encodeURIComponent(currentInstance) + '/env'
+      : '/waha/instance/' + encodeURIComponent(currentInstance) + '/env';
+    const data = await api(envEndpoint);
     renderEnvTable('detail-env', data.env);
   } catch (e) {
     document.getElementById('detail-env').innerHTML = '<p style="color:var(--red);font-size:.85rem">Erro: ' + esc(e.message) + '</p>';
@@ -287,7 +324,10 @@ async function loadInstanceEnv() {
 async function loadInstanceLogs() {
   if (!currentInstance) return;
   try {
-    const data = await api('/instance/' + encodeURIComponent(currentInstance) + '/logs?tail=80');
+    const logsEndpoint = currentInstanceType === 'n8n'
+      ? '/instance/' + encodeURIComponent(currentInstance) + '/logs?tail=80'
+      : '/waha/instance/' + encodeURIComponent(currentInstance) + '/logs?tail=80';
+    const data = await api(logsEndpoint);
     document.getElementById('detail-logs').textContent = data.logs || '(sem logs)';
   } catch (e) {
     document.getElementById('detail-logs').textContent = 'Erro ao carregar logs: ' + e.message;
@@ -296,17 +336,25 @@ async function loadInstanceLogs() {
 
 async function restartInstance() {
   if (!currentInstance) return;
+  if (currentInstanceType !== 'n8n') {
+    toast('Reinicio pela UI disponivel apenas para N8N nesta versao', 'error');
+    return;
+  }
   openModal('Reiniciar instancia ' + currentInstance + '?', async () => {
     try {
       await api('/instance/' + encodeURIComponent(currentInstance) + '/restart', { method: 'POST' });
       toast('Instancia reiniciada', 'success');
-      setTimeout(() => openInstance(currentInstance), 2000);
+      setTimeout(() => openInstance(currentInstance, currentInstanceType), 2000);
     } catch (e) { toast('Erro: ' + e.message, 'error'); }
   });
 }
 
 async function resetInstance() {
   if (!currentInstance) return;
+  if (currentInstanceType !== 'n8n') {
+    toast('Reset pela UI disponivel apenas para N8N nesta versao', 'error');
+    return;
+  }
   openModal('RESETAR instancia ' + currentInstance + '? Todos os dados serao perdidos!', async () => {
     try {
       await api('/instance/' + encodeURIComponent(currentInstance) + '/reset', {
@@ -314,7 +362,7 @@ async function resetInstance() {
         body: JSON.stringify({ version: 'latest' }),
       });
       toast('Instancia resetada', 'success');
-      setTimeout(() => openInstance(currentInstance), 3000);
+      setTimeout(() => openInstance(currentInstance, currentInstanceType), 3000);
     } catch (e) { toast('Erro: ' + e.message, 'error'); }
   });
 }
@@ -323,22 +371,30 @@ async function deleteInstance() {
   if (!currentInstance) return;
   openModal('EXCLUIR instancia ' + currentInstance + '? Esta acao e irreversivel!', async () => {
     try {
-      await api('/delete-instance/' + encodeURIComponent(currentInstance), { method: 'DELETE' });
+      const endpoint = currentInstanceType === 'n8n'
+        ? '/delete-instance/' + encodeURIComponent(currentInstance)
+        : '/waha/instance/' + encodeURIComponent(currentInstance);
+      await api(endpoint, { method: 'DELETE' });
       toast('Instancia excluida', 'success');
       currentInstance = null;
+      currentInstanceType = 'n8n';
       navigate('instances');
     } catch (e) { toast('Erro: ' + e.message, 'error'); }
   });
 }
 
 async function showUpdateVersion() {
+  if (currentInstanceType !== 'n8n') {
+    toast('Atualizacao de versao pela UI disponivel apenas para N8N nesta versao', 'error');
+    return;
+  }
   const form = document.getElementById('version-update-form');
   if (!form.classList.contains('hidden')) {
     form.classList.add('hidden');
     return;
   }
   try {
-    const data = await api('/versions');
+    const data = await api('/versions?type=n8n');
     const select = document.getElementById('update-version-select');
     select.innerHTML = data.versions.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
     form.classList.remove('hidden');
@@ -347,6 +403,7 @@ async function showUpdateVersion() {
 
 async function doUpdateVersion() {
   if (!currentInstance) return;
+  if (currentInstanceType !== 'n8n') return;
   const version = document.getElementById('update-version-select').value;
   openModal('Atualizar ' + currentInstance + ' para versao ' + version + '?', async () => {
     try {
@@ -356,7 +413,7 @@ async function doUpdateVersion() {
       });
       toast('Versao atualizada', 'success');
       document.getElementById('version-update-form').classList.add('hidden');
-      setTimeout(() => openInstance(currentInstance), 3000);
+      setTimeout(() => openInstance(currentInstance, currentInstanceType), 3000);
     } catch (e) { toast('Erro: ' + e.message, 'error'); }
   });
 }
@@ -377,15 +434,9 @@ async function onCreateTypeChange() {
   const versionLabel = document.getElementById('create-version-label');
   const versionSelect = document.getElementById('create-version');
 
-  if (type === 'waha') {
-    if (versionLabel) versionLabel.textContent = 'VERSAO WAHA';
-    versionSelect.innerHTML = '<option value="latest">latest</option>';
-    return;
-  }
-
-  if (versionLabel) versionLabel.textContent = 'VERSAO N8N';
+  if (versionLabel) versionLabel.textContent = type === 'waha' ? 'VERSAO WAHA' : 'VERSAO N8N';
   try {
-    const data = await api('/versions');
+    const data = await api('/versions?type=' + encodeURIComponent(type));
     versionSelect.innerHTML = data.versions.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
   } catch {
     versionSelect.innerHTML = '<option value="latest">latest</option>';

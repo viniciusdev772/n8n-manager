@@ -67,16 +67,21 @@ async def health():
 
 @router.get("/versions", dependencies=[Depends(verify_token)])
 @router.get("/docker-versions", dependencies=[Depends(verify_token)])
-async def list_versions():
-    """Busca as versões mais recentes do N8N diretamente do Docker Hub."""
+async def list_versions(type: str = Query("n8n")):
+    """Busca as versões mais recentes no Docker Hub (N8N ou WAHA)."""
     import httpx
 
     import re
 
+    instance_type = (type or "n8n").strip().lower()
+    if instance_type not in ("n8n", "waha"):
+        raise HTTPException(400, "type deve ser 'n8n' ou 'waha'")
+
     try:
         async with httpx.AsyncClient(timeout=10) as client:
+            repo = "n8nio/n8n" if instance_type == "n8n" else "devlikeapro/waha"
             resp = await client.get(
-                "https://registry.hub.docker.com/v2/repositories/n8nio/n8n/tags",
+                f"https://registry.hub.docker.com/v2/repositories/{repo}/tags",
                 params={"page_size": 50, "ordering": "last_updated"},
             )
             if resp.status_code == 200:
@@ -86,26 +91,37 @@ async def list_versions():
                 semver_re = re.compile(r"^1\.\d+\.\d+$")
                 for tag in data.get("results", []):
                     tag_name = tag.get("name", "")
-                    # Apenas versões semver 1.X.Y (sem task runners)
-                    if semver_re.match(tag_name) and tag_name not in seen:
-                        seen.add(tag_name)
-                        versions.append({"id": tag_name, "name": tag_name})
+                    if not tag_name or tag_name in seen:
+                        continue
+
+                    if instance_type == "n8n":
+                        # Apenas versões semver 1.X.Y (sem task runners)
+                        if not semver_re.match(tag_name):
+                            continue
+
+                    seen.add(tag_name)
+                    versions.append({"id": tag_name, "name": tag_name})
                     if len(versions) >= 8:
                         break
 
-                # Ordenar por versão decrescente
-                versions.sort(
-                    key=lambda v: [int(x) for x in v["id"].split(".")],
-                    reverse=True,
-                )
+                if instance_type == "n8n":
+                    # Ordenar por versão decrescente
+                    versions.sort(
+                        key=lambda v: [int(x) for x in v["id"].split(".")],
+                        reverse=True,
+                    )
+                else:
+                    # Mantém "latest" no topo quando presente
+                    versions.sort(key=lambda v: (v["id"] != "latest", v["id"]))
 
                 if versions:
-                    return {"versions": versions}
+                    return {"instance_type": instance_type, "versions": versions}
     except Exception as e:
         pass
 
     # Fallback: versão latest
     return {
+        "instance_type": instance_type,
         "versions": [
             {"id": "latest", "name": "Última versão (latest)"},
         ]
@@ -564,6 +580,22 @@ async def instance_env(instance_id: str):
         container = get_container(instance_id)
     except docker.errors.NotFound:
         raise HTTPException(404, "Instância não encontrada")
+
+    container.reload()
+    env_list = container.attrs.get("Config", {}).get("Env", [])
+    env_vars = {}
+    for item in env_list:
+        key, _, value = item.partition("=")
+        env_vars[key] = value
+    return {"instance_id": instance_id, "env": env_vars}
+
+
+@router.get("/waha/instance/{instance_id}/env", dependencies=[Depends(verify_token)])
+async def waha_instance_env(instance_id: str):
+    try:
+        container = get_waha_container(instance_id)
+    except docker.errors.NotFound:
+        raise HTTPException(404, "Instância WAHA não encontrada")
 
     container.reload()
     env_list = container.attrs.get("Config", {}).get("Env", [])
