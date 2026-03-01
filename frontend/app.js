@@ -3,6 +3,7 @@
 const API = '';
 let currentInstance = null;
 let currentInstanceType = 'n8n';
+let createVersionRequestSeq = 0;
 
 /* ── Helpers ─────────────────────────────────── */
 
@@ -235,7 +236,7 @@ function watchJob(jobId) {
   btn.disabled = true;
   fill.style.width = '0%';
   msg.textContent = 'Acompanhando job...';
-  pollJob(jobId, fill, msg, result, btn);
+  pollJob(jobId, fill, msg, result, btn, null);
 }
 
 /* ── Instances ───────────────────────────────── */
@@ -433,21 +434,30 @@ async function onCreateTypeChange() {
   const type = document.getElementById('create-type')?.value || 'n8n';
   const versionLabel = document.getElementById('create-version-label');
   const versionSelect = document.getElementById('create-version');
+  const requestId = ++createVersionRequestSeq;
 
   if (versionLabel) versionLabel.textContent = type === 'waha' ? 'VERSAO WAHA' : 'VERSAO N8N';
   try {
     const data = await api('/versions?type=' + encodeURIComponent(type));
+    if (requestId !== createVersionRequestSeq) return;
+    const currentType = document.getElementById('create-type')?.value || 'n8n';
+    if (currentType !== type) return;
     versionSelect.innerHTML = data.versions.map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
   } catch {
+    if (requestId !== createVersionRequestSeq) return;
     versionSelect.innerHTML = '<option value="latest">latest</option>';
   }
 }
 
 async function doCreate() {
   const name = document.getElementById('create-name').value.trim();
-  const instanceType = document.getElementById('create-type')?.value || 'n8n';
+  const instanceType = (document.getElementById('create-type')?.value || 'n8n').trim().toLowerCase();
   const version = document.getElementById('create-version').value;
   if (!name) { toast('Nome obrigatorio', 'error'); return; }
+  if (!['n8n', 'waha'].includes(instanceType)) {
+    toast('Tipo de instancia invalido', 'error');
+    return;
+  }
 
   const btn = document.getElementById('create-btn');
   btn.disabled = true;
@@ -458,15 +468,15 @@ async function doCreate() {
   progress.classList.remove('hidden');
   result.classList.add('hidden');
   fill.style.width = '5%';
-  msg.textContent = 'Enfileirando...';
+  msg.textContent = 'Enfileirando ' + instanceType.toUpperCase() + '...';
 
   try {
     const endpoint = instanceType === 'waha' ? '/waha/enqueue-instance' : '/enqueue-instance';
     const job = await api(endpoint, {
       method: 'POST',
-      body: JSON.stringify({ name, version }),
+      body: JSON.stringify({ name, version, instance_type: instanceType }),
     });
-    pollJob(job.job_id, fill, msg, result, btn);
+    pollJob(job.job_id, fill, msg, result, btn, instanceType);
   } catch (e) {
     msg.textContent = 'Erro: ' + e.message;
     result.className = 'error';
@@ -476,7 +486,7 @@ async function doCreate() {
   }
 }
 
-async function pollJob(jobId, fill, msg, resultEl, btn) {
+async function pollJob(jobId, fill, msg, resultEl, btn, requestedType = null) {
   let idx = 0;
   const poll = async () => {
     try {
@@ -490,12 +500,16 @@ async function pollJob(jobId, fill, msg, resultEl, btn) {
         if (ev.status === 'complete') {
           fill.style.width = '100%';
           resultEl.className = 'success';
-          if (ev.instance_type === 'waha') {
+          const finalType = ((ev.instance_type || requestedType || 'n8n') + '').toLowerCase();
+          if (finalType === 'waha') {
             const apiKey = ev.credentials && ev.credentials.api_key ? ev.credentials.api_key : '';
             const apiKeyHtml = apiKey ? '<br><small>API Key: <code>' + esc(apiKey) + '</code></small>' : '';
             resultEl.innerHTML = 'Instancia WAHA criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>' + apiKeyHtml;
           } else {
-            resultEl.innerHTML = 'Instancia criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>';
+            resultEl.innerHTML = 'Instancia N8N criada! <a href="' + esc(ev.url || '') + '" target="_blank">' + esc(ev.url || '') + '</a>';
+          }
+          if (requestedType && ev.instance_type && requestedType !== ev.instance_type) {
+            resultEl.innerHTML += '<br><small style="color:#fbbf24">Aviso: resposta retornou tipo ' + esc(ev.instance_type) + ' diferente do solicitado.</small>';
           }
           resultEl.classList.remove('hidden');
           btn.disabled = false;
