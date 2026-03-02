@@ -189,6 +189,153 @@ def is_zero_saldo(value):
         return False
 
 
+def _has_value(value):
+    return value is not None and value != ""
+
+
+def _detail_quality(abast, saldo_casa, source_text):
+    score = 0
+    if abast is not None:
+        score += 2
+    if _has_value(saldo_casa):
+        score += 2
+    if str(source_text or "").strip():
+        score += 1
+    return score
+
+
+def _choose_best_color_detail(existing: Dict[str, Any], candidate: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Escolhe o melhor registro entre dois candidatos da mesma cor.
+    Critério principal: completude de dados (abast/saldo/texto origem).
+    Empate: mantém o existente (ordem original do PDF).
+    """
+    existing_score = _detail_quality(
+        existing.get("abast"),
+        existing.get("saldo_casa"),
+        existing.get("source_text"),
+    )
+    candidate_score = _detail_quality(
+        candidate.get("abast"),
+        candidate.get("saldo_casa"),
+        candidate.get("source_text"),
+    )
+    if candidate_score > existing_score:
+        chosen = dict(candidate)
+    else:
+        chosen = dict(existing)
+
+    # Mantém descrições mais completas, independentemente do vencedor.
+    existing_color_desc = str(existing.get("color_desc") or "")
+    candidate_color_desc = str(candidate.get("color_desc") or "")
+    if len(candidate_color_desc) > len(existing_color_desc):
+        chosen["color_desc"] = candidate_color_desc
+    else:
+        chosen["color_desc"] = existing_color_desc
+
+    return chosen
+
+
+def _merge_destination_detail(existing: Optional[Dict[str, Any]], candidate: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Evita sobrescrever detalhe bom com linha parcial de quebra de página.
+    """
+    if existing is None:
+        return dict(candidate)
+
+    existing_score = _detail_quality(
+        existing.get("abast"),
+        existing.get("saldo_casa"),
+        existing.get("source_text"),
+    )
+    candidate_score = _detail_quality(
+        candidate.get("abast"),
+        candidate.get("saldo_casa"),
+        candidate.get("source_text"),
+    )
+
+    if candidate_score > existing_score:
+        merged = dict(candidate)
+        if not merged.get("saldo_origem"):
+            merged["saldo_origem"] = existing.get("saldo_origem", "nacional")
+    else:
+        merged = dict(existing)
+        if not merged.get("saldo_origem"):
+            merged["saldo_origem"] = candidate.get("saldo_origem", "nacional")
+
+    existing_source_text = str(existing.get("source_text") or "")
+    candidate_source_text = str(candidate.get("source_text") or "")
+    if len(candidate_source_text) > len(existing_source_text):
+        merged["source_text"] = candidate_source_text
+    elif "source_text" not in merged:
+        merged["source_text"] = existing_source_text
+
+    return merged
+
+
+def merge_items_for_page_breaks(items):
+    """
+    Consolida duplicidades de item/cor na mesma mini fábrica.
+    Resolve casos de quebra de página em que a primeira linha da página
+    repete item/cor sem colunas numéricas.
+    """
+    merged_items: Dict[tuple, Dict[str, Any]] = {}
+    order: List[tuple] = []
+
+    for it in items:
+        mini = it.get("mini_fabrica") or "Mini Fabrica - N/D"
+        item_code = it.get("item_code", "")
+        item_key = (mini, item_code)
+
+        if item_key not in merged_items:
+            merged_items[item_key] = {
+                "item_code": item_code,
+                "item_desc": it.get("item_desc", "") or "",
+                "mini_fabrica": mini,
+                "colors": [],
+                "_color_index": {},
+            }
+            order.append(item_key)
+        else:
+            current_desc = merged_items[item_key].get("item_desc", "") or ""
+            new_desc = it.get("item_desc", "") or ""
+            if len(new_desc) > len(current_desc):
+                merged_items[item_key]["item_desc"] = new_desc
+
+        target = merged_items[item_key]
+        for color in it.get("colors", []):
+            color_key = (
+                color.get("color_code", ""),
+                color.get("par_tipo", "") or "",
+                color.get("tam", "") or "",
+            )
+            idx = target["_color_index"].get(color_key)
+            if idx is None:
+                color_copy = dict(color)
+                if color_copy.get("par_tipo") is None:
+                    color_copy["par_tipo"] = ""
+                if color_copy.get("tam") is None:
+                    color_copy["tam"] = ""
+                target["_color_index"][color_key] = len(target["colors"])
+                target["colors"].append(color_copy)
+            else:
+                existing = target["colors"][idx]
+                candidate = dict(color)
+                if candidate.get("par_tipo") is None:
+                    candidate["par_tipo"] = ""
+                if candidate.get("tam") is None:
+                    candidate["tam"] = ""
+                target["colors"][idx] = _choose_best_color_detail(existing, candidate)
+
+    result = []
+    for key in order:
+        item = merged_items[key]
+        item["item_desc"] = (item.get("item_desc") or "").strip()
+        del item["_color_index"]
+        result.append(item)
+    return result
+
+
 def make_source_meta(page_number, row_words, row_text, color_zone=None):
     """Metadados de origem da linha no PDF para auditoria no HTML."""
     zone = color_zone or row_words
@@ -425,7 +572,7 @@ def parse_pdf(pdf_path):
         if "_sub_saldo_by_color" in it:
             del it["_sub_saldo_by_color"]
 
-    return items
+    return merge_items_for_page_breaks(items)
 
 
 def save_json(items, path):
@@ -573,7 +720,7 @@ def build_grouped_items(items, include_singletons=False, include_par_singletons=
                     grouped[key]["color_desc"] = new_color_desc
             if mf not in grouped[key]["por_mini_fabrica"]:
                 grouped[key]["_mini_fabricas_order"].append(mf)
-            grouped[key]["por_mini_fabrica"][mf] = {
+            new_detail = {
                 "abast": c.get("abast"),
                 "saldo_casa": c.get("saldo_casa"),
                 "saldo_origem": c.get("saldo_origem", "nacional"),
@@ -582,6 +729,10 @@ def build_grouped_items(items, include_singletons=False, include_par_singletons=
                 "source_y": c.get("source_y"),
                 "source_text": c.get("source_text", ""),
             }
+            grouped[key]["por_mini_fabrica"][mf] = _merge_destination_detail(
+                grouped[key]["por_mini_fabrica"].get(mf),
+                new_detail,
+            )
 
     grouped_items = []
     for entry in grouped.values():
