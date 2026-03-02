@@ -520,9 +520,15 @@ def print_summary(items):
             print(f"   └── {c['color_code']} - {c['color_desc']}{par_str}{tam_str}{abast_str}{casa_str}{origem_str}")
 
 
-def build_common_items(items):
+def build_grouped_items(items, include_singletons=False, include_par_singletons=INCLUDE_PAR_SINGLETONS_IN_COMMON):
     """
-    Retorna combinações item+cor presentes em 2+ mini fábricas diferentes.
+    Agrupa por combinação item+tipo+cor+tam.
+
+    include_singletons=False:
+      - mantém apenas combinações presentes em 2+ mini fábricas
+      - opcionalmente inclui PAR singleton (conforme include_par_singletons)
+    include_singletons=True:
+      - inclui todas as combinações encontradas
     """
     grouped = {}
     seq = 0
@@ -567,22 +573,33 @@ def build_common_items(items):
                 "source_text": c.get("source_text", ""),
             }
 
-    commons = []
+    grouped_items = []
     for entry in grouped.values():
         mini_fabs = entry["_mini_fabricas_order"]
         is_par = (entry.get("par_tipo") or "").upper() == "PAR"
-        include_single_par = INCLUDE_PAR_SINGLETONS_IN_COMMON and is_par and len(mini_fabs) >= 1
-        if len(mini_fabs) >= 2 or include_single_par:
+        include_single_par = include_par_singletons and is_par and len(mini_fabs) >= 1
+        if include_singletons or len(mini_fabs) >= 2 or include_single_par:
             entry["mini_fabricas"] = mini_fabs
             del entry["_mini_fabricas_order"]
-            commons.append(entry)
+            grouped_items.append(entry)
         else:
             del entry["_mini_fabricas_order"]
 
-    commons.sort(key=lambda x: x["_first_seq"])
-    for entry in commons:
+    grouped_items.sort(key=lambda x: x["_first_seq"])
+    for entry in grouped_items:
         del entry["_first_seq"]
-    return commons
+    return grouped_items
+
+
+def build_common_items(items):
+    """
+    Retorna combinações item+cor presentes em 2+ mini fábricas diferentes.
+    """
+    return build_grouped_items(
+        items,
+        include_singletons=False,
+        include_par_singletons=INCLUDE_PAR_SINGLETONS_IN_COMMON,
+    )
 
 
 def save_common_json(common_items, path):
@@ -629,9 +646,15 @@ def save_common_csv(common_items, path):
     print(f"[OK] CSV  Comuns → {path}")
 
 
-def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
-    distribution = _build_common_distribution(common_items)
-    data_json = json.dumps(distribution, ensure_ascii=False)
+def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", all_items=None):
+    distribution_common = _build_common_distribution(common_items)
+    if all_items is None:
+        distribution_all = distribution_common
+    else:
+        all_grouped = build_grouped_items(all_items, include_singletons=True, include_par_singletons=True)
+        distribution_all = _build_common_distribution(all_grouped)
+    data_common_json = json.dumps(distribution_common, ensure_ascii=False)
+    data_all_json = json.dumps(distribution_all, ensure_ascii=False)
     generated_at = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
     html = f"""<!doctype html>
 <html lang="pt-BR">
@@ -667,7 +690,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     .kpi {{ border: 1px solid var(--line); border-radius: 8px; padding: 8px; background: #fbfdff; }}
     .kpi .lbl {{ color: var(--muted); font-size: 11px; text-transform: uppercase; }}
     .kpi .val {{ font-size: 16px; font-weight: 700; margin-top: 2px; }}
-    .controls {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto; gap: 8px; align-items: end; }}
+    .controls {{ display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto auto; gap: 8px; align-items: end; }}
     .controls label {{ display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; }}
     .controls input, .controls select, .controls button {{ width: 100%; border: 1px solid #c6d3e0; border-radius: 8px; padding: 8px; background: #fff; }}
     .controls button {{ cursor: pointer; font-weight: 600; }}
@@ -758,6 +781,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
         </select>
       </div>
       <label class="inline"><input id="onlyFalta" type="checkbox"> Somente com falta</label>
+      <label class="inline"><input id="showAll" type="checkbox" checked> Mostrar todos os itens</label>
       <button id="compareMinisBtn" type="button">Comparar Minis</button>
       <button id="exportCsv" type="button">Exportar CSV filtrado</button>
     </section>
@@ -840,7 +864,8 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
   </dialog>
 
   <script>
-    const DATA = {data_json};
+    const DATA_COMMON = {data_common_json};
+    const DATA_ALL = {data_all_json};
     const rowsEl = document.getElementById('rows');
     const emptyEl = document.getElementById('empty');
     const groupsEl = document.getElementById('groups');
@@ -853,6 +878,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     const minNeedEl = document.getElementById('minNeed');
     const sortEl = document.getElementById('sort');
     const onlyFaltaEl = document.getElementById('onlyFalta');
+    const showAllEl = document.getElementById('showAll');
     const compareMinisBtn = document.getElementById('compareMinisBtn');
     const exportCsvEl = document.getElementById('exportCsv');
     const compareDialog = document.getElementById('compareDialog');
@@ -969,8 +995,20 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       miniEl.innerHTML = '<option value="">Todas</option>' + minis.map(m => `<option value="${{esc(m)}}">${{esc(m)}}</option>`).join('');
     }}
 
-    const ALL_ROWS = flattenRows(DATA);
+    const ALL_ROWS_COMMON = flattenRows(DATA_COMMON);
+    const ALL_ROWS_ALL = flattenRows(DATA_ALL);
+    let ALL_ROWS = showAllEl.checked ? ALL_ROWS_ALL : ALL_ROWS_COMMON;
     populateMinis(ALL_ROWS);
+
+    function rebuildRowsByMode() {{
+      const selectedMini = miniEl.value || '';
+      ALL_ROWS = showAllEl.checked ? ALL_ROWS_ALL : ALL_ROWS_COMMON;
+      populateMinis(ALL_ROWS);
+      if (selectedMini && Array.from(miniEl.options).some(o => o.value === selectedMini)) {{
+        miniEl.value = selectedMini;
+      }}
+      render();
+    }}
 
     function filterBaseRows(ignoreMini = false) {{
       const term = (qEl.value || '').toLowerCase();
@@ -1150,6 +1188,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
     function render() {{
       const rows = applyFilters();
       const groups = summarizeGroups(rows);
+      const modeLabel = showAllEl.checked ? "todos os itens" : "somente itens em comum";
       const totalNeed = rows.reduce((acc, r) => acc + r.need, 0);
       const totalCovered = rows.reduce((acc, r) => acc + r.covered, 0);
       const totalGap = Math.max(totalNeed - totalCovered, 0);
@@ -1163,8 +1202,8 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       kpi.cov.textContent = `${{covPct.toFixed(1)}}%`;
       kpi.none.textContent = String(rows.filter(r => r.status === 'none').length);
       kpi.sub.textContent = String(rows.filter(r => String(r.saldo_origem || '').toLowerCase() === 'substituto').length);
-      scopeInfo.textContent = `Visão filtrada: ${{rows.length}} destino(s), ${{groups.length}} grupo(s), falta total ${{fmt(totalGap,1)}}.`;
-      groupsInfo.textContent = `Conferência: mesmos item+cor atendendo múltiplas mini fábricas no recorte atual.`;
+      scopeInfo.textContent = `Visão filtrada (${{modeLabel}}): ${{rows.length}} destino(s), ${{groups.length}} grupo(s), falta total ${{fmt(totalGap,1)}}.`;
+      groupsInfo.textContent = `Conferência por item+cor para ${{modeLabel}} no recorte atual.`;
 
       if (!rows.length) {{
         rowsEl.innerHTML = '';
@@ -1231,6 +1270,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs"):
       const evt = el.tagName === 'INPUT' && el.type !== 'checkbox' ? 'input' : 'change';
       el.addEventListener(evt, render);
     }});
+    showAllEl.addEventListener('change', rebuildRowsByMode);
     compareMinisBtn.addEventListener('click', () => {{
       buildCompareMiniOptions();
       compareWarn.textContent = '';
@@ -1611,7 +1651,12 @@ if FASTAPI_AVAILABLE:
                 common_items = build_common_items(all_items)
                 save_common_json(common_items, str(common_json_path))
                 save_common_csv(common_items, str(common_csv_path))
-                save_common_html(common_items, str(common_html_path), source_label=uploaded_names[0])
+                save_common_html(
+                    common_items,
+                    str(common_html_path),
+                    source_label=uploaded_names[0],
+                    all_items=all_items,
+                )
             else:
                 json_name = f"multi_pdf_{stamp}_parsed.json"
                 csv_name = f"multi_pdf_{stamp}_parsed.csv"
@@ -1630,7 +1675,12 @@ if FASTAPI_AVAILABLE:
                 common_items = build_common_items(all_items)
                 save_common_json(common_items, str(common_json_path))
                 save_common_csv(common_items, str(common_csv_path))
-                save_common_html(common_items, str(common_html_path), source_label=f"{len(uploaded_names)} PDFs")
+                save_common_html(
+                    common_items,
+                    str(common_html_path),
+                    source_label=f"{len(uploaded_names)} PDFs",
+                    all_items=all_items,
+                )
 
             total_colors = sum(len(it["colors"]) for it in all_items)
             response = {
@@ -1692,7 +1742,12 @@ if __name__ == "__main__":
         common_items = build_common_items(items)
         save_common_json(common_items, base + "_common_items.json")
         save_common_csv(common_items, base + "_common_items.csv")
-        save_common_html(common_items, base + "_common_items.html", source_label=os.path.basename(pdf_path))
+        save_common_html(
+            common_items,
+            base + "_common_items.html",
+            source_label=os.path.basename(pdf_path),
+            all_items=items,
+        )
         print_common_summary(common_items)
     else:
         # Modo consolidado: 2+ PDFs -> 1 JSON/CSV parse + 1 JSON/CSV/HTML comuns.
@@ -1718,5 +1773,10 @@ if __name__ == "__main__":
         common_items = build_common_items(all_items)
         save_common_json(common_items, out_common_json)
         save_common_csv(common_items, out_common_csv)
-        save_common_html(common_items, out_common_html, source_label=f"{len(pdf_paths)} PDFs")
+        save_common_html(
+            common_items,
+            out_common_html,
+            source_label=f"{len(pdf_paths)} PDFs",
+            all_items=all_items,
+        )
         print_common_summary(common_items)
