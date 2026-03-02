@@ -694,26 +694,53 @@ def _prepare_dataframe_for_excel(df: pd.DataFrame, numeric_columns: List[str]) -
     return out
 
 
-def _save_styled_xlsx_from_df(
+def _safe_sheet_name(name: str) -> str:
+    text = re.sub(r"[\[\]\*:/\\?]", " ", str(name or "Sheet")).strip()
+    if not text:
+        text = "Sheet"
+    return text[:31]
+
+
+def _unique_sheet_name(name: str, used: set) -> str:
+    base = _safe_sheet_name(name)
+    candidate = base
+    idx = 2
+    while candidate.lower() in used:
+        suffix = f" ({idx})"
+        max_base = max(1, 31 - len(suffix))
+        candidate = f"{base[:max_base].rstrip()}{suffix}"
+        idx += 1
+    used.add(candidate.lower())
+    return candidate
+
+
+def _safe_table_name(name: str, idx: int) -> str:
+    safe = re.sub(r"[^A-Za-z0-9_]", "", name or f"Table{idx}")
+    if not safe:
+        safe = f"Table{idx}"
+    if safe[0].isdigit():
+        safe = f"T_{safe}"
+    return safe[:80]
+
+
+def _mini_sort_key(mini_name: str):
+    text = str(mini_name or "")
+    m = re.search(r"(\d+)", text)
+    number = int(m.group(1)) if m else 10**9
+    return (number, text)
+
+
+def _render_styled_sheet(
+    ws,
     df: pd.DataFrame,
-    xlsx_path: str,
-    sheet_name: str,
     table_name: str,
     numeric_formats: Optional[Dict[str, str]] = None,
     color_scale_columns: Optional[List[str]] = None,
-) -> bool:
-    if not OPENPYXL_AVAILABLE:
-        print("[WARN] openpyxl não disponível: exportação XLSX não gerada.")
-        return False
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = (sheet_name or "Dados")[:31]
-
+):
     headers = list(df.columns)
     if not headers:
-        wb.save(xlsx_path)
-        return True
+        ws["A1"] = "Sem dados"
+        return
 
     ws.append(headers)
     for row in df.itertuples(index=False, name=None):
@@ -749,13 +776,8 @@ def _save_styled_xlsx_from_df(
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
 
-    safe_table_name = re.sub(r"[^A-Za-z0-9_]", "", table_name or "TableData")
-    if not safe_table_name:
-        safe_table_name = "TableData"
-    if safe_table_name[0].isdigit():
-        safe_table_name = "T_" + safe_table_name
     if max_row >= 2:
-        tab = Table(displayName=safe_table_name[:80], ref=f"A1:{get_column_letter(max_col)}{max_row}")
+        tab = Table(displayName=table_name, ref=f"A1:{get_column_letter(max_col)}{max_row}")
         tab.tableStyleInfo = TableStyleInfo(
             name="TableStyleMedium2",
             showFirstColumn=False,
@@ -796,7 +818,7 @@ def _save_styled_xlsx_from_df(
 
     for col_idx, header in enumerate(headers, start=1):
         col_letter = get_column_letter(col_idx)
-        sample_size = min(max_row, 800)
+        sample_size = min(max_row, 1200)
         max_len = len(str(header))
         for row_idx in range(2, sample_size + 1):
             value = ws.cell(row_idx, col_idx).value
@@ -805,6 +827,65 @@ def _save_styled_xlsx_from_df(
             max_len = max(max_len, len(str(value)))
         ws.column_dimensions[col_letter].width = min(max(10, max_len + 2), 52)
 
+
+def _save_styled_xlsx_from_df(
+    df: pd.DataFrame,
+    xlsx_path: str,
+    sheet_name: str,
+    table_name: str,
+    numeric_formats: Optional[Dict[str, str]] = None,
+    color_scale_columns: Optional[List[str]] = None,
+) -> bool:
+    if not OPENPYXL_AVAILABLE:
+        print("[WARN] openpyxl não disponível: exportação XLSX não gerada.")
+        return False
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = _safe_sheet_name(sheet_name or "Dados")
+    _render_styled_sheet(
+        ws,
+        df=df,
+        table_name=_safe_table_name(table_name, 1),
+        numeric_formats=numeric_formats,
+        color_scale_columns=color_scale_columns,
+    )
+
+    wb.save(xlsx_path)
+    return True
+
+
+def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: str) -> bool:
+    if not OPENPYXL_AVAILABLE:
+        print("[WARN] openpyxl não disponível: exportação XLSX não gerada.")
+        return False
+
+    wb = Workbook()
+    used_sheet_names = set()
+    created = 0
+    for idx, spec in enumerate(sheet_specs, start=1):
+        df = spec.get("df")
+        if df is None:
+            continue
+        if created == 0:
+            ws = wb.active
+        else:
+            ws = wb.create_sheet()
+        ws.title = _unique_sheet_name(spec.get("sheet_name", f"Sheet{idx}"), used_sheet_names)
+        _render_styled_sheet(
+            ws,
+            df=df,
+            table_name=_safe_table_name(spec.get("table_name", f"Table{idx}"), idx),
+            numeric_formats=spec.get("numeric_formats"),
+            color_scale_columns=spec.get("color_scale_columns"),
+        )
+        created += 1
+
+    if created == 0:
+        ws = wb.active
+        ws.title = _unique_sheet_name("Dados", used_sheet_names)
+        ws["A1"] = "Sem dados"
+
     wb.save(xlsx_path)
     return True
 
@@ -812,12 +893,28 @@ def _save_styled_xlsx_from_df(
 def save_csv(items, path, xlsx_path=None):
     columns = [
         "Mini Fabrica", "Codigo Item", "Descricao Item", "Tipo Unidade",
-        "Codigo Cor", "Descricao Cor", "Tam",
-        "Deve (Abast)", "Saldo em Casa", "Origem do Saldo"
+        "Codigo Cor", "Descricao Cor", "Tam", "Deve (Abast)",
+        "Necessidade (Min 1m)", "Saldo em Casa", "Coberto Estimado",
+        "Falta Estimada", "Cobertura (%)", "Origem do Saldo"
     ]
+
+    def _need_with_min_1m(deve_abast):
+        deve = _to_float(deve_abast)
+        if deve is None:
+            return 0.0
+        need = abs(deve)
+        if 0.0 < need < 1.0:
+            return 1.0
+        return need
+
     records = []
     for it in items:
         for c in it["colors"]:
+            need = _need_with_min_1m(c.get("abast"))
+            saldo = _to_float(c.get("saldo_casa")) or 0.0
+            covered = min(max(saldo, 0.0), need)
+            gap = max(need - covered, 0.0)
+            coverage_pct = (covered / need * 100.0) if need > 0 else 100.0
             records.append({
                 "Mini Fabrica": it.get("mini_fabrica", ""),
                 "Codigo Item": it["item_code"],
@@ -827,26 +924,121 @@ def save_csv(items, path, xlsx_path=None):
                 "Descricao Cor": c["color_desc"],
                 "Tam": c.get("tam", ""),
                 "Deve (Abast)": c.get("abast", ""),
+                "Necessidade (Min 1m)": need,
                 "Saldo em Casa": c.get("saldo_casa", ""),
+                "Coberto Estimado": covered,
+                "Falta Estimada": gap,
+                "Cobertura (%)": coverage_pct,
                 "Origem do Saldo": c.get("saldo_origem", ""),
             })
 
     # Mantém ordem de aparição do PDF (itens e cores), sem reordenação por código.
     df = pd.DataFrame.from_records(records, columns=columns)
-    df = _prepare_dataframe_for_excel(df, numeric_columns=["Deve (Abast)", "Saldo em Casa"])
+    df = _prepare_dataframe_for_excel(
+        df,
+        numeric_columns=[
+            "Deve (Abast)",
+            "Necessidade (Min 1m)",
+            "Saldo em Casa",
+            "Coberto Estimado",
+            "Falta Estimada",
+            "Cobertura (%)",
+        ],
+    )
     target = Path(path)
     if target.suffix.lower() == ".xlsx":
-        xlsx_ok = _save_styled_xlsx_from_df(
-            df,
-            xlsx_path=str(target),
-            sheet_name="Itens",
-            table_name="ItensParser",
-            numeric_formats={
-                "Deve (Abast)": "#,##0.00000",
-                "Saldo em Casa": "#,##0.00000",
-            },
-            color_scale_columns=["Deve (Abast)", "Saldo em Casa"],
+        resumo_minis = []
+        if not df.empty:
+            for mini, sub in df.groupby("Mini Fabrica", dropna=False, sort=False):
+                mini_label = mini if mini not in (None, "") else "Mini Fabrica - N/D"
+                need_total = float(sub["Necessidade (Min 1m)"].fillna(0).sum())
+                saldo_total = float(sub["Saldo em Casa"].fillna(0).sum())
+                coberto_total = float(sub["Coberto Estimado"].fillna(0).sum())
+                falta_total = float(sub["Falta Estimada"].fillna(0).sum())
+                cobertura = (coberto_total / need_total * 100.0) if need_total > 0 else 100.0
+                resumo_minis.append(
+                    {
+                        "Mini Fabrica": mini_label,
+                        "Total Linhas": int(len(sub)),
+                        "Total Necessidade": need_total,
+                        "Total Saldo": saldo_total,
+                        "Total Coberto": coberto_total,
+                        "Total Falta": falta_total,
+                        "Cobertura (%)": cobertura,
+                    }
+                )
+        resumo_df = pd.DataFrame.from_records(
+            resumo_minis,
+            columns=[
+                "Mini Fabrica",
+                "Total Linhas",
+                "Total Necessidade",
+                "Total Saldo",
+                "Total Coberto",
+                "Total Falta",
+                "Cobertura (%)",
+            ],
         )
+        if not resumo_df.empty:
+            resumo_df = resumo_df.sort_values(
+                by="Mini Fabrica",
+                key=lambda s: s.map(lambda v: _mini_sort_key(v)),
+            )
+
+        sheet_specs = [
+            {
+                "sheet_name": "Todos Itens",
+                "df": df,
+                "table_name": "ItensTodos",
+                "numeric_formats": {
+                    "Deve (Abast)": "#,##0.00000",
+                    "Necessidade (Min 1m)": "#,##0.00000",
+                    "Saldo em Casa": "#,##0.00000",
+                    "Coberto Estimado": "#,##0.00000",
+                    "Falta Estimada": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                },
+                "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+            },
+            {
+                "sheet_name": "Resumo Minis",
+                "df": resumo_df,
+                "table_name": "ResumoMinis",
+                "numeric_formats": {
+                    "Total Linhas": "0",
+                    "Total Necessidade": "#,##0.00000",
+                    "Total Saldo": "#,##0.00000",
+                    "Total Coberto": "#,##0.00000",
+                    "Total Falta": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                },
+                "color_scale_columns": ["Total Necessidade", "Total Falta", "Cobertura (%)"],
+            },
+        ]
+
+        if not df.empty:
+            minis = sorted(df["Mini Fabrica"].fillna("").unique().tolist(), key=_mini_sort_key)
+            for mini in minis:
+                mini_label = mini if mini else "Mini Fabrica - N/D"
+                mini_df = df[df["Mini Fabrica"].fillna("") == mini]
+                sheet_specs.append(
+                    {
+                        "sheet_name": mini_label,
+                        "df": mini_df,
+                        "table_name": f"ItensMini{mini_label}",
+                        "numeric_formats": {
+                            "Deve (Abast)": "#,##0.00000",
+                            "Necessidade (Min 1m)": "#,##0.00000",
+                            "Saldo em Casa": "#,##0.00000",
+                            "Coberto Estimado": "#,##0.00000",
+                            "Falta Estimada": "#,##0.00000",
+                            "Cobertura (%)": "0.00",
+                        },
+                        "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                    }
+                )
+
+        xlsx_ok = _save_styled_multi_sheet_xlsx(sheet_specs, xlsx_path=str(target))
         if xlsx_ok:
             print(f"[OK] XLSX → {target}")
         else:
@@ -1004,6 +1196,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
         "Necessidade por Mini (deve|saldo|origem)"
     ]
     records = []
+    destinos_records = []
     for it in distribution:
         detalhes = " || ".join(
             f"{d['mini_fabrica']}: deve={d.get('deve_abast','')} | saldo={d.get('saldo_casa','')} | origem={d.get('saldo_origem','')}"
@@ -1021,6 +1214,34 @@ def save_common_csv(common_items, path, xlsx_path=None):
             "Total Necessidade": it["total_necessidade"],
             "Necessidade por Mini (deve|saldo|origem)": detalhes,
         })
+        for d in it["destinos"]:
+            need = _to_float(d.get("necessidade")) or 0.0
+            saldo = _to_float(d.get("saldo_casa")) or 0.0
+            covered = min(max(saldo, 0.0), need)
+            gap = max(need - covered, 0.0)
+            coverage_pct = (covered / need * 100.0) if need > 0 else 100.0
+            destinos_records.append(
+                {
+                    "Mini Fabrica": d.get("mini_fabrica", ""),
+                    "Codigo Item": it["item_code"],
+                    "Descricao Item": it["item_desc"],
+                    "Tipo Unidade": it.get("tipo_unidade", ""),
+                    "Codigo Cor": it["codigo_cor"],
+                    "Descricao Cor": it["descricao_cor"],
+                    "Tam": it.get("tam", ""),
+                    "Deve Original": d.get("deve_abast"),
+                    "Necessidade (Min 1m)": need,
+                    "Saldo em Casa": d.get("saldo_casa"),
+                    "Coberto Estimado": covered,
+                    "Falta Estimada": gap,
+                    "Cobertura (%)": coverage_pct,
+                    "Origem do Saldo": d.get("saldo_origem", ""),
+                    "Pagina Origem": d.get("source_page"),
+                    "X Origem": d.get("source_x"),
+                    "Y Origem": d.get("source_y"),
+                    "Linha Origem PDF": d.get("source_text", ""),
+                }
+            )
 
     # Mantém ordem natural dos itens comuns (primeira aparição no fluxo dos PDFs).
     df = pd.DataFrame.from_records(records, columns=columns)
@@ -1028,19 +1249,139 @@ def save_common_csv(common_items, path, xlsx_path=None):
         df,
         numeric_columns=["Qtd Mini Fabricas", "Total Necessidade"],
     )
+    destinos_columns = [
+        "Mini Fabrica", "Codigo Item", "Descricao Item", "Tipo Unidade", "Codigo Cor", "Descricao Cor", "Tam",
+        "Deve Original", "Necessidade (Min 1m)", "Saldo em Casa", "Coberto Estimado", "Falta Estimada",
+        "Cobertura (%)", "Origem do Saldo", "Pagina Origem", "X Origem", "Y Origem", "Linha Origem PDF"
+    ]
+    df_destinos = pd.DataFrame.from_records(destinos_records, columns=destinos_columns)
+    df_destinos = _prepare_dataframe_for_excel(
+        df_destinos,
+        numeric_columns=[
+            "Deve Original",
+            "Necessidade (Min 1m)",
+            "Saldo em Casa",
+            "Coberto Estimado",
+            "Falta Estimada",
+            "Cobertura (%)",
+            "Pagina Origem",
+            "X Origem",
+            "Y Origem",
+        ],
+    )
     target = Path(path)
     if target.suffix.lower() == ".xlsx":
-        xlsx_ok = _save_styled_xlsx_from_df(
-            df,
-            xlsx_path=str(target),
-            sheet_name="ItensComuns",
-            table_name="ItensComunsParser",
-            numeric_formats={
-                "Qtd Mini Fabricas": "0",
-                "Total Necessidade": "#,##0.00000",
-            },
-            color_scale_columns=["Total Necessidade"],
+        resumo_minis_records = []
+        if not df_destinos.empty:
+            for mini, sub in df_destinos.groupby("Mini Fabrica", dropna=False, sort=False):
+                mini_label = mini if mini not in (None, "") else "Mini Fabrica - N/D"
+                need_total = float(sub["Necessidade (Min 1m)"].fillna(0).sum())
+                saldo_total = float(sub["Saldo em Casa"].fillna(0).sum())
+                coberto_total = float(sub["Coberto Estimado"].fillna(0).sum())
+                falta_total = float(sub["Falta Estimada"].fillna(0).sum())
+                cobertura = (coberto_total / need_total * 100.0) if need_total > 0 else 100.0
+                resumo_minis_records.append(
+                    {
+                        "Mini Fabrica": mini_label,
+                        "Destinos": int(len(sub)),
+                        "Total Necessidade": need_total,
+                        "Total Saldo": saldo_total,
+                        "Total Coberto": coberto_total,
+                        "Total Falta": falta_total,
+                        "Cobertura (%)": cobertura,
+                        "Sem Cobertura": int((sub["Falta Estimada"].fillna(0) > 1e-9).sum()),
+                    }
+                )
+        df_resumo_minis = pd.DataFrame.from_records(
+            resumo_minis_records,
+            columns=[
+                "Mini Fabrica",
+                "Destinos",
+                "Total Necessidade",
+                "Total Saldo",
+                "Total Coberto",
+                "Total Falta",
+                "Cobertura (%)",
+                "Sem Cobertura",
+            ],
         )
+        if not df_resumo_minis.empty:
+            df_resumo_minis = df_resumo_minis.sort_values(
+                by="Mini Fabrica",
+                key=lambda s: s.map(lambda v: _mini_sort_key(v)),
+            )
+
+        sheet_specs = [
+            {
+                "sheet_name": "Itens Comuns",
+                "df": df,
+                "table_name": "ItensComuns",
+                "numeric_formats": {
+                    "Qtd Mini Fabricas": "0",
+                    "Total Necessidade": "#,##0.00000",
+                },
+                "color_scale_columns": ["Total Necessidade", "Qtd Mini Fabricas"],
+            },
+            {
+                "sheet_name": "Necessidade por Mini",
+                "df": df_destinos,
+                "table_name": "NecessidadeMini",
+                "numeric_formats": {
+                    "Deve Original": "#,##0.00000",
+                    "Necessidade (Min 1m)": "#,##0.00000",
+                    "Saldo em Casa": "#,##0.00000",
+                    "Coberto Estimado": "#,##0.00000",
+                    "Falta Estimada": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                    "Pagina Origem": "0",
+                    "X Origem": "0.0",
+                    "Y Origem": "0.0",
+                },
+                "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+            },
+            {
+                "sheet_name": "Resumo Minis Comuns",
+                "df": df_resumo_minis,
+                "table_name": "ResumoMiniComuns",
+                "numeric_formats": {
+                    "Destinos": "0",
+                    "Total Necessidade": "#,##0.00000",
+                    "Total Saldo": "#,##0.00000",
+                    "Total Coberto": "#,##0.00000",
+                    "Total Falta": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                    "Sem Cobertura": "0",
+                },
+                "color_scale_columns": ["Total Necessidade", "Total Falta", "Cobertura (%)"],
+            },
+        ]
+
+        if not df_destinos.empty:
+            minis = sorted(df_destinos["Mini Fabrica"].fillna("").unique().tolist(), key=_mini_sort_key)
+            for mini in minis:
+                mini_label = mini if mini else "Mini Fabrica - N/D"
+                mini_df = df_destinos[df_destinos["Mini Fabrica"].fillna("") == mini]
+                sheet_specs.append(
+                    {
+                        "sheet_name": mini_label,
+                        "df": mini_df,
+                        "table_name": f"ComumMini{mini_label}",
+                        "numeric_formats": {
+                            "Deve Original": "#,##0.00000",
+                            "Necessidade (Min 1m)": "#,##0.00000",
+                            "Saldo em Casa": "#,##0.00000",
+                            "Coberto Estimado": "#,##0.00000",
+                            "Falta Estimada": "#,##0.00000",
+                            "Cobertura (%)": "0.00",
+                            "Pagina Origem": "0",
+                            "X Origem": "0.0",
+                            "Y Origem": "0.0",
+                        },
+                        "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                    }
+                )
+
+        xlsx_ok = _save_styled_multi_sheet_xlsx(sheet_specs, xlsx_path=str(target))
         if xlsx_ok:
             print(f"[OK] XLSX Comuns → {target}")
         else:
