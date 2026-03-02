@@ -799,6 +799,12 @@ def _render_styled_sheet(
     show_gridlines: bool = False,
     body_row_height: Optional[float] = None,
     center_columns: Optional[List[str]] = None,
+    header_font_size: int = 10,
+    body_font_size: int = 9,
+    column_width_scale: float = 1.0,
+    min_column_width: float = 8.0,
+    max_column_width: float = 52.0,
+    narrow_margins: bool = False,
 ):
     headers = list(df.columns)
     if not headers:
@@ -813,12 +819,13 @@ def _render_styled_sheet(
     max_col = ws.max_column
 
     header_fill = PatternFill(fill_type="solid", start_color="1F4E78", end_color="1F4E78")
-    header_font = Font(color="FFFFFF", bold=True)
+    header_font = Font(color="FFFFFF", bold=True, size=header_font_size)
     thin = Side(border_style="thin", color="D9E1F2")
     body_border = Border(left=thin, right=thin, top=thin, bottom=thin)
     header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     body_alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
     body_alt_fill = PatternFill(fill_type="solid", start_color="F8FBFF", end_color="F8FBFF")
+    body_font = Font(size=body_font_size, color="1C2733")
 
     for col_idx in range(1, max_col + 1):
         cell = ws.cell(1, col_idx)
@@ -835,6 +842,7 @@ def _render_styled_sheet(
         for col_idx in range(1, max_col + 1):
             cell = ws.cell(row_idx, col_idx)
             cell.border = body_border
+            cell.font = body_font
             if col_idx in center_col_idx:
                 cell.alignment = Alignment(horizontal="center", vertical="top", wrap_text=True)
             else:
@@ -857,6 +865,14 @@ def _render_styled_sheet(
     ws.print_title_rows = "1:1"
     ws.print_area = f"A1:{get_column_letter(max_col)}{max_row}"
     ws.oddFooter.center.text = "Pagina &P de &N"
+    ws.print_options.horizontalCentered = True
+    if narrow_margins:
+        ws.page_margins.left = 0.2
+        ws.page_margins.right = 0.2
+        ws.page_margins.top = 0.25
+        ws.page_margins.bottom = 0.25
+        ws.page_margins.header = 0.15
+        ws.page_margins.footer = 0.15
     if sheet_note:
         ws.oddHeader.left.text = sheet_note[:100]
 
@@ -973,7 +989,8 @@ def _render_styled_sheet(
             if value is None:
                 continue
             max_len = max(max_len, len(str(value)))
-        ws.column_dimensions[col_letter].width = min(max(10, max_len + 2), 52)
+        desired = (max_len + 2) * max(column_width_scale, 0.5)
+        ws.column_dimensions[col_letter].width = min(max(min_column_width, desired), max_column_width)
 
 
 def _save_styled_xlsx_from_df(
@@ -1037,6 +1054,12 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             show_gridlines=spec.get("show_gridlines", False),
             body_row_height=spec.get("body_row_height"),
             center_columns=spec.get("center_columns"),
+            header_font_size=spec.get("header_font_size", 10),
+            body_font_size=spec.get("body_font_size", 9),
+            column_width_scale=spec.get("column_width_scale", 1.0),
+            min_column_width=spec.get("min_column_width", 8.0),
+            max_column_width=spec.get("max_column_width", 52.0),
+            narrow_margins=spec.get("narrow_margins", False),
         )
         created_sheets.append(
             {
@@ -1346,8 +1369,14 @@ def save_csv(items, path, xlsx_path=None):
                             "page_orientation": "portrait",
                             "fit_to_width": 1,
                             "fit_to_height": 1,
-                            "body_row_height": 24,
+                            "body_row_height": 16,
                             "show_gridlines": True,
+                            "header_font_size": 8,
+                            "body_font_size": 7,
+                            "column_width_scale": 0.78,
+                            "min_column_width": 6.5,
+                            "max_column_width": 24.0,
+                            "narrow_margins": True,
                             "center_columns": [
                                 "Codigo Item",
                                 "Codigo Cor",
