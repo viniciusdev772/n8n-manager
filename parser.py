@@ -17,7 +17,7 @@ Estrutura de colunas no PDF:
     Abast (valor devido)       : x0 ≈ 245–285
 """
 
-import sys, re, json, os, tempfile
+import sys, re, json, os, tempfile, csv
 from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import quote
@@ -26,6 +26,25 @@ from html import escape
 import pdfplumber
 import pandas as pd
 from collections import defaultdict
+try:
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+    from openpyxl.worksheet.table import Table, TableStyleInfo
+    from openpyxl.formatting.rule import ColorScaleRule
+    OPENPYXL_AVAILABLE = True
+except ModuleNotFoundError:
+    Workbook = None
+    Alignment = None
+    Border = None
+    Font = None
+    PatternFill = None
+    Side = None
+    get_column_letter = None
+    Table = None
+    TableStyleInfo = None
+    ColorScaleRule = None
+    OPENPYXL_AVAILABLE = False
 try:
     from fastapi import FastAPI, File, HTTPException, Request, UploadFile
     from fastapi.openapi.utils import get_openapi
@@ -631,7 +650,166 @@ def _build_common_distribution(common_items):
     return distribution
 
 
-def save_csv(items, path):
+def _to_float(value):
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+    text = str(value).strip().replace(" ", "")
+    if not text:
+        return None
+    if "," in text and "." in text:
+        if text.rfind(",") > text.rfind("."):
+            text = text.replace(".", "").replace(",", ".")
+        else:
+            text = text.replace(",", "")
+    elif "," in text:
+        text = text.replace(",", ".")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def _sanitize_excel_formula(value):
+    if not isinstance(value, str):
+        return value
+    text = value
+    if text.startswith(("=", "+", "@")):
+        return "'" + text
+    return text
+
+
+def _prepare_dataframe_for_excel(df: pd.DataFrame, numeric_columns: List[str]) -> pd.DataFrame:
+    out = df.copy()
+    for col in numeric_columns:
+        if col in out.columns:
+            out[col] = out[col].apply(_to_float)
+    for col in out.columns:
+        if pd.api.types.is_object_dtype(out[col]):
+            out[col] = out[col].apply(_sanitize_excel_formula)
+    return out
+
+
+def _save_styled_xlsx_from_df(
+    df: pd.DataFrame,
+    xlsx_path: str,
+    sheet_name: str,
+    table_name: str,
+    numeric_formats: Optional[Dict[str, str]] = None,
+    color_scale_columns: Optional[List[str]] = None,
+) -> bool:
+    if not OPENPYXL_AVAILABLE:
+        print("[WARN] openpyxl não disponível: exportação XLSX não gerada.")
+        return False
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = (sheet_name or "Dados")[:31]
+
+    headers = list(df.columns)
+    if not headers:
+        wb.save(xlsx_path)
+        return True
+
+    ws.append(headers)
+    for row in df.itertuples(index=False, name=None):
+        ws.append([None if pd.isna(v) else v for v in row])
+
+    max_row = ws.max_row
+    max_col = ws.max_column
+
+    header_fill = PatternFill(fill_type="solid", start_color="1F4E78", end_color="1F4E78")
+    header_font = Font(color="FFFFFF", bold=True)
+    thin = Side(border_style="thin", color="D9E1F2")
+    body_border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    body_alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+    body_alt_fill = PatternFill(fill_type="solid", start_color="F8FBFF", end_color="F8FBFF")
+
+    for col_idx in range(1, max_col + 1):
+        cell = ws.cell(1, col_idx)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = body_border
+
+    for row_idx in range(2, max_row + 1):
+        use_alt = (row_idx % 2) == 0
+        for col_idx in range(1, max_col + 1):
+            cell = ws.cell(row_idx, col_idx)
+            cell.border = body_border
+            cell.alignment = body_alignment
+            if use_alt:
+                cell.fill = body_alt_fill
+
+    ws.freeze_panes = "A2"
+    ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
+
+    safe_table_name = re.sub(r"[^A-Za-z0-9_]", "", table_name or "TableData")
+    if not safe_table_name:
+        safe_table_name = "TableData"
+    if safe_table_name[0].isdigit():
+        safe_table_name = "T_" + safe_table_name
+    if max_row >= 2:
+        tab = Table(displayName=safe_table_name[:80], ref=f"A1:{get_column_letter(max_col)}{max_row}")
+        tab.tableStyleInfo = TableStyleInfo(
+            name="TableStyleMedium2",
+            showFirstColumn=False,
+            showLastColumn=False,
+            showRowStripes=True,
+            showColumnStripes=False,
+        )
+        ws.add_table(tab)
+
+    numeric_formats = numeric_formats or {}
+    for col_name, fmt in numeric_formats.items():
+        if col_name not in headers:
+            continue
+        col_idx = headers.index(col_name) + 1
+        for row_idx in range(2, max_row + 1):
+            cell = ws.cell(row_idx, col_idx)
+            if isinstance(cell.value, (int, float)):
+                cell.number_format = fmt
+                cell.alignment = Alignment(horizontal="right", vertical="top")
+
+    for col_name in color_scale_columns or []:
+        if col_name not in headers or max_row < 2:
+            continue
+        col_idx = headers.index(col_name) + 1
+        col_letter = get_column_letter(col_idx)
+        ws.conditional_formatting.add(
+            f"{col_letter}2:{col_letter}{max_row}",
+            ColorScaleRule(
+                start_type="min",
+                start_color="F8696B",
+                mid_type="percentile",
+                mid_value=50,
+                mid_color="FFEB84",
+                end_type="max",
+                end_color="63BE7B",
+            ),
+        )
+
+    for col_idx, header in enumerate(headers, start=1):
+        col_letter = get_column_letter(col_idx)
+        sample_size = min(max_row, 800)
+        max_len = len(str(header))
+        for row_idx in range(2, sample_size + 1):
+            value = ws.cell(row_idx, col_idx).value
+            if value is None:
+                continue
+            max_len = max(max_len, len(str(value)))
+        ws.column_dimensions[col_letter].width = min(max(10, max_len + 2), 52)
+
+    wb.save(xlsx_path)
+    return True
+
+
+def save_csv(items, path, xlsx_path=None):
     columns = [
         "Mini Fabrica", "Codigo Item", "Descricao Item", "Tipo Unidade",
         "Codigo Cor", "Descricao Cor", "Tam",
@@ -655,9 +833,52 @@ def save_csv(items, path):
 
     # Mantém ordem de aparição do PDF (itens e cores), sem reordenação por código.
     df = pd.DataFrame.from_records(records, columns=columns)
-    # CSV amigável para planilha e leitura direta.
-    df.to_csv(path, index=False, encoding="utf-8-sig")
+    df = _prepare_dataframe_for_excel(df, numeric_columns=["Deve (Abast)", "Saldo em Casa"])
+    target = Path(path)
+    if target.suffix.lower() == ".xlsx":
+        xlsx_ok = _save_styled_xlsx_from_df(
+            df,
+            xlsx_path=str(target),
+            sheet_name="Itens",
+            table_name="ItensParser",
+            numeric_formats={
+                "Deve (Abast)": "#,##0.00000",
+                "Saldo em Casa": "#,##0.00000",
+            },
+            color_scale_columns=["Deve (Abast)", "Saldo em Casa"],
+        )
+        if xlsx_ok:
+            print(f"[OK] XLSX → {target}")
+        else:
+            fallback_csv = str(target.with_suffix(".csv"))
+            df.to_csv(
+                fallback_csv,
+                index=False,
+                encoding="utf-8-sig",
+                sep=";",
+                decimal=",",
+                quoting=csv.QUOTE_MINIMAL,
+            )
+            print(f"[WARN] XLSX indisponível, CSV fallback → {fallback_csv}")
+        return
+
+    # CSV amigável para Excel (pt-BR): delimitador ; e decimal com vírgula.
+    df.to_csv(path, index=False, encoding="utf-8-sig", sep=";", decimal=",", quoting=csv.QUOTE_MINIMAL)
     print(f"[OK] CSV  → {path}")
+    if xlsx_path:
+        xlsx_ok = _save_styled_xlsx_from_df(
+            df,
+            xlsx_path=xlsx_path,
+            sheet_name="Itens",
+            table_name="ItensParser",
+            numeric_formats={
+                "Deve (Abast)": "#,##0.00000",
+                "Saldo em Casa": "#,##0.00000",
+            },
+            color_scale_columns=["Deve (Abast)", "Saldo em Casa"],
+        )
+        if xlsx_ok:
+            print(f"[OK] XLSX → {xlsx_path}")
 
 
 def print_summary(items):
@@ -775,7 +996,7 @@ def save_common_json(common_items, path):
     print(f"[OK] JSON Comuns → {path}")
 
 
-def save_common_csv(common_items, path):
+def save_common_csv(common_items, path, xlsx_path=None):
     distribution = _build_common_distribution(common_items)
     columns = [
         "Codigo Item", "Descricao Item", "Tipo Unidade", "Codigo Cor", "Descricao Cor", "Tam",
@@ -803,8 +1024,54 @@ def save_common_csv(common_items, path):
 
     # Mantém ordem natural dos itens comuns (primeira aparição no fluxo dos PDFs).
     df = pd.DataFrame.from_records(records, columns=columns)
-    df.to_csv(path, index=False, encoding="utf-8-sig")
+    df = _prepare_dataframe_for_excel(
+        df,
+        numeric_columns=["Qtd Mini Fabricas", "Total Necessidade"],
+    )
+    target = Path(path)
+    if target.suffix.lower() == ".xlsx":
+        xlsx_ok = _save_styled_xlsx_from_df(
+            df,
+            xlsx_path=str(target),
+            sheet_name="ItensComuns",
+            table_name="ItensComunsParser",
+            numeric_formats={
+                "Qtd Mini Fabricas": "0",
+                "Total Necessidade": "#,##0.00000",
+            },
+            color_scale_columns=["Total Necessidade"],
+        )
+        if xlsx_ok:
+            print(f"[OK] XLSX Comuns → {target}")
+        else:
+            fallback_csv = str(target.with_suffix(".csv"))
+            df.to_csv(
+                fallback_csv,
+                index=False,
+                encoding="utf-8-sig",
+                sep=";",
+                decimal=",",
+                quoting=csv.QUOTE_MINIMAL,
+            )
+            print(f"[WARN] XLSX Comuns indisponível, CSV fallback → {fallback_csv}")
+        return
+
+    df.to_csv(path, index=False, encoding="utf-8-sig", sep=";", decimal=",", quoting=csv.QUOTE_MINIMAL)
     print(f"[OK] CSV  Comuns → {path}")
+    if xlsx_path:
+        xlsx_ok = _save_styled_xlsx_from_df(
+            df,
+            xlsx_path=xlsx_path,
+            sheet_name="ItensComuns",
+            table_name="ItensComunsParser",
+            numeric_formats={
+                "Qtd Mini Fabricas": "0",
+                "Total Necessidade": "#,##0.00000",
+            },
+            color_scale_columns=["Total Necessidade"],
+        )
+        if xlsx_ok:
+            print(f"[OK] XLSX Comuns → {xlsx_path}")
 
 
 def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", all_items=None):
@@ -1732,6 +1999,8 @@ if FASTAPI_AVAILABLE:
             media_type = "application/json"
         elif suffix == ".csv":
             media_type = "text/csv"
+        elif suffix == ".xlsx":
+            media_type = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         elif suffix == ".html":
             media_type = "text/html"
         return FileResponse(str(file_path), filename=file_path.name, media_type=media_type)
@@ -1796,12 +2065,15 @@ if FASTAPI_AVAILABLE:
                 all_items.extend(parse_pdf(str(temp_path)))
 
             stamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
+            spreadsheet_ext = "xlsx" if OPENPYXL_AVAILABLE else "csv"
+            if not OPENPYXL_AVAILABLE:
+                print("[WARN] openpyxl não instalado: exportação mantida em CSV.")
             if len(upload_files) == 1:
                 base_name = Path(upload_files[0].filename or "arquivo").stem
                 json_name = f"{base_name}_{stamp}_parsed.json"
-                csv_name = f"{base_name}_{stamp}_parsed.csv"
+                csv_name = f"{base_name}_{stamp}_parsed.{spreadsheet_ext}"
                 common_json_name = f"{base_name}_{stamp}_common_items.json"
-                common_csv_name = f"{base_name}_{stamp}_common_items.csv"
+                common_csv_name = f"{base_name}_{stamp}_common_items.{spreadsheet_ext}"
                 common_html_name = f"{base_name}_{stamp}_common_items.html"
                 html_name = common_html_name
                 json_path = output_dir / json_name
@@ -1823,9 +2095,9 @@ if FASTAPI_AVAILABLE:
                 )
             else:
                 json_name = f"multi_pdf_{stamp}_parsed.json"
-                csv_name = f"multi_pdf_{stamp}_parsed.csv"
+                csv_name = f"multi_pdf_{stamp}_parsed.{spreadsheet_ext}"
                 common_json_name = f"multi_pdf_{stamp}_common_items.json"
-                common_csv_name = f"multi_pdf_{stamp}_common_items.csv"
+                common_csv_name = f"multi_pdf_{stamp}_common_items.{spreadsheet_ext}"
                 common_html_name = f"multi_pdf_{stamp}_common_items.html"
                 html_name = common_html_name
                 json_path = output_dir / json_name
@@ -1893,7 +2165,9 @@ if __name__ == "__main__":
 
     pdf_paths = sys.argv[1:]
 
-    # Modo único: 1 PDF -> saídas parse (JSON/CSV) + comuns (JSON/CSV/HTML).
+    spreadsheet_ext = "xlsx" if OPENPYXL_AVAILABLE else "csv"
+
+    # Modo único: 1 PDF -> saídas parse (JSON/planilha) + comuns (JSON/planilha/HTML).
     if len(pdf_paths) == 1:
         pdf_path = pdf_paths[0]
         print(f"Processando: {pdf_path}\n")
@@ -1901,11 +2175,11 @@ if __name__ == "__main__":
 
         base = os.path.splitext(pdf_path)[0]
         save_json(items, base + "_parsed.json")
-        save_csv(items,  base + "_parsed.csv")
+        save_csv(items,  base + f"_parsed.{spreadsheet_ext}")
         print_summary(items)
         common_items = build_common_items(items)
         save_common_json(common_items, base + "_common_items.json")
-        save_common_csv(common_items, base + "_common_items.csv")
+        save_common_csv(common_items, base + f"_common_items.{spreadsheet_ext}")
         save_common_html(
             common_items,
             base + "_common_items.html",
@@ -1914,7 +2188,7 @@ if __name__ == "__main__":
         )
         print_common_summary(common_items)
     else:
-        # Modo consolidado: 2+ PDFs -> 1 JSON/CSV parse + 1 JSON/CSV/HTML comuns.
+        # Modo consolidado: 2+ PDFs -> 1 JSON/planilha parse + 1 JSON/planilha/HTML comuns.
         all_items = []
         for idx, pdf_path in enumerate(pdf_paths, start=1):
             if idx > 1:
@@ -1924,9 +2198,9 @@ if __name__ == "__main__":
 
         first_dir = os.path.dirname(os.path.abspath(pdf_paths[0]))
         out_json = os.path.join(first_dir, "multi_pdf_parsed.json")
-        out_csv = os.path.join(first_dir, "multi_pdf_parsed.csv")
+        out_csv = os.path.join(first_dir, f"multi_pdf_parsed.{spreadsheet_ext}")
         out_common_json = os.path.join(first_dir, "multi_pdf_common_items.json")
-        out_common_csv = os.path.join(first_dir, "multi_pdf_common_items.csv")
+        out_common_csv = os.path.join(first_dir, f"multi_pdf_common_items.{spreadsheet_ext}")
         out_common_html = os.path.join(first_dir, "multi_pdf_common_items.html")
 
         print(f"\nGerando saída consolidada de {len(pdf_paths)} PDFs...\n")
