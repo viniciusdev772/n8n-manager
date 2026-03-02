@@ -31,7 +31,6 @@ try:
     from openpyxl.chart import BarChart, Reference
     from openpyxl.formatting.rule import CellIsRule, ColorScaleRule, DataBarRule, FormulaRule, IconSetRule
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-    from openpyxl.styles.differential import DifferentialStyle
     from openpyxl.utils import get_column_letter
     from openpyxl.worksheet.datavalidation import DataValidation
     from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -45,7 +44,6 @@ except ModuleNotFoundError:
     Border = None
     DataBarRule = None
     DataValidation = None
-    DifferentialStyle = None
     Font = None
     FormulaRule = None
     IconSetRule = None
@@ -923,15 +921,12 @@ def _render_styled_sheet(
         origem_idx = headers.index("Origem do Saldo") + 1
         origem_col = get_column_letter(origem_idx)
         body_ref = f"A2:{get_column_letter(max_col)}{max_row}"
-        dxf = DifferentialStyle(
-            fill=PatternFill(fill_type="solid", start_color="FFF4E5", end_color="FFF4E5"),
-            font=Font(color="7A3E00"),
-        )
         ws.conditional_formatting.add(
             body_ref,
             FormulaRule(
                 formula=[f"${origem_col}2=\"substituto\""],
-                dxf=dxf,
+                fill=PatternFill(fill_type="solid", start_color="FFF4E5", end_color="FFF4E5"),
+                font=Font(color="7A3E00"),
                 stopIfTrue=False,
             ),
         )
