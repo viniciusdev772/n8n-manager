@@ -28,16 +28,27 @@ import pandas as pd
 from collections import defaultdict
 try:
     from openpyxl import Workbook
+    from openpyxl.chart import BarChart, Reference
+    from openpyxl.formatting.rule import CellIsRule, ColorScaleRule, DataBarRule, FormulaRule, IconSetRule
     from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.styles.differential import DifferentialStyle
     from openpyxl.utils import get_column_letter
+    from openpyxl.worksheet.datavalidation import DataValidation
     from openpyxl.worksheet.table import Table, TableStyleInfo
-    from openpyxl.formatting.rule import ColorScaleRule
     OPENPYXL_AVAILABLE = True
 except ModuleNotFoundError:
     Workbook = None
+    BarChart = None
+    Reference = None
+    CellIsRule = None
     Alignment = None
     Border = None
+    DataBarRule = None
+    DataValidation = None
+    DifferentialStyle = None
     Font = None
+    FormulaRule = None
+    IconSetRule = None
     PatternFill = None
     Side = None
     get_column_letter = None
@@ -730,12 +741,59 @@ def _mini_sort_key(mini_name: str):
     return (number, text)
 
 
+def _sheet_header_col(ws, header_name: str) -> Optional[int]:
+    target = str(header_name or "").strip().lower()
+    for col_idx in range(1, ws.max_column + 1):
+        value = ws.cell(1, col_idx).value
+        if str(value or "").strip().lower() == target:
+            return col_idx
+    return None
+
+
+def _add_index_chart(index_ws, source_ws, category_header: str, value_header: str, title: str, anchor: str):
+    if source_ws.max_row < 2:
+        return
+    cat_col = _sheet_header_col(source_ws, category_header)
+    val_col = _sheet_header_col(source_ws, value_header)
+    if cat_col is None or val_col is None:
+        return
+    chart = BarChart()
+    chart.type = "col"
+    chart.style = 10
+    chart.title = title
+    chart.y_axis.title = value_header
+    chart.x_axis.title = category_header
+    chart.legend = None
+    data = Reference(
+        source_ws,
+        min_col=val_col,
+        min_row=1,
+        max_col=val_col,
+        max_row=source_ws.max_row,
+    )
+    cats = Reference(
+        source_ws,
+        min_col=cat_col,
+        min_row=2,
+        max_row=source_ws.max_row,
+    )
+    chart.add_data(data, titles_from_data=True)
+    chart.set_categories(cats)
+    chart.height = 6.5
+    chart.width = 12.5
+    index_ws.add_chart(chart, anchor)
+
+
 def _render_styled_sheet(
     ws,
     df: pd.DataFrame,
     table_name: str,
     numeric_formats: Optional[Dict[str, str]] = None,
     color_scale_columns: Optional[List[str]] = None,
+    data_bar_columns: Optional[List[str]] = None,
+    icon_set_columns: Optional[List[str]] = None,
+    list_validations: Optional[Dict[str, List[str]]] = None,
+    sheet_note: str = "",
 ):
     headers = list(df.columns)
     if not headers:
@@ -775,6 +833,17 @@ def _render_styled_sheet(
 
     ws.freeze_panes = "A2"
     ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
+    ws.sheet_view.zoomScale = 90
+    ws.sheet_view.showGridLines = False
+    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+    ws.page_setup.fitToHeight = 0
+    ws.page_setup.fitToWidth = 1
+    ws.print_title_rows = "1:1"
+    ws.print_area = f"A1:{get_column_letter(max_col)}{max_row}"
+    ws.oddFooter.center.text = "Pagina &P de &N"
+    if sheet_note:
+        ws.oddHeader.left.text = sheet_note[:100]
 
     if max_row >= 2:
         tab = Table(displayName=table_name, ref=f"A1:{get_column_letter(max_col)}{max_row}")
@@ -815,6 +884,73 @@ def _render_styled_sheet(
                 end_color="63BE7B",
             ),
         )
+
+    for col_name in data_bar_columns or []:
+        if col_name not in headers or max_row < 2:
+            continue
+        col_idx = headers.index(col_name) + 1
+        col_letter = get_column_letter(col_idx)
+        ws.conditional_formatting.add(
+            f"{col_letter}2:{col_letter}{max_row}",
+            DataBarRule(start_type="min", end_type="max", color="4F81BD"),
+        )
+
+    for col_name in icon_set_columns or []:
+        if col_name not in headers or max_row < 2:
+            continue
+        col_idx = headers.index(col_name) + 1
+        col_letter = get_column_letter(col_idx)
+        ws.conditional_formatting.add(
+            f"{col_letter}2:{col_letter}{max_row}",
+            IconSetRule("3TrafficLights1", "num", [0, 60, 90], showValue=True),
+        )
+
+    if "Falta Estimada" in headers and max_row >= 2:
+        falta_idx = headers.index("Falta Estimada") + 1
+        falta_col = get_column_letter(falta_idx)
+        ws.conditional_formatting.add(
+            f"{falta_col}2:{falta_col}{max_row}",
+            CellIsRule(
+                operator="greaterThan",
+                formula=["0"],
+                stopIfTrue=False,
+                fill=PatternFill(fill_type="solid", start_color="FDE2E1", end_color="FDE2E1"),
+                font=Font(color="9C0006"),
+            ),
+        )
+
+    if "Origem do Saldo" in headers and max_row >= 2:
+        origem_idx = headers.index("Origem do Saldo") + 1
+        origem_col = get_column_letter(origem_idx)
+        body_ref = f"A2:{get_column_letter(max_col)}{max_row}"
+        dxf = DifferentialStyle(
+            fill=PatternFill(fill_type="solid", start_color="FFF4E5", end_color="FFF4E5"),
+            font=Font(color="7A3E00"),
+        )
+        ws.conditional_formatting.add(
+            body_ref,
+            FormulaRule(
+                formula=[f"${origem_col}2=\"substituto\""],
+                dxf=dxf,
+                stopIfTrue=False,
+            ),
+        )
+
+    for col_name, values in (list_validations or {}).items():
+        if col_name not in headers or max_row < 2 or not values:
+            continue
+        col_idx = headers.index(col_name) + 1
+        col_letter = get_column_letter(col_idx)
+        safe_values = [str(v).replace('"', "") for v in values]
+        dv = DataValidation(
+            type="list",
+            formula1=f"\"{','.join(safe_values)}\"",
+            allow_blank=True,
+        )
+        dv.error = "Valor fora da lista permitida."
+        dv.errorTitle = "Valor inválido"
+        ws.add_data_validation(dv)
+        dv.add(f"{col_letter}2:{col_letter}{max_row}")
 
     for col_idx, header in enumerate(headers, start=1):
         col_letter = get_column_letter(col_idx)
@@ -862,15 +998,15 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
 
     wb = Workbook()
     used_sheet_names = set()
+    index_ws = wb.active
+    index_ws.title = _unique_sheet_name("Indice", used_sheet_names)
     created = 0
+    created_sheets = []
     for idx, spec in enumerate(sheet_specs, start=1):
         df = spec.get("df")
         if df is None:
             continue
-        if created == 0:
-            ws = wb.active
-        else:
-            ws = wb.create_sheet()
+        ws = wb.create_sheet()
         ws.title = _unique_sheet_name(spec.get("sheet_name", f"Sheet{idx}"), used_sheet_names)
         _render_styled_sheet(
             ws,
@@ -878,13 +1014,70 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             table_name=_safe_table_name(spec.get("table_name", f"Table{idx}"), idx),
             numeric_formats=spec.get("numeric_formats"),
             color_scale_columns=spec.get("color_scale_columns"),
+            data_bar_columns=spec.get("data_bar_columns"),
+            icon_set_columns=spec.get("icon_set_columns"),
+            list_validations=spec.get("list_validations"),
+            sheet_note=spec.get("sheet_note", ""),
+        )
+        created_sheets.append(
+            {
+                "ws": ws,
+                "description": spec.get("description", ""),
+                "rows": len(df.index),
+            }
         )
         created += 1
 
     if created == 0:
-        ws = wb.active
-        ws.title = _unique_sheet_name("Dados", used_sheet_names)
-        ws["A1"] = "Sem dados"
+        index_ws["A1"] = "Sem dados para exportação."
+    else:
+        index_ws["A1"] = "Indice das Planilhas"
+        index_ws["A1"].font = Font(size=16, bold=True, color="1F4E78")
+        index_ws["A2"] = f"Gerado em {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}"
+        index_ws["A2"].font = Font(size=10, color="4A6482")
+        index_ws["A4"] = "Aba"
+        index_ws["B4"] = "Descrição"
+        index_ws["C4"] = "Linhas"
+        for cell in ("A4", "B4", "C4"):
+            index_ws[cell].fill = PatternFill(fill_type="solid", start_color="1F4E78", end_color="1F4E78")
+            index_ws[cell].font = Font(color="FFFFFF", bold=True)
+            index_ws[cell].alignment = Alignment(horizontal="center")
+
+        row = 5
+        for entry in created_sheets:
+            ws = entry["ws"]
+            index_ws.cell(row=row, column=1, value=ws.title)
+            index_ws.cell(row=row, column=1).hyperlink = f"#'{ws.title}'!A1"
+            index_ws.cell(row=row, column=1).font = Font(color="1F4E78", underline="single")
+            index_ws.cell(row=row, column=2, value=entry["description"] or "Sem descrição")
+            index_ws.cell(row=row, column=3, value=entry["rows"])
+            row += 1
+
+        index_ws.column_dimensions["A"].width = 32
+        index_ws.column_dimensions["B"].width = 68
+        index_ws.column_dimensions["C"].width = 12
+        index_ws.freeze_panes = "A5"
+        index_ws.sheet_view.zoomScale = 95
+        index_ws.sheet_view.showGridLines = False
+        index_ws.page_setup.orientation = index_ws.ORIENTATION_LANDSCAPE
+        index_ws.page_setup.fitToHeight = 0
+        index_ws.page_setup.fitToWidth = 1
+        index_ws.print_area = f"A1:C{max(5, row-1)}"
+
+        summary_sheet_names = ["Resumo Minis", "Resumo Minis Comuns"]
+        chart_anchor = ["E4", "E22"]
+        for src_name, anchor in zip(summary_sheet_names, chart_anchor):
+            source = next((e["ws"] for e in created_sheets if e["ws"].title == src_name), None)
+            if source is None:
+                continue
+            _add_index_chart(
+                index_ws,
+                source_ws=source,
+                category_header="Mini Fabrica",
+                value_header="Total Falta",
+                title=f"{src_name} - Total Falta",
+                anchor=anchor,
+            )
 
     wb.save(xlsx_path)
     return True
@@ -984,12 +1177,18 @@ def save_csv(items, path, xlsx_path=None):
                 by="Mini Fabrica",
                 key=lambda s: s.map(lambda v: _mini_sort_key(v)),
             )
+        top_faltas_df = df.sort_values(
+            by=["Falta Estimada", "Necessidade (Min 1m)"],
+            ascending=[False, False],
+            kind="mergesort",
+        ).head(300)
 
         sheet_specs = [
             {
                 "sheet_name": "Todos Itens",
                 "df": df,
                 "table_name": "ItensTodos",
+                "description": "Base completa dos itens parseados (todas as mini fabricas).",
                 "numeric_formats": {
                     "Deve (Abast)": "#,##0.00000",
                     "Necessidade (Min 1m)": "#,##0.00000",
@@ -999,11 +1198,16 @@ def save_csv(items, path, xlsx_path=None):
                     "Cobertura (%)": "0.00",
                 },
                 "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                "data_bar_columns": ["Falta Estimada", "Necessidade (Min 1m)"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "list_validations": {"Origem do Saldo": ["nacional", "substituto"]},
+                "sheet_note": "Visao operacional consolidada",
             },
             {
                 "sheet_name": "Resumo Minis",
                 "df": resumo_df,
                 "table_name": "ResumoMinis",
+                "description": "Resumo agregado por mini fabrica (necessidade, saldo, cobertura).",
                 "numeric_formats": {
                     "Total Linhas": "0",
                     "Total Necessidade": "#,##0.00000",
@@ -1013,6 +1217,28 @@ def save_csv(items, path, xlsx_path=None):
                     "Cobertura (%)": "0.00",
                 },
                 "color_scale_columns": ["Total Necessidade", "Total Falta", "Cobertura (%)"],
+                "data_bar_columns": ["Total Falta"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "sheet_note": "Resumo por mini para priorizacao",
+            },
+            {
+                "sheet_name": "Top Faltas",
+                "df": top_faltas_df,
+                "table_name": "TopFaltasItens",
+                "description": "Top linhas com maior falta estimada para acao rapida.",
+                "numeric_formats": {
+                    "Deve (Abast)": "#,##0.00000",
+                    "Necessidade (Min 1m)": "#,##0.00000",
+                    "Saldo em Casa": "#,##0.00000",
+                    "Coberto Estimado": "#,##0.00000",
+                    "Falta Estimada": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                },
+                "color_scale_columns": ["Falta Estimada", "Cobertura (%)"],
+                "data_bar_columns": ["Falta Estimada"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "list_validations": {"Origem do Saldo": ["nacional", "substituto"]},
+                "sheet_note": "Top faltas ordenadas por criticidade",
             },
         ]
 
@@ -1026,6 +1252,7 @@ def save_csv(items, path, xlsx_path=None):
                         "sheet_name": mini_label,
                         "df": mini_df,
                         "table_name": f"ItensMini{mini_label}",
+                        "description": f"Itens somente da {mini_label}.",
                         "numeric_formats": {
                             "Deve (Abast)": "#,##0.00000",
                             "Necessidade (Min 1m)": "#,##0.00000",
@@ -1035,6 +1262,10 @@ def save_csv(items, path, xlsx_path=None):
                             "Cobertura (%)": "0.00",
                         },
                         "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                        "data_bar_columns": ["Falta Estimada"],
+                        "icon_set_columns": ["Cobertura (%)"],
+                        "list_validations": {"Origem do Saldo": ["nacional", "substituto"]},
+                        "sheet_note": f"Filtro operacional da {mini_label}",
                     }
                 )
 
@@ -1220,6 +1451,12 @@ def save_common_csv(common_items, path, xlsx_path=None):
             covered = min(max(saldo, 0.0), need)
             gap = max(need - covered, 0.0)
             coverage_pct = (covered / need * 100.0) if need > 0 else 100.0
+            status = "Coberto"
+            if gap > 1e-9 and covered > 1e-9:
+                status = "Parcial"
+            elif gap > 1e-9 and covered <= 1e-9:
+                status = "Sem cobertura"
+            prioridade = (gap * 100.0) + (need * 10.0) + (100.0 - coverage_pct)
             destinos_records.append(
                 {
                     "Mini Fabrica": d.get("mini_fabrica", ""),
@@ -1235,6 +1472,8 @@ def save_common_csv(common_items, path, xlsx_path=None):
                     "Coberto Estimado": covered,
                     "Falta Estimada": gap,
                     "Cobertura (%)": coverage_pct,
+                    "Status Cobertura": status,
+                    "Prioridade Operacional": prioridade,
                     "Origem do Saldo": d.get("saldo_origem", ""),
                     "Pagina Origem": d.get("source_page"),
                     "X Origem": d.get("source_x"),
@@ -1252,7 +1491,8 @@ def save_common_csv(common_items, path, xlsx_path=None):
     destinos_columns = [
         "Mini Fabrica", "Codigo Item", "Descricao Item", "Tipo Unidade", "Codigo Cor", "Descricao Cor", "Tam",
         "Deve Original", "Necessidade (Min 1m)", "Saldo em Casa", "Coberto Estimado", "Falta Estimada",
-        "Cobertura (%)", "Origem do Saldo", "Pagina Origem", "X Origem", "Y Origem", "Linha Origem PDF"
+        "Cobertura (%)", "Status Cobertura", "Prioridade Operacional",
+        "Origem do Saldo", "Pagina Origem", "X Origem", "Y Origem", "Linha Origem PDF"
     ]
     df_destinos = pd.DataFrame.from_records(destinos_records, columns=destinos_columns)
     df_destinos = _prepare_dataframe_for_excel(
@@ -1264,6 +1504,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
             "Coberto Estimado",
             "Falta Estimada",
             "Cobertura (%)",
+            "Prioridade Operacional",
             "Pagina Origem",
             "X Origem",
             "Y Origem",
@@ -1280,6 +1521,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
                 coberto_total = float(sub["Coberto Estimado"].fillna(0).sum())
                 falta_total = float(sub["Falta Estimada"].fillna(0).sum())
                 cobertura = (coberto_total / need_total * 100.0) if need_total > 0 else 100.0
+                prioridade_media = float(sub["Prioridade Operacional"].fillna(0).mean()) if len(sub) else 0.0
                 resumo_minis_records.append(
                     {
                         "Mini Fabrica": mini_label,
@@ -1290,6 +1532,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
                         "Total Falta": falta_total,
                         "Cobertura (%)": cobertura,
                         "Sem Cobertura": int((sub["Falta Estimada"].fillna(0) > 1e-9).sum()),
+                        "Prioridade Média": prioridade_media,
                     }
                 )
         df_resumo_minis = pd.DataFrame.from_records(
@@ -1303,6 +1546,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
                 "Total Falta",
                 "Cobertura (%)",
                 "Sem Cobertura",
+                "Prioridade Média",
             ],
         )
         if not df_resumo_minis.empty:
@@ -1310,22 +1554,31 @@ def save_common_csv(common_items, path, xlsx_path=None):
                 by="Mini Fabrica",
                 key=lambda s: s.map(lambda v: _mini_sort_key(v)),
             )
+        top_faltas_df = df_destinos.sort_values(
+            by=["Falta Estimada", "Prioridade Operacional"],
+            ascending=[False, False],
+            kind="mergesort",
+        ).head(300)
 
         sheet_specs = [
             {
                 "sheet_name": "Itens Comuns",
                 "df": df,
                 "table_name": "ItensComuns",
+                "description": "Conjuntos item+cor em comum entre mini fabricas.",
                 "numeric_formats": {
                     "Qtd Mini Fabricas": "0",
                     "Total Necessidade": "#,##0.00000",
                 },
                 "color_scale_columns": ["Total Necessidade", "Qtd Mini Fabricas"],
+                "data_bar_columns": ["Total Necessidade"],
+                "sheet_note": "Visao agrupada de itens em comum",
             },
             {
                 "sheet_name": "Necessidade por Mini",
                 "df": df_destinos,
                 "table_name": "NecessidadeMini",
+                "description": "Detalhe operacional por destino/mini com necessidade, cobertura e origem.",
                 "numeric_formats": {
                     "Deve Original": "#,##0.00000",
                     "Necessidade (Min 1m)": "#,##0.00000",
@@ -1333,16 +1586,25 @@ def save_common_csv(common_items, path, xlsx_path=None):
                     "Coberto Estimado": "#,##0.00000",
                     "Falta Estimada": "#,##0.00000",
                     "Cobertura (%)": "0.00",
+                    "Prioridade Operacional": "#,##0.00",
                     "Pagina Origem": "0",
                     "X Origem": "0.0",
                     "Y Origem": "0.0",
                 },
                 "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                "data_bar_columns": ["Falta Estimada", "Prioridade Operacional"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "list_validations": {
+                    "Status Cobertura": ["Coberto", "Parcial", "Sem cobertura"],
+                    "Origem do Saldo": ["nacional", "substituto"],
+                },
+                "sheet_note": "Detalhamento por mini para decisao operacional",
             },
             {
                 "sheet_name": "Resumo Minis Comuns",
                 "df": df_resumo_minis,
                 "table_name": "ResumoMiniComuns",
+                "description": "Resumo de comuns por mini com foco de prioridade.",
                 "numeric_formats": {
                     "Destinos": "0",
                     "Total Necessidade": "#,##0.00000",
@@ -1351,8 +1613,38 @@ def save_common_csv(common_items, path, xlsx_path=None):
                     "Total Falta": "#,##0.00000",
                     "Cobertura (%)": "0.00",
                     "Sem Cobertura": "0",
+                    "Prioridade Média": "#,##0.00",
                 },
                 "color_scale_columns": ["Total Necessidade", "Total Falta", "Cobertura (%)"],
+                "data_bar_columns": ["Total Falta", "Prioridade Média"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "sheet_note": "Resumo executivo dos comuns por mini",
+            },
+            {
+                "sheet_name": "Top Faltas Comuns",
+                "df": top_faltas_df,
+                "table_name": "TopFaltasComuns",
+                "description": "Top faltas dos itens em comum para acao imediata.",
+                "numeric_formats": {
+                    "Deve Original": "#,##0.00000",
+                    "Necessidade (Min 1m)": "#,##0.00000",
+                    "Saldo em Casa": "#,##0.00000",
+                    "Coberto Estimado": "#,##0.00000",
+                    "Falta Estimada": "#,##0.00000",
+                    "Cobertura (%)": "0.00",
+                    "Prioridade Operacional": "#,##0.00",
+                    "Pagina Origem": "0",
+                    "X Origem": "0.0",
+                    "Y Origem": "0.0",
+                },
+                "color_scale_columns": ["Falta Estimada", "Cobertura (%)", "Prioridade Operacional"],
+                "data_bar_columns": ["Falta Estimada", "Prioridade Operacional"],
+                "icon_set_columns": ["Cobertura (%)"],
+                "list_validations": {
+                    "Status Cobertura": ["Coberto", "Parcial", "Sem cobertura"],
+                    "Origem do Saldo": ["nacional", "substituto"],
+                },
+                "sheet_note": "Top faltas dos comuns por prioridade",
             },
         ]
 
@@ -1366,6 +1658,7 @@ def save_common_csv(common_items, path, xlsx_path=None):
                         "sheet_name": mini_label,
                         "df": mini_df,
                         "table_name": f"ComumMini{mini_label}",
+                        "description": f"Comuns filtrados para {mini_label}.",
                         "numeric_formats": {
                             "Deve Original": "#,##0.00000",
                             "Necessidade (Min 1m)": "#,##0.00000",
@@ -1373,11 +1666,19 @@ def save_common_csv(common_items, path, xlsx_path=None):
                             "Coberto Estimado": "#,##0.00000",
                             "Falta Estimada": "#,##0.00000",
                             "Cobertura (%)": "0.00",
+                            "Prioridade Operacional": "#,##0.00",
                             "Pagina Origem": "0",
                             "X Origem": "0.0",
                             "Y Origem": "0.0",
                         },
                         "color_scale_columns": ["Necessidade (Min 1m)", "Falta Estimada", "Cobertura (%)"],
+                        "data_bar_columns": ["Falta Estimada", "Prioridade Operacional"],
+                        "icon_set_columns": ["Cobertura (%)"],
+                        "list_validations": {
+                            "Status Cobertura": ["Coberto", "Parcial", "Sem cobertura"],
+                            "Origem do Saldo": ["nacional", "substituto"],
+                        },
+                        "sheet_note": f"Detalhe de comuns da {mini_label}",
                     }
                 )
 
