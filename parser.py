@@ -435,6 +435,16 @@ def save_json(items, path):
 
 
 def _build_common_distribution(common_items):
+    def normalized_need(abast):
+        if abast is None:
+            return 0.0
+        need = abs(float(abast))
+        # Regra operacional: toda necessidade positiva abaixo de 1m
+        # deve ser tratada como 1m mínimo.
+        if 0.0 < need < 1.0:
+            return 1.0
+        return need
+
     distribution = []
     for it in common_items:
         destinos = []
@@ -442,7 +452,7 @@ def _build_common_distribution(common_items):
         for mf in it.get("mini_fabricas", []):
             det = it.get("por_mini_fabrica", {}).get(mf, {})
             abast = det.get("abast")
-            need = abs(float(abast)) if abast is not None else 0.0
+            need = normalized_need(abast)
             total_deve += need
             destinos.append(
                 {
@@ -797,6 +807,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", al
               <th>Item / Cor</th>
               <th>Destino</th>
               <th>Abrange</th>
+              <th>Deve Orig.</th>
               <th>Necess.</th>
               <th>Saldo</th>
               <th>Coberto</th>
@@ -1220,6 +1231,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", al
             </td>
             <td><strong>${{esc(r.mini_fabrica)}}</strong></td>
             <td class="mono">${{r.q_mini}}</td>
+            <td class="mono">${{fmt(r.deve_abast)}}</td>
             <td class="mono">${{fmt(r.need)}}</td>
             <td class="mono">${{fmt(r.saldo_casa)}}</td>
             <td class="mono">${{fmt(r.covered)}}</td>
@@ -1257,7 +1269,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", al
               ${{g.destinos.map(d => `
                 <div class="mini-row">
                   <div class="mini-name">${{esc(d.mini_fabrica)}}</div>
-                  <div class="mono">nec ${{fmt(d.need)}} | falta ${{fmt(d.gap)}} | cob ${{d.coveragePct.toFixed(0)}}%</div>
+                  <div class="mono">deve ${{fmt(d.deve_abast)}} | nec ${{fmt(d.need)}} | falta ${{fmt(d.gap)}} | cob ${{d.coveragePct.toFixed(0)}}%</div>
                 </div>
               `).join('')}}
             </div>
@@ -1302,10 +1314,10 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", al
 
     function exportFilteredCsv() {{
       const rows = applyFilters();
-      const header = [
-        "prioridade","codigo_item","descricao_item","tipo_unidade","codigo_cor","descricao_cor","tam",
-        "mini_fabrica_destino","qtd_mini_fabricas","necessidade","saldo_casa","coberto","falta","cobertura_pct","status","origem_saldo"
-      ];
+        const header = [
+          "prioridade","codigo_item","descricao_item","tipo_unidade","codigo_cor","descricao_cor","tam",
+          "mini_fabrica_destino","qtd_mini_fabricas","deve_original","necessidade","saldo_casa","coberto","falta","cobertura_pct","status","origem_saldo"
+        ];
       const csvRows = [header];
       for (const r of rows) {{
         csvRows.push([
@@ -1318,6 +1330,7 @@ def save_common_html(common_items, html_path, source_label="Múltiplos PDFs", al
           r.tam || "",
           r.mini_fabrica,
           r.q_mini,
+          fmt(r.deve_abast),
           fmt(r.need),
           fmt(r.saldo_casa),
           fmt(r.covered),
