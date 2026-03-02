@@ -792,6 +792,13 @@ def _render_styled_sheet(
     icon_set_columns: Optional[List[str]] = None,
     list_validations: Optional[Dict[str, List[str]]] = None,
     sheet_note: str = "",
+    page_orientation: str = "landscape",
+    fit_to_width: int = 1,
+    fit_to_height: int = 0,
+    freeze_cell: str = "A2",
+    show_gridlines: bool = False,
+    body_row_height: Optional[float] = None,
+    center_columns: Optional[List[str]] = None,
 ):
     headers = list(df.columns)
     if not headers:
@@ -820,23 +827,33 @@ def _render_styled_sheet(
         cell.alignment = header_alignment
         cell.border = body_border
 
+    center_columns = center_columns or []
+    center_col_idx = {headers.index(c) + 1 for c in center_columns if c in headers}
+
     for row_idx in range(2, max_row + 1):
         use_alt = (row_idx % 2) == 0
         for col_idx in range(1, max_col + 1):
             cell = ws.cell(row_idx, col_idx)
             cell.border = body_border
-            cell.alignment = body_alignment
+            if col_idx in center_col_idx:
+                cell.alignment = Alignment(horizontal="center", vertical="top", wrap_text=True)
+            else:
+                cell.alignment = body_alignment
             if use_alt:
                 cell.fill = body_alt_fill
+        if body_row_height:
+            ws.row_dimensions[row_idx].height = body_row_height
 
-    ws.freeze_panes = "A2"
+    ws.freeze_panes = freeze_cell
     ws.auto_filter.ref = f"A1:{get_column_letter(max_col)}{max_row}"
     ws.sheet_view.zoomScale = 90
-    ws.sheet_view.showGridLines = False
-    ws.page_setup.orientation = ws.ORIENTATION_LANDSCAPE
+    ws.sheet_view.showGridLines = show_gridlines
+    ws.page_setup.orientation = (
+        ws.ORIENTATION_PORTRAIT if str(page_orientation).lower() == "portrait" else ws.ORIENTATION_LANDSCAPE
+    )
     ws.page_setup.paperSize = ws.PAPERSIZE_A4
-    ws.page_setup.fitToHeight = 0
-    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = fit_to_height
+    ws.page_setup.fitToWidth = fit_to_width
     ws.print_title_rows = "1:1"
     ws.print_area = f"A1:{get_column_letter(max_col)}{max_row}"
     ws.oddFooter.center.text = "Pagina &P de &N"
@@ -1013,6 +1030,13 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             icon_set_columns=spec.get("icon_set_columns"),
             list_validations=spec.get("list_validations"),
             sheet_note=spec.get("sheet_note", ""),
+            page_orientation=spec.get("page_orientation", "landscape"),
+            fit_to_width=spec.get("fit_to_width", 1),
+            fit_to_height=spec.get("fit_to_height", 0),
+            freeze_cell=spec.get("freeze_cell", "A2"),
+            show_gridlines=spec.get("show_gridlines", False),
+            body_row_height=spec.get("body_row_height"),
+            center_columns=spec.get("center_columns"),
         )
         created_sheets.append(
             {
@@ -1096,15 +1120,19 @@ def save_csv(items, path, xlsx_path=None):
         return need
 
     records = []
+    romaneio_records = []
     for it in items:
         for c in it["colors"]:
+            mini_label = it.get("mini_fabrica", "") or "Mini Fabrica - N/D"
             need = _need_with_min_1m(c.get("abast"))
             saldo = _to_float(c.get("saldo_casa")) or 0.0
             covered = min(max(saldo, 0.0), need)
             gap = max(need - covered, 0.0)
             coverage_pct = (covered / need * 100.0) if need > 0 else 100.0
+            deve_raw = _to_float(c.get("abast"))
+            falta_exata = abs(deve_raw) if deve_raw is not None else 0.0
             records.append({
-                "Mini Fabrica": it.get("mini_fabrica", ""),
+                "Mini Fabrica": mini_label,
                 "Codigo Item": it["item_code"],
                 "Descricao Item": it["item_desc"],
                 "Tipo Unidade": c.get("par_tipo", ""),
@@ -1119,6 +1147,20 @@ def save_csv(items, path, xlsx_path=None):
                 "Cobertura (%)": coverage_pct,
                 "Origem do Saldo": c.get("saldo_origem", ""),
             })
+            if falta_exata > 0:
+                romaneio_records.append(
+                    {
+                        "Mini Fabrica": mini_label,
+                        "Codigo Item": it["item_code"],
+                        "Descricao Item": it["item_desc"],
+                        "Codigo Cor": c["color_code"],
+                        "Descricao Cor": c["color_desc"],
+                        "Deve Exato (m)": falta_exata,
+                        "Saldo em Casa": c.get("saldo_casa", ""),
+                        "Origem do Saldo": c.get("saldo_origem", ""),
+                        "Metragem Separada (anotar)": "",
+                    }
+                )
 
     # Mantém ordem de aparição do PDF (itens e cores), sem reordenação por código.
     df = pd.DataFrame.from_records(records, columns=columns)
@@ -1132,6 +1174,22 @@ def save_csv(items, path, xlsx_path=None):
             "Falta Estimada",
             "Cobertura (%)",
         ],
+    )
+    romaneio_columns = [
+        "Mini Fabrica",
+        "Codigo Item",
+        "Descricao Item",
+        "Codigo Cor",
+        "Descricao Cor",
+        "Deve Exato (m)",
+        "Saldo em Casa",
+        "Origem do Saldo",
+        "Metragem Separada (anotar)",
+    ]
+    romaneio_df = pd.DataFrame.from_records(romaneio_records, columns=romaneio_columns)
+    romaneio_df = _prepare_dataframe_for_excel(
+        romaneio_df,
+        numeric_columns=["Deve Exato (m)", "Saldo em Casa"],
     )
     target = Path(path)
     if target.suffix.lower() == ".xlsx":
@@ -1263,6 +1321,41 @@ def save_csv(items, path, xlsx_path=None):
                         "sheet_note": f"Filtro operacional da {mini_label}",
                     }
                 )
+                mini_rom_df = romaneio_df[romaneio_df["Mini Fabrica"].fillna("") == mini].copy()
+                if not mini_rom_df.empty:
+                    mini_rom_df = mini_rom_df.drop(columns=["Mini Fabrica"])
+                    mini_rom_df = mini_rom_df.sort_values(
+                        by=["Deve Exato (m)", "Codigo Item", "Codigo Cor"],
+                        ascending=[False, True, True],
+                        kind="mergesort",
+                    )
+                    sheet_specs.append(
+                        {
+                            "sheet_name": f"Romaneio {mini_label}",
+                            "df": mini_rom_df,
+                            "table_name": f"RomMini{mini_label}",
+                            "description": f"Romaneio de impressao da {mini_label} (falta exata).",
+                            "numeric_formats": {
+                                "Deve Exato (m)": "#,##0.00000",
+                                "Saldo em Casa": "#,##0.00000",
+                            },
+                            "color_scale_columns": ["Deve Exato (m)"],
+                            "data_bar_columns": ["Deve Exato (m)"],
+                            "list_validations": {"Origem do Saldo": ["nacional", "substituto"]},
+                            "sheet_note": f"Romaneio para impressao - {mini_label}",
+                            "page_orientation": "portrait",
+                            "fit_to_width": 1,
+                            "fit_to_height": 1,
+                            "body_row_height": 24,
+                            "show_gridlines": True,
+                            "center_columns": [
+                                "Codigo Item",
+                                "Codigo Cor",
+                                "Origem do Saldo",
+                                "Metragem Separada (anotar)",
+                            ],
+                        }
+                    )
 
         xlsx_ok = _save_styled_multi_sheet_xlsx(sheet_specs, xlsx_path=str(target))
         if xlsx_ok:
