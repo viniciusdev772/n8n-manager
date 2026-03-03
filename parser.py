@@ -825,6 +825,7 @@ def _render_styled_sheet(
     column_width_scale: float = 1.0,
     min_column_width: float = 8.0,
     max_column_width: float = 52.0,
+    column_width_overrides: Optional[Dict[str, float]] = None,
     narrow_margins: bool = False,
     excel_strict_compat: bool = True,
 ):
@@ -1005,6 +1006,10 @@ def _render_styled_sheet(
 
     for col_idx, header in enumerate(headers, start=1):
         col_letter = get_column_letter(col_idx)
+        custom_width = (column_width_overrides or {}).get(header)
+        if custom_width is not None:
+            ws.column_dimensions[col_letter].width = custom_width
+            continue
         sample_size = min(max_row, 1200)
         max_len = len(str(header))
         for row_idx in range(2, sample_size + 1):
@@ -1085,6 +1090,7 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             column_width_scale=spec.get("column_width_scale", 1.0),
             min_column_width=spec.get("min_column_width", 8.0),
             max_column_width=spec.get("max_column_width", 52.0),
+            column_width_overrides=spec.get("column_width_overrides"),
             narrow_margins=spec.get("narrow_margins", False),
             excel_strict_compat=strict_compat,
         )
@@ -1404,6 +1410,10 @@ def save_csv(items, path, xlsx_path=None):
                             "column_width_scale": 0.72,
                             "min_column_width": 6.5,
                             "max_column_width": 21.0,
+                            "column_width_overrides": {
+                                "Deve Exato (m)": 8.8,
+                                "Saldo em Casa": 8.8,
+                            },
                             "narrow_margins": True,
                             "center_columns": [
                                 "Codigo Item",
