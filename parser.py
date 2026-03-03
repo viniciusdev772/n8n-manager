@@ -704,10 +704,20 @@ def _prepare_dataframe_for_excel(df: pd.DataFrame, numeric_columns: List[str]) -
 
 
 def _safe_sheet_name(name: str) -> str:
-    text = re.sub(r"[\[\]\*:/\\?]", " ", str(name or "Sheet")).strip()
+    text = str(name or "Sheet")
+    # Excel rejeita caracteres de controle e pode reparar planilhas com nomes
+    # iniciando/terminando com apostrofo. Sanitizamos para manter compatibilidade.
+    text = re.sub(r"[\x00-\x1F\x7F]", " ", text)
+    text = re.sub(r"[\[\]\*:/\\?']", " ", text).strip()
+    text = re.sub(r"\s+", " ", text)
     if not text:
         text = "Sheet"
     return text[:31]
+
+
+def _sheet_ref_title(sheet_title: str) -> str:
+    """Escapa titulo de aba para uso em referencias do tipo #'<aba>'!A1."""
+    return str(sheet_title or "").replace("'", "''")
 
 
 def _unique_sheet_name(name: str, used: set) -> str:
@@ -933,7 +943,8 @@ def _render_styled_sheet(
         col_letter = get_column_letter(col_idx)
         ws.conditional_formatting.add(
             f"{col_letter}2:{col_letter}{max_row}",
-            IconSetRule("3TrafficLights1", "num", [0, 60, 90], showValue=True),
+            # Regras em percentual evitam reparo de arquivo em algumas versões do Excel 365.
+            IconSetRule("3TrafficLights1", "percent", [0, 60, 90], showValue=True),
         )
 
     if "Falta Estimada" in headers and max_row >= 2:
@@ -1089,7 +1100,7 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
         for entry in created_sheets:
             ws = entry["ws"]
             index_ws.cell(row=row, column=1, value=ws.title)
-            index_ws.cell(row=row, column=1).hyperlink = f"#'{ws.title}'!A1"
+            index_ws.cell(row=row, column=1).hyperlink = f"#'{_sheet_ref_title(ws.title)}'!A1"
             index_ws.cell(row=row, column=1).font = Font(color="1F4E78", underline="single")
             index_ws.cell(row=row, column=2, value=entry["description"] or "Sem descrição")
             index_ws.cell(row=row, column=3, value=entry["rows"])
