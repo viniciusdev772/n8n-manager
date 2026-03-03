@@ -5552,14 +5552,7 @@
         "source_x": 149.0,
         "source_y": 807.7,
         "source_text": "128939 - NAPA FLOATHER NATURE PU 1.0 M 15758 - PRETO 0 -8.843 6,308.000 68.00000 6,299.15706"
-      }
-    ]
-  },
-  {
-    "item_code": "128939",
-    "item_desc": "NAPA FLOATHER NATURE PU 1.0 (MD P/V 20/21) + SARJA 7030/40",
-    "mini_fabrica": "Mini Fabrica - 26",
-    "colors": [
+      },
       {
         "color_code": "52568",
         "color_desc": "NUDE 658/CRU 20",
@@ -7075,14 +7068,7 @@
         "source_x": 149.0,
         "source_y": 812.4,
         "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 35312 - BRANCO OFF 0 -0.277 0.000 0.00000 -0.27680"
-      }
-    ]
-  },
-  {
-    "item_code": "183344",
-    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
-    "mini_fabrica": "Mini Fabrica - 38",
-    "colors": [
+      },
       {
         "color_code": "95373",
         "color_desc": "CAMEL 1165",
@@ -7842,14 +7828,7 @@
         "source_x": 149.0,
         "source_y": 814.8,
         "source_text": "M 101049 - AVELA 0 -2.781 616.000 0.00000 613.21920"
-      }
-    ]
-  },
-  {
-    "item_code": "174077",
-    "item_desc": "NAPA SUPREMA PU 0.9 (MD O/I 25)+ESPUMA 3,5MM D26+SPON 20",
-    "mini_fabrica": "Mini Fabrica - 43",
-    "colors": [
+      },
       {
         "color_code": "103562",
         "color_desc": "CHERRY 1335/BRANCO 15/BRANCO 15",
@@ -8677,14 +8656,7 @@
         "source_x": 149.0,
         "source_y": 808.1,
         "source_text": "M 103102 - CHERRY 0 -1.334 64.710 104.00000 63.37600 0101B015"
-      }
-    ]
-  },
-  {
-    "item_code": "183344",
-    "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
-    "mini_fabrica": "Mini Fabrica - 50",
-    "colors": [
+      },
       {
         "color_code": "105704",
         "color_desc": "OSTRA 1431",

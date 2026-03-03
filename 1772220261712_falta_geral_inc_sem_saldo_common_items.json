@@ -10,7 +10,7 @@
       "descricao_cor": "PRETO",
       "tam": "",
       "qtd_mini_fabricas": 9,
-      "total_necessidade": 204.058,
+      "total_necessidade": 204.886,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 9",
@@ -114,7 +114,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 40",
           "deve_abast": -0.172,
-          "necessidade": 0.172,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 10,
@@ -132,7 +132,7 @@
       "descricao_cor": "CREME 516",
       "tam": "",
       "qtd_mini_fabricas": 7,
-      "total_necessidade": 67.785,
+      "total_necessidade": 68.556,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 9",
@@ -168,7 +168,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 10",
           "deve_abast": -0.229,
-          "necessidade": 0.229,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 3,
@@ -268,7 +268,7 @@
       "descricao_cor": "BEGE 435",
       "tam": "",
       "qtd_mini_fabricas": 4,
-      "total_necessidade": 40.659,
+      "total_necessidade": 41.878,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 19",
@@ -290,7 +290,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 19",
           "deve_abast": -0.661,
-          "necessidade": 0.661,
+          "necessidade": 1.0,
           "saldo_casa": "25.00000",
           "saldo_origem": "nacional",
           "source_page": 6,
@@ -312,7 +312,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 68",
           "deve_abast": -0.12,
-          "necessidade": 0.12,
+          "necessidade": 1.0,
           "saldo_casa": "25.00000",
           "saldo_origem": "nacional",
           "source_page": 12,
@@ -442,7 +442,7 @@
       "descricao_cor": "BEGE 435/CRU 20",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 0.749,
+      "total_necessidade": 2.0,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 9"
@@ -451,7 +451,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 6",
           "deve_abast": -0.038,
-          "necessidade": 0.038,
+          "necessidade": 1.0,
           "saldo_casa": "13.40000",
           "saldo_origem": "nacional",
           "source_page": 1,
@@ -462,7 +462,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.711,
-          "necessidade": 0.711,
+          "necessidade": 1.0,
           "saldo_casa": "13.40000",
           "saldo_origem": "nacional",
           "source_page": 2,
@@ -594,7 +594,7 @@
       "descricao_cor": "BRANCO OFF 526",
       "tam": "",
       "qtd_mini_fabricas": 8,
-      "total_necessidade": 264.766,
+      "total_necessidade": 266.123,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 16",
@@ -609,7 +609,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 6",
           "deve_abast": -0.366,
-          "necessidade": 0.366,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 1,
@@ -653,7 +653,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 38",
           "deve_abast": -0.277,
-          "necessidade": 0.277,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 9,
@@ -742,7 +742,7 @@
       "descricao_cor": "DOURADO/BISCOITO",
       "tam": "",
       "qtd_mini_fabricas": 5,
-      "total_necessidade": 48.876,
+      "total_necessidade": 50.055,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 16",
@@ -787,7 +787,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 30",
           "deve_abast": -0.708,
-          "necessidade": 0.708,
+          "necessidade": 1.0,
           "saldo_casa": "20.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -798,7 +798,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 40",
           "deve_abast": -0.113,
-          "necessidade": 0.113,
+          "necessidade": 1.0,
           "saldo_casa": "20.00000",
           "saldo_origem": "nacional",
           "source_page": 10,
@@ -930,7 +930,7 @@
       "descricao_cor": "BRANCO OFF 526/BISCOITO",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 10.493,
+      "total_necessidade": 11.245,
       "mini_fabricas_destino": [
         "Mini Fabrica - 6",
         "Mini Fabrica - 16"
@@ -950,7 +950,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.248,
-          "necessidade": 0.248,
+          "necessidade": 1.0,
           "saldo_casa": "19.00000",
           "saldo_origem": "nacional",
           "source_page": 5,
@@ -968,7 +968,7 @@
       "descricao_cor": "CARAMELO 310",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 31.058,
+      "total_necessidade": 31.302,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 30",
@@ -978,7 +978,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.756,
-          "necessidade": 0.756,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 1,
@@ -1018,7 +1018,7 @@
       "descricao_cor": "PRETO 01",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 6.27,
+      "total_necessidade": 6.871,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 24"
@@ -1038,7 +1038,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 24",
           "deve_abast": -0.399,
-          "necessidade": 0.399,
+          "necessidade": 1.0,
           "saldo_casa": "714.40000",
           "saldo_origem": "nacional",
           "source_page": 7,
@@ -1194,7 +1194,7 @@
       "descricao_cor": "BEGE 435",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 2.23,
+      "total_necessidade": 3.126,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 50"
@@ -1214,7 +1214,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 50",
           "deve_abast": -0.104,
-          "necessidade": 0.104,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 11,
@@ -1282,7 +1282,7 @@
       "descricao_cor": "BRANCO OFF 526",
       "tam": "",
       "qtd_mini_fabricas": 5,
-      "total_necessidade": 36.958,
+      "total_necessidade": 37.195,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 19",
@@ -1305,7 +1305,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 19",
           "deve_abast": -0.763,
-          "necessidade": 0.763,
+          "necessidade": 1.0,
           "saldo_casa": "26.00000",
           "saldo_origem": "nacional",
           "source_page": 6,
@@ -1356,7 +1356,7 @@
       "descricao_cor": "CAMEL 1165",
       "tam": "",
       "qtd_mini_fabricas": 7,
-      "total_necessidade": 84.847,
+      "total_necessidade": 85.205,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 16",
@@ -1403,7 +1403,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 24",
           "deve_abast": -0.642,
-          "necessidade": 0.642,
+          "necessidade": 1.0,
           "saldo_casa": "93.00000",
           "saldo_origem": "nacional",
           "source_page": 7,
@@ -1454,7 +1454,7 @@
       "descricao_cor": "OLIVE 1469",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 6.903,
+      "total_necessidade": 7.044,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 19",
@@ -1486,7 +1486,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 40",
           "deve_abast": -0.859,
-          "necessidade": 0.859,
+          "necessidade": 1.0,
           "saldo_casa": "46.00000",
           "saldo_origem": "nacional",
           "source_page": 10,
@@ -1592,7 +1592,7 @@
       "descricao_cor": "TERRACOTA 1477",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 22.688,
+      "total_necessidade": 23.037,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 19",
@@ -1602,7 +1602,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.651,
-          "necessidade": 0.651,
+          "necessidade": 1.0,
           "saldo_casa": "26.00000",
           "saldo_origem": "nacional",
           "source_page": 2,
@@ -1792,7 +1792,7 @@
       "descricao_cor": "TERRACOTA 1477/BISCOITO",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 11.511,
+      "total_necessidade": 11.822,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 24",
@@ -1802,7 +1802,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.706,
-          "necessidade": 0.706,
+          "necessidade": 1.0,
           "saldo_casa": "20.00000",
           "saldo_origem": "nacional",
           "source_page": 2,
@@ -1824,7 +1824,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 30",
           "deve_abast": -0.983,
-          "necessidade": 0.983,
+          "necessidade": 1.0,
           "saldo_casa": "20.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -1980,7 +1980,7 @@
       "descricao_cor": "BRANCO 99/CRU 20",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 1.514,
+      "total_necessidade": 2.0,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 10"
@@ -1989,7 +1989,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.763,
-          "necessidade": 0.763,
+          "necessidade": 1.0,
           "saldo_casa": "25.00000",
           "saldo_origem": "nacional",
           "source_page": 2,
@@ -2000,7 +2000,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 10",
           "deve_abast": -0.751,
-          "necessidade": 0.751,
+          "necessidade": 1.0,
           "saldo_casa": "25.00000",
           "saldo_origem": "nacional",
           "source_page": 3,
@@ -2094,7 +2094,7 @@
       "descricao_cor": "PRETO 01/PRETO",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 0.758,
+      "total_necessidade": 2.0,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 26"
@@ -2103,7 +2103,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 9",
           "deve_abast": -0.086,
-          "necessidade": 0.086,
+          "necessidade": 1.0,
           "saldo_casa": "12.30000",
           "saldo_origem": "nacional",
           "source_page": 2,
@@ -2114,7 +2114,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 26",
           "deve_abast": -0.672,
-          "necessidade": 0.672,
+          "necessidade": 1.0,
           "saldo_casa": "12.30000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -2294,7 +2294,7 @@
       "descricao_cor": "PRETO 01/PRETO 01",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 5.961,
+      "total_necessidade": 6.168,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 10",
@@ -2326,7 +2326,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 43",
           "deve_abast": -0.793,
-          "necessidade": 0.793,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 11,
@@ -2382,7 +2382,7 @@
       "descricao_cor": "MULTI CAMEL 1165",
       "tam": "",
       "qtd_mini_fabricas": 4,
-      "total_necessidade": 14.67,
+      "total_necessidade": 15.022,
       "mini_fabricas_destino": [
         "Mini Fabrica - 9",
         "Mini Fabrica - 19",
@@ -2415,7 +2415,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 40",
           "deve_abast": -0.648,
-          "necessidade": 0.648,
+          "necessidade": 1.0,
           "saldo_casa": "42.00000",
           "saldo_origem": "nacional",
           "source_page": 10,
@@ -2632,7 +2632,7 @@
       "descricao_cor": "CAMEL 1165/BRANCO 15/CAMEL 1165",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 4.592,
+      "total_necessidade": 5.13,
       "mini_fabricas_destino": [
         "Mini Fabrica - 10",
         "Mini Fabrica - 16",
@@ -2653,7 +2653,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.462,
-          "necessidade": 0.462,
+          "necessidade": 1.0,
           "saldo_casa": "12.00000",
           "saldo_origem": "nacional",
           "source_page": 5,
@@ -2682,7 +2682,7 @@
       "descricao_cor": "PRETO 01/PRETO",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 12.018,
+      "total_necessidade": 12.416,
       "mini_fabricas_destino": [
         "Mini Fabrica - 10",
         "Mini Fabrica - 34"
@@ -2702,7 +2702,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 34",
           "deve_abast": -0.602,
-          "necessidade": 0.602,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 9,
@@ -2796,7 +2796,7 @@
       "descricao_cor": "CAMEL 778/BRANCO 15- BRANCO 15",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 9.063,
+      "total_necessidade": 9.22,
       "mini_fabricas_destino": [
         "Mini Fabrica - 10",
         "Mini Fabrica - 34"
@@ -2816,7 +2816,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 34",
           "deve_abast": -0.843,
-          "necessidade": 0.843,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 9,
@@ -3150,7 +3150,7 @@
       "descricao_cor": "PRETO",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 29.051,
+      "total_necessidade": 29.626,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 19",
@@ -3160,7 +3160,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.425,
-          "necessidade": 0.425,
+          "necessidade": 1.0,
           "saldo_casa": "117.00000",
           "saldo_origem": "nacional",
           "source_page": 4,
@@ -3200,7 +3200,7 @@
       "descricao_cor": "NATURAL",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 8.76,
+      "total_necessidade": 9.16,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 19"
@@ -3209,7 +3209,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.6,
-          "necessidade": 0.6,
+          "necessidade": 1.0,
           "saldo_casa": "186.00000",
           "saldo_origem": "nacional",
           "source_page": 4,
@@ -3338,7 +3338,7 @@
       "descricao_cor": "PRETO 01",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 20.01,
+      "total_necessidade": 20.502,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 43"
@@ -3347,7 +3347,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.508,
-          "necessidade": 0.508,
+          "necessidade": 1.0,
           "saldo_casa": "37.90000",
           "saldo_origem": "nacional",
           "source_page": 4,
@@ -3376,7 +3376,7 @@
       "descricao_cor": "OLIVE 1469",
       "tam": "",
       "qtd_mini_fabricas": 5,
-      "total_necessidade": 35.207,
+      "total_necessidade": 36.589,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 30",
@@ -3388,7 +3388,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.139,
-          "necessidade": 0.139,
+          "necessidade": 1.0,
           "saldo_casa": "30.00000",
           "saldo_origem": "nacional",
           "source_page": 4,
@@ -3410,7 +3410,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 38",
           "deve_abast": -0.479,
-          "necessidade": 0.479,
+          "necessidade": 1.0,
           "saldo_casa": "30.00000",
           "saldo_origem": "nacional",
           "source_page": 9,
@@ -3488,7 +3488,7 @@
       "descricao_cor": "PRETO 01",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 141.927,
+      "total_necessidade": 142.734,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 50"
@@ -3497,7 +3497,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.193,
-          "necessidade": 0.193,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 5,
@@ -3526,7 +3526,7 @@
       "descricao_cor": "AVELA 1248/CRU 20",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 16.041,
+      "total_necessidade": 16.06,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 26",
@@ -3547,7 +3547,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 26",
           "deve_abast": -0.981,
-          "necessidade": 0.981,
+          "necessidade": 1.0,
           "saldo_casa": "84.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -3764,7 +3764,7 @@
       "descricao_cor": "OSTRA 1431",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 14.868,
+      "total_necessidade": 15.502,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 50"
@@ -3773,7 +3773,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 16",
           "deve_abast": -0.366,
-          "necessidade": 0.366,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 5,
@@ -3802,7 +3802,7 @@
       "descricao_cor": "OLIVE 1469",
       "tam": "",
       "qtd_mini_fabricas": 4,
-      "total_necessidade": 21.719,
+      "total_necessidade": 21.929,
       "mini_fabricas_destino": [
         "Mini Fabrica - 16",
         "Mini Fabrica - 38",
@@ -3846,7 +3846,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 43",
           "deve_abast": -0.79,
-          "necessidade": 0.79,
+          "necessidade": 1.0,
           "saldo_casa": "50.00000",
           "saldo_origem": "nacional",
           "source_page": 11,
@@ -4380,7 +4380,7 @@
       "descricao_cor": "CHOCOLATE 1271",
       "tam": "",
       "qtd_mini_fabricas": 4,
-      "total_necessidade": 116.593,
+      "total_necessidade": 117.175,
       "mini_fabricas_destino": [
         "Mini Fabrica - 19",
         "Mini Fabrica - 20",
@@ -4391,7 +4391,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 19",
           "deve_abast": -0.418,
-          "necessidade": 0.418,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 6,
@@ -4442,7 +4442,7 @@
       "descricao_cor": "CHERRY 1335",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 7.27,
+      "total_necessidade": 7.55,
       "mini_fabricas_destino": [
         "Mini Fabrica - 19",
         "Mini Fabrica - 43",
@@ -4463,7 +4463,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 43",
           "deve_abast": -0.72,
-          "necessidade": 0.72,
+          "necessidade": 1.0,
           "saldo_casa": "104.00000",
           "saldo_origem": "nacional",
           "source_page": 11,
@@ -4492,7 +4492,7 @@
       "descricao_cor": "TERRACOTA 1477",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 33.855,
+      "total_necessidade": 34.428,
       "mini_fabricas_destino": [
         "Mini Fabrica - 19",
         "Mini Fabrica - 30",
@@ -4513,7 +4513,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 30",
           "deve_abast": -0.427,
-          "necessidade": 0.427,
+          "necessidade": 1.0,
           "saldo_casa": "67.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -4580,7 +4580,7 @@
       "descricao_cor": "CHOCOLATE 1271/PRETO 01/PRETO 01",
       "tam": "",
       "qtd_mini_fabricas": 3,
-      "total_necessidade": 11.593,
+      "total_necessidade": 11.701,
       "mini_fabricas_destino": [
         "Mini Fabrica - 19",
         "Mini Fabrica - 30",
@@ -4601,7 +4601,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 30",
           "deve_abast": -0.892,
-          "necessidade": 0.892,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -5034,7 +5034,7 @@
       "descricao_cor": "OSTRA 1431/CRU 20",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 4.112,
+      "total_necessidade": 4.69,
       "mini_fabricas_destino": [
         "Mini Fabrica - 30",
         "Mini Fabrica - 38"
@@ -5043,7 +5043,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 30",
           "deve_abast": -0.422,
-          "necessidade": 0.422,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 8,
@@ -5266,7 +5266,7 @@
       "descricao_cor": "BRANCO OFF 526/BRANCO 15/NATURAL",
       "tam": "",
       "qtd_mini_fabricas": 2,
-      "total_necessidade": 40.362,
+      "total_necessidade": 40.518,
       "mini_fabricas_destino": [
         "Mini Fabrica - 40",
         "Mini Fabrica - 43"
@@ -5275,7 +5275,7 @@
         {
           "mini_fabrica": "Mini Fabrica - 40",
           "deve_abast": -0.844,
-          "necessidade": 0.844,
+          "necessidade": 1.0,
           "saldo_casa": "0.00000",
           "saldo_origem": "nacional",
           "source_page": 10,

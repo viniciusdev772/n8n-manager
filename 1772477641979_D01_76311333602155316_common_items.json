@@ -1,0 +1,2552 @@
+{
+  "total_itens_comuns": 55,
+  "total_grupos_distribuicao": 55,
+  "grupos_distribuicao": [
+    {
+      "item_code": "25567",
+      "item_desc": "AVESSO VELUR",
+      "tipo_unidade": "",
+      "codigo_cor": "3",
+      "descricao_cor": "PRETO",
+      "tam": "",
+      "qtd_mini_fabricas": 7,
+      "total_necessidade": 138.0341,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 10",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -24.88765,
+          "necessidade": 24.88765,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 134.4,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -24.88765 0.000 0.00000 -24.88765"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -58.18175,
+          "necessidade": 58.18175,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 724.2,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -58.18175 0.000 0.00000 -58.18175"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 10",
+          "deve_abast": -22.8924,
+          "necessidade": 22.8924,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 419.3,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -22.89240 0.000 0.00000 -22.89240"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -3.7911,
+          "necessidade": 3.7911,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 605.0,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -3.79110 0.000 0.00000 -3.79110"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -13.87,
+          "necessidade": 13.87,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 558.3,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.87000 0.000 0.00000 -13.87000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -13.4112,
+          "necessidade": 13.4112,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 253.4,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.41120 0.000 0.00000 -13.41120"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -0.1716,
+          "necessidade": 1.0,
+          "saldo_casa": "32",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 529.9,
+          "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -0.17160 0.000 0.00000 -0.17160"
+        }
+      ]
+    },
+    {
+      "item_code": "25567",
+      "item_desc": "AVESSO VELUR",
+      "tipo_unidade": "",
+      "codigo_cor": "35313",
+      "descricao_cor": "CREME 516",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 63.8734,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 30"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -17.86419,
+          "necessidade": 17.86419,
+          "saldo_casa": "94",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 152.8,
+          "source_text": "M 35313 - CREME 516 0 -17.86419 0.000 0.00000 -17.86419"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -12.11184,
+          "necessidade": 12.11184,
+          "saldo_casa": "94",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 761.0,
+          "source_text": "M 35313 - CREME 516 0 -12.11184 0.000 0.00000 -12.11184"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -3.698,
+          "necessidade": 3.698,
+          "saldo_casa": "94",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 623.4,
+          "source_text": "M 35313 - CREME 516 0 -3.69800 0.000 0.00000 -3.69800"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -30.1994,
+          "necessidade": 30.1994,
+          "saldo_casa": "94",
+          "saldo_origem": "substituto",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 595.1,
+          "source_text": "M 35313 - CREME 516 0 -30.19940 0.000 0.00000 -30.19940"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "72374",
+      "descricao_cor": "CAFE 856",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 11.0918,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -10.0,
+          "necessidade": 10.0,
+          "saldo_casa": "134.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 171.2,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 72374 - CAFE 856 0 -10.00000 147.000 134.00000 137.00000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -1.0918,
+          "necessidade": 1.0918,
+          "saldo_casa": "134.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 437.8,
+          "source_text": "M 72374 - CAFE 856 0 -1.09180 147.000 134.00000 145.90820"
+        }
+      ]
+    },
+    {
+      "item_code": "58623",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)+FIL",
+      "tipo_unidade": "",
+      "codigo_cor": "29452",
+      "descricao_cor": "BEGE 435",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 41.8772,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 68"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -14.2836,
+          "necessidade": 14.2836,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 208.1,
+          "source_text": "58623 - FORRO MILANO PU 0.7(B O/I 2014)+FIL M 29452 - BEGE 435 0 -14.28360 150.800 25.00000 136.51640"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -0.6608,
+          "necessidade": 1.0,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 179.8,
+          "source_text": "M 29452 - BEGE 435 0 -0.66080 150.800 25.00000 150.13920"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -25.5936,
+          "necessidade": 25.5936,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 327.2,
+          "source_text": "M 29452 - BEGE 435 0 -25.59360 150.800 25.00000 125.20640"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 68",
+          "deve_abast": -0.12,
+          "necessidade": 1.0,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 382.5,
+          "source_text": "58623 - FORRO MILANO PU 0.7(B O/I 2014)+FIL M 29452 - BEGE 435 0 -0.12000 150.800 25.00000 150.68000"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "29452",
+      "descricao_cor": "BEGE 435",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 37.555,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 16",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -19.9496,
+          "necessidade": 19.9496,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 226.6,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -19.94960 280.000 25.00000 260.05040 0101C003"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 16",
+          "deve_abast": -5.4808,
+          "necessidade": 5.4808,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 493.7,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -5.48080 280.000 25.00000 274.51920 0101C003"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -2.4812,
+          "necessidade": 2.4812,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 235.0,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -2.48120 280.000 25.00000 277.51880 0101C003"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -9.6434,
+          "necessidade": 9.6434,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 511.5,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -9.64340 280.000 25.00000 270.35660 0101C003"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "52531",
+      "descricao_cor": "NUDE 658",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 44.5613,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -7.8868,
+          "necessidade": 7.8868,
+          "saldo_casa": "120",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 245.0,
+          "source_text": "M 52531 - NUDE 658 0 -7.88680 0.000 0.00000 -7.88680"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -19.19668,
+          "necessidade": 19.19668,
+          "saldo_casa": "120",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 419.4,
+          "source_text": "M 52531 - NUDE 658 0 -19.19668 0.000 0.00000 -19.19668"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -17.4778,
+          "necessidade": 17.4778,
+          "saldo_casa": "120",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 253.5,
+          "source_text": "M 52531 - NUDE 658 0 -17.47780 0.000 0.00000 -17.47780"
+        }
+      ]
+    },
+    {
+      "item_code": "84629",
+      "item_desc": "VERNIZ PREMIUM PU 1.0 (M/MD O/I 20",
+      "tipo_unidade": "",
+      "codigo_cor": "29498",
+      "descricao_cor": "BEGE 435/CRU",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 2.0,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 9"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -0.0376,
+          "necessidade": 1.0,
+          "saldo_casa": "13.40000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 318.7,
+          "source_text": "84629 - VERNIZ PREMIUM PU 1.0 (M/MD O/I 20 M 29498 - BEGE 435/CRU 0 -0.03760 552.300 13.40000 552.26240"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -0.711,
+          "necessidade": 1.0,
+          "saldo_casa": "13.40000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 603.6,
+          "source_text": "84629 - VERNIZ PREMIUM PU 1.0 (M/MD O/I 20 M 29498 - BEGE 435/CRU 0 -0.71100 552.300 13.40000 551.58900"
+        }
+      ]
+    },
+    {
+      "item_code": "108850",
+      "item_desc": "NAPA PELE STRECH PU 1.0 (MD O/I 2",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 24.3944,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 38"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -11.05036,
+          "necessidade": 11.05036,
+          "saldo_casa": "120",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 355.6,
+          "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -11.05036 0.000 0.00000 -11.05036"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -13.344,
+          "necessidade": 13.344,
+          "saldo_casa": "120",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 364.0,
+          "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -13.34400 0.000 0.00000 -13.34400"
+        }
+      ]
+    },
+    {
+      "item_code": "149602",
+      "item_desc": "CAMURCA STRECH DUO + VELVET (",
+      "tipo_unidade": "",
+      "codigo_cor": "15787",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 43.8584,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 38"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -9.3936,
+          "necessidade": 9.3936,
+          "saldo_casa": "42.70000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 392.4,
+          "source_text": "149602 - CAMURCA STRECH DUO + VELVET ( M 15787 - PRETO 01/PRET0 -9.39360 990.400 42.70000 981.00640"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -34.4648,
+          "necessidade": 34.4648,
+          "saldo_casa": "42.70000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 419.3,
+          "source_text": "149602 - CAMURCA STRECH DUO + VELVET ( M 15787 - PRETO 01/PRET0 -34.46480 990.400 42.70000 955.93520"
+        }
+      ]
+    },
+    {
+      "item_code": "157666",
+      "item_desc": "TECIDO ADTERM CH 180 C CONFOR",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 83.1328,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 19"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -21.8776,
+          "necessidade": 21.8776,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 410.8,
+          "source_text": "157666 - TECIDO ADTERM CH 180 C CONFOR M 15745 - PRETO 01 0 -21.87760 3,070.000 60.00000 3,048.12240"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -61.2552,
+          "necessidade": 61.2552,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 493.1,
+          "source_text": "157666 - TECIDO ADTERM CH 180 C CONFOR M 15745 - PRETO 01 0 -61.25520 3,070.000 60.00000 3,008.74480"
+        }
+      ]
+    },
+    {
+      "item_code": "187451",
+      "item_desc": "NYLON KANSAS(ACT O/I22)+ESPUMA",
+      "tipo_unidade": "",
+      "codigo_cor": "106860",
+      "descricao_cor": "AVELA 1248/BR",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 11.0,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -9.368,
+          "necessidade": 9.368,
+          "saldo_casa": "17.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 503.0,
+          "source_text": "187451 - NYLON KANSAS(ACT O/I22)+ESPUMA M 106860 - AVELA 1248/BR0 -9.36800 0.000 17.00000 -9.36800"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -1.632,
+          "necessidade": 1.632,
+          "saldo_casa": "17.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 447.7,
+          "source_text": "187451 - NYLON KANSAS(ACT O/I22)+ESPUMA M 106860 - AVELA 1248/BR0 -1.63200 0.000 17.00000 -1.63200"
+        }
+      ]
+    },
+    {
+      "item_code": "202378",
+      "item_desc": "NAPA ESSELENCE PU 0.9+SARJA 70",
+      "tipo_unidade": "",
+      "codigo_cor": "35738",
+      "descricao_cor": "BRANCO OFF",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 14.472,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 6",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 6",
+          "deve_abast": -10.392,
+          "necessidade": 10.392,
+          "saldo_casa": "20.00000",
+          "saldo_origem": "nacional",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 632.0,
+          "source_text": "M 35738 - BRANCO OFF 50 -10.39200 17.500 20.00000 7.10800"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -4.08,
+          "necessidade": 4.08,
+          "saldo_casa": "20.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 503.0,
+          "source_text": "202378 - NAPA ESSELENCE PU 0.9+SARJA 70 M 35738 - BRANCO OFF 50 -4.08000 17.500 20.00000 13.42000"
+        }
+      ]
+    },
+    {
+      "item_code": "25567",
+      "item_desc": "AVESSO VELUR",
+      "tipo_unidade": "",
+      "codigo_cor": "23041",
+      "descricao_cor": "CARAMELO 310",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 31.3015,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 38"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -0.7559,
+          "necessidade": 1.0,
+          "saldo_casa": "40",
+          "saldo_origem": "substituto",
+          "source_page": 1,
+          "source_x": 149.0,
+          "source_y": 742.6,
+          "source_text": "M 23041 - CARAMELO 3100 -0.75590 10.500 0.00000 9.74410"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -19.3067,
+          "necessidade": 19.3067,
+          "saldo_casa": "40",
+          "saldo_origem": "substituto",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 576.7,
+          "source_text": "M 23041 - CARAMELO 3100 -19.30670 10.500 0.00000 -8.80670"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -10.9948,
+          "necessidade": 10.9948,
+          "saldo_casa": "40",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 271.9,
+          "source_text": "M 23041 - CARAMELO 3100 -10.99480 10.500 0.00000 -0.49480"
+        }
+      ]
+    },
+    {
+      "item_code": "47527",
+      "item_desc": "FORRO FIORI (V P/V 12/13)",
+      "tipo_unidade": "",
+      "codigo_cor": "26926",
+      "descricao_cor": "CAMEL 408",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 38.216,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -9.0825,
+          "necessidade": 9.0825,
+          "saldo_casa": "50",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 142.9,
+          "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -9.08250 0.000 0.00000 -9.08250"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -29.1335,
+          "necessidade": 29.1335,
+          "saldo_casa": "50",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 308.7,
+          "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -29.13350 0.000 0.00000 -29.13350"
+        }
+      ]
+    },
+    {
+      "item_code": "56427",
+      "item_desc": "PELICA PU 1.0 (V O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 60.0019,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -6.2766,
+          "necessidade": 6.2766,
+          "saldo_casa": "53",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 161.3,
+          "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -6.27660 0.000 0.00000 -6.27660"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -26.8261,
+          "necessidade": 26.8261,
+          "saldo_casa": "53",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 660.3,
+          "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.82610 0.000 0.00000 -26.82610"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -26.89925,
+          "necessidade": 26.89925,
+          "saldo_casa": "53",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 327.2,
+          "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.89925 0.000 0.00000 -26.89925"
+        }
+      ]
+    },
+    {
+      "item_code": "56427",
+      "item_desc": "PELICA PU 1.0 (V O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "29452",
+      "descricao_cor": "BEGE 435",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 3.1264,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -2.1264,
+          "necessidade": 2.1264,
+          "saldo_casa": "18",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 198.2,
+          "source_text": "M 29452 - BEGE 435 0 -2.12640 0.000 0.00000 -2.12640"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -0.1042,
+          "necessidade": 1.0,
+          "saldo_casa": "18",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 345.6,
+          "source_text": "M 29452 - BEGE 435 0 -0.10420 0.000 0.00000 -0.10420"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "29452",
+      "descricao_cor": "BEGE 435",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 78.8103,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -25.7126,
+          "necessidade": 25.7126,
+          "saldo_casa": "300",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 290.3,
+          "source_text": "M 29452 - BEGE 435 0 -25.71260 25.300 0.00000 -0.41260"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -4.368,
+          "necessidade": 4.368,
+          "saldo_casa": "300",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 715.6,
+          "source_text": "M 29452 - BEGE 435 0 -4.36800 25.300 0.00000 20.93200"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -48.7297,
+          "necessidade": 48.7297,
+          "saldo_casa": "300",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 400.9,
+          "source_text": "M 29452 - BEGE 435 0 -48.72970 25.300 0.00000 -23.42970"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "35312",
+      "descricao_cor": "BRANCO OFF",
+      "tam": "",
+      "qtd_mini_fabricas": 5,
+      "total_necessidade": 37.1948,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 26",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -14.33743,
+          "necessidade": 14.33743,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 308.8,
+          "source_text": "M 35312 - BRANCO OFF 50 -14.33743 820.000 26.00000 805.66257"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -0.7628,
+          "necessidade": 1.0,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 734.0,
+          "source_text": "M 35312 - BRANCO OFF 50 -0.76280 820.000 26.00000 819.23720"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -3.3119,
+          "necessidade": 3.3119,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 134.4,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 35312 - BRANCO OFF 50 -3.31190 820.000 26.00000 816.68810"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -5.77,
+          "necessidade": 5.77,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 566.8,
+          "source_text": "M 35312 - BRANCO OFF 50 -5.77000 820.000 26.00000 814.23000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -12.7755,
+          "necessidade": 12.7755,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 419.3,
+          "source_text": "M 35312 - BRANCO OFF 50 -12.77550 820.000 26.00000 807.22450"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "95373",
+      "descricao_cor": "CAMEL 1165",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 57.5539,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -9.476,
+          "necessidade": 9.476,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 327.2,
+          "source_text": "M 95373 - CAMEL 1165 0 -9.47600 2,063.000 60.00000 2,053.52400 0101B002"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -4.22494,
+          "necessidade": 4.22494,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 789.3,
+          "source_text": "M 95373 - CAMEL 1165 0 -4.22494 2,063.000 60.00000 2,058.77506 0101B002"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -16.324,
+          "necessidade": 16.324,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 585.2,
+          "source_text": "M 95373 - CAMEL 1165 0 -16.32400 2,063.000 60.00000 2,046.67600 0101B002"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -27.529,
+          "necessidade": 27.529,
+          "saldo_casa": "60.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 474.6,
+          "source_text": "M 95373 - CAMEL 1165 0 -27.52900 2,063.000 60.00000 2,035.47100 0101B002"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "107610",
+      "descricao_cor": "OLIVE 1469",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 7.044,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -3.32,
+          "necessidade": 3.32,
+          "saldo_casa": "46.00000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 364.0,
+          "source_text": "M 107610 - OLIVE 1469 0 -3.32000 85.000 46.00000 81.68000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -2.724,
+          "necessidade": 2.724,
+          "saldo_casa": "46.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 142.9,
+          "source_text": "M 107610 - OLIVE 1469 0 -2.72400 85.000 46.00000 82.27600"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -0.8592,
+          "necessidade": 1.0,
+          "saldo_casa": "46.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 622.0,
+          "source_text": "M 107610 - OLIVE 1469 0 -0.85920 85.000 46.00000 84.14080"
+        }
+      ]
+    },
+    {
+      "item_code": "63609",
+      "item_desc": "FORRO MILANO PU 0.7+PX25+FILME",
+      "tipo_unidade": "",
+      "codigo_cor": "50",
+      "descricao_cor": "NATURAL",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 176.3555,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -79.0055,
+          "necessidade": 79.0055,
+          "saldo_casa": "229.40000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 382.5,
+          "source_text": "63609 - FORRO MILANO PU 0.7+PX25+FILME M 50 - NATURAL 0 -79.00550 259.100 229.40000 180.09450 0101B002"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -97.35,
+          "necessidade": 97.35,
+          "saldo_casa": "229.40000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 198.2,
+          "source_text": "63609 - FORRO MILANO PU 0.7+PX25+FILME M 50 - NATURAL 0 -97.35000 259.100 229.40000 161.75000 0101B002"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "107613",
+      "descricao_cor": "TERRACOTA",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 23.0372,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 20"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -0.65142,
+          "necessidade": 1.0,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 437.8,
+          "source_text": "M 107613 - TERRACOTA 10 -0.65142 0.000 26.00000 -0.65142"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -16.03716,
+          "necessidade": 16.03716,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 308.8,
+          "source_text": "M 107613 - TERRACOTA 10 -16.03716 0.000 26.00000 -16.03716"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 20",
+          "deve_abast": -6.0,
+          "necessidade": 6.0,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 714.2,
+          "source_text": "M 107613 - TERRACOTA 10 -6.00000 0.000 26.00000 -6.00000"
+        }
+      ]
+    },
+    {
+      "item_code": "67345",
+      "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40",
+      "tipo_unidade": "",
+      "codigo_cor": "35324",
+      "descricao_cor": "BRANCO OFF",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 16.0016,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -12.1376,
+          "necessidade": 12.1376,
+          "saldo_casa": "94.30000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 474.6,
+          "source_text": "M 35324 - BRANCO OFF 50 -12.13760 450.600 94.30000 438.46240 0101B009"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -3.864,
+          "necessidade": 3.864,
+          "saldo_casa": "94.30000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 171.2,
+          "source_text": "M 35324 - BRANCO OFF 50 -3.86400 450.600 94.30000 446.73600 0101B009"
+        }
+      ]
+    },
+    {
+      "item_code": "67345",
+      "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40",
+      "tipo_unidade": "",
+      "codigo_cor": "105897",
+      "descricao_cor": "OSTRA 1431/C",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 15.0515,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -6.2811,
+          "necessidade": 6.2811,
+          "saldo_casa": "47.80000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 511.5,
+          "source_text": "M 105897 - OSTRA 1431/C0 -6.28110 31.100 47.80000 24.81890"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -2.1696,
+          "necessidade": 2.1696,
+          "saldo_casa": "47.80000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 345.6,
+          "source_text": "M 105897 - OSTRA 1431/C0 -2.16960 31.100 47.80000 28.93040"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -6.6008,
+          "necessidade": 6.6008,
+          "saldo_casa": "47.80000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 226.6,
+          "source_text": "M 105897 - OSTRA 1431/C0 -6.60080 31.100 47.80000 24.49920"
+        }
+      ]
+    },
+    {
+      "item_code": "73034",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BAS",
+      "tipo_unidade": "",
+      "codigo_cor": "96142",
+      "descricao_cor": "CAMEL 1165/BIS",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 77.9358,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 24",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -26.1326,
+          "necessidade": 26.1326,
+          "saldo_casa": "58.50000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 529.9,
+          "source_text": "73034 - NAPA TURIM PU 1.0 (B P/V 15/16)+BAS M 96142 - CAMEL 1165/BIS0 -26.13260 0.000 58.50000 -26.13260"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 24",
+          "deve_abast": -19.872,
+          "necessidade": 19.872,
+          "saldo_casa": "58.50000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 787.9,
+          "source_text": "73034 - NAPA TURIM PU 1.0 (B P/V 15/16)+BAS M 96142 - CAMEL 1165/BIS0 -19.87200 0.000 58.50000 -19.87200"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -31.9312,
+          "necessidade": 31.9312,
+          "saldo_casa": "58.50000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 245.0,
+          "source_text": "73034 - NAPA TURIM PU 1.0 (B P/V 15/16)+BAS M 96142 - CAMEL 1165/BIS0 -31.93120 0.000 58.50000 -31.93120"
+        }
+      ]
+    },
+    {
+      "item_code": "73034",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)+BAS",
+      "tipo_unidade": "",
+      "codigo_cor": "107768",
+      "descricao_cor": "TERRACOTA",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 2.0,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 30"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -0.706,
+          "necessidade": 1.0,
+          "saldo_casa": "8.00000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 548.4,
+          "source_text": "M 107768 - TERRACOTA 10 -0.70600 0.000 8.00000 -0.70600"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -0.9832,
+          "necessidade": 1.0,
+          "saldo_casa": "8.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 668.9,
+          "source_text": "73034 - NAPA TURIM PU 1.0 (B P/V 15/16)+BAS M 107768 - TERRACOTA 10 -0.98320 0.000 8.00000 -0.98320"
+        }
+      ]
+    },
+    {
+      "item_code": "76853",
+      "item_desc": "METAL GLAMOUR PU 0.9 (V P/V 16/17)",
+      "tipo_unidade": "",
+      "codigo_cor": "41",
+      "descricao_cor": "PRATA",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 9.1824,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -1.37386,
+          "necessidade": 1.37386,
+          "saldo_casa": "90",
+          "saldo_origem": "substituto",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 566.8,
+          "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -1.37386 3.200 0.00000 1.82614"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -3.5125,
+          "necessidade": 3.5125,
+          "saldo_casa": "90",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 419.4,
+          "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -3.51250 3.200 0.00000 -0.31250"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -4.296,
+          "necessidade": 4.296,
+          "saldo_casa": "90",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 658.9,
+          "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -4.29600 3.200 0.00000 -1.09600"
+        }
+      ]
+    },
+    {
+      "item_code": "94157",
+      "item_desc": "NAPA TURIM PU 1.0+VELVET",
+      "tipo_unidade": "",
+      "codigo_cor": "15787",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 62.1115,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -12.9267,
+          "necessidade": 12.9267,
+          "saldo_casa": "163.60000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 622.1,
+          "source_text": "94157 - NAPA TURIM PU 1.0+VELVET M 15787 - PRETO 01/PRET0 -12.92670 1,188.000 163.60000 1,175.07330"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -49.1848,
+          "necessidade": 49.1848,
+          "saldo_casa": "163.60000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 677.4,
+          "source_text": "94157 - NAPA TURIM PU 1.0+VELVET M 15787 - PRETO 01/PRET0 -49.18480 1,188.000 163.60000 1,138.81520"
+        }
+      ]
+    },
+    {
+      "item_code": "94157",
+      "item_desc": "NAPA TURIM PU 1.0+VELVET",
+      "tipo_unidade": "",
+      "codigo_cor": "95701",
+      "descricao_cor": "CAMEL 1165/CR",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 38.9572,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 43"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -20.4044,
+          "necessidade": 20.4044,
+          "saldo_casa": "16.70000",
+          "saldo_origem": "nacional",
+          "source_page": 2,
+          "source_x": 149.0,
+          "source_y": 640.5,
+          "source_text": "M 95701 - CAMEL 1165/CR0 -20.40440 0.000 16.70000 -20.40440"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -12.2402,
+          "necessidade": 12.2402,
+          "saldo_casa": "16.70000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 705.7,
+          "source_text": "94157 - NAPA TURIM PU 1.0+VELVET M 95701 - CAMEL 1165/CR0 -12.24020 0.000 16.70000 -12.24020"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 43",
+          "deve_abast": -6.3126,
+          "necessidade": 6.3126,
+          "saldo_casa": "16.70000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 253.5,
+          "source_text": "94157 - NAPA TURIM PU 1.0+VELVET M 95701 - CAMEL 1165/CR0 -6.31260 0.000 16.70000 -6.31260"
+        }
+      ]
+    },
+    {
+      "item_code": "143760",
+      "item_desc": "METALIZADO LONDON PU 0.9+BASE",
+      "tipo_unidade": "",
+      "codigo_cor": "15787",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 2.0,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -0.0856,
+          "necessidade": 1.0,
+          "saldo_casa": "12.30000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 161.3,
+          "source_text": "143760 - METALIZADO LONDON PU 0.9+BASE M 15787 - PRETO 01/PRET0 -0.08560 21.800 12.30000 21.71440"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -0.672,
+          "necessidade": 1.0,
+          "saldo_casa": "12.30000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 392.4,
+          "source_text": "143760 - METALIZADO LONDON PU 0.9+BASE M 15787 - PRETO 01/PRET0 -0.67200 21.800 12.30000 21.12800"
+        }
+      ]
+    },
+    {
+      "item_code": "168873",
+      "item_desc": "NAPA CALF PU 0.9 ( P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 206.5701,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -110.314,
+          "necessidade": 110.314,
+          "saldo_casa": "239",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 179.8,
+          "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -110.31400 0.000 0.00000 -110.31400"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -13.95224,
+          "necessidade": 13.95224,
+          "saldo_casa": "239",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 695.8,
+          "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -13.95224 0.000 0.00000 -13.95224"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -82.3039,
+          "necessidade": 82.3039,
+          "saldo_casa": "239",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 714.2,
+          "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -82.30390 0.000 0.00000 -82.30390"
+        }
+      ]
+    },
+    {
+      "item_code": "168873",
+      "item_desc": "NAPA CALF PU 0.9 ( P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "102051",
+      "descricao_cor": "AREIA 1286",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 119.4515,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -100.4344,
+          "necessidade": 100.4344,
+          "saldo_casa": "188",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 216.6,
+          "source_text": "M 102051 - AREIA 1286 0 -100.43440 4.000 0.00000 -96.43440"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -19.0171,
+          "necessidade": 19.0171,
+          "saldo_casa": "188",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 769.5,
+          "source_text": "M 102051 - AREIA 1286 0 -19.01710 4.000 0.00000 -15.01710"
+        }
+      ]
+    },
+    {
+      "item_code": "192801",
+      "item_desc": "BRILHO ITALIA PU 0.9 (P/V 25/26)",
+      "tipo_unidade": "",
+      "codigo_cor": "23146",
+      "descricao_cor": "OURO ROSADO",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 88.8596,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -43.4036,
+          "necessidade": 43.4036,
+          "saldo_casa": "83",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 308.8,
+          "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -43.40360 0.000 0.00000 -43.40360"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -1.46508,
+          "necessidade": 1.46508,
+          "saldo_casa": "83",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 603.6,
+          "source_text": "M 23146 - OURO ROSADO0 -1.46508 0.000 0.00000 -1.46508"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -19.66,
+          "necessidade": 19.66,
+          "saldo_casa": "83",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 142.9,
+          "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -19.66000 0.000 0.00000 -19.66000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -24.33096,
+          "necessidade": 24.33096,
+          "saldo_casa": "83",
+          "saldo_origem": "substituto",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 235.0,
+          "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -24.33096 0.000 0.00000 -24.33096"
+        }
+      ]
+    },
+    {
+      "item_code": "196770",
+      "item_desc": "NAPA ONCA GRECIA PU 0.9 (B P/V 24",
+      "tipo_unidade": "",
+      "codigo_cor": "96942",
+      "descricao_cor": "MULTI CAMEL",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 15.0211,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 9",
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 9",
+          "deve_abast": -7.3855,
+          "necessidade": 7.3855,
+          "saldo_casa": "42.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 345.6,
+          "source_text": "196770 - NAPA ONCA GRECIA PU 0.9 (B P/V 24 M 96942 - MULTI CAMEL 10 -7.38550 50.391 42.00000 43.00550 0101B016"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -1.0,
+          "necessidade": 1.0,
+          "saldo_casa": "42.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 622.1,
+          "source_text": "196770 - NAPA ONCA GRECIA PU 0.9 (B P/V 24 M 96942 - MULTI CAMEL 10 -1.00000 50.391 42.00000 49.39100 0101B016"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -0.648,
+          "necessidade": 1.0,
+          "saldo_casa": "42.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 161.3,
+          "source_text": "196770 - NAPA ONCA GRECIA PU 0.9 (B P/V 24 M 96942 - MULTI CAMEL 10 -0.64800 50.391 42.00000 49.74300 0101B016"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -5.6356,
+          "necessidade": 5.6356,
+          "saldo_casa": "42.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 308.8,
+          "source_text": "196770 - NAPA ONCA GRECIA PU 0.9 (B P/V 24 M 96942 - MULTI CAMEL 10 -5.63560 50.391 42.00000 44.75540 0101B016"
+        }
+      ]
+    },
+    {
+      "item_code": "23124",
+      "item_desc": "TERMOPONTO P345/11 - 120",
+      "tipo_unidade": "",
+      "codigo_cor": "3",
+      "descricao_cor": "PRETO",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 28.6256,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -21.04,
+          "necessidade": 21.04,
+          "saldo_casa": "113.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 568.1,
+          "source_text": "23124 - TERMOPONTO P345/11 - 120 M 3 - PRETO 0 -21.04000 5,605.000 113.00000 5,583.96000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -7.5856,
+          "necessidade": 7.5856,
+          "saldo_casa": "113.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 511.5,
+          "source_text": "23124 - TERMOPONTO P345/11 - 120 M 3 - PRETO 0 -7.58560 5,605.000 113.00000 5,597.41440"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "50",
+      "descricao_cor": "NATURAL",
+      "tam": "",
+      "qtd_mini_fabricas": 4,
+      "total_necessidade": 120.2391,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -107.84868,
+          "necessidade": 107.84868,
+          "saldo_casa": "405.7",
+          "saldo_origem": "substituto",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 678.7,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -107.84868 39.400 0.00000 -68.44868"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -2.232,
+          "necessidade": 2.232,
+          "saldo_casa": "405.7",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 290.3,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -2.23200 39.400 0.00000 37.16800"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -5.6028,
+          "necessidade": 5.6028,
+          "saldo_casa": "405.7",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 548.3,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -5.60280 39.400 0.00000 33.79720"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -4.55559,
+          "necessidade": 4.55559,
+          "saldo_casa": "405.7",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 382.5,
+          "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -4.55559 39.400 0.00000 34.84441"
+        }
+      ]
+    },
+    {
+      "item_code": "56577",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)",
+      "tipo_unidade": "",
+      "codigo_cor": "101321",
+      "descricao_cor": "CHOCOLATE",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 45.57,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -18.4588,
+          "necessidade": 18.4588,
+          "saldo_casa": "50.00000",
+          "saldo_origem": "nacional",
+          "source_page": 3,
+          "source_x": 149.0,
+          "source_y": 807.7,
+          "source_text": "M 101321 - CHOCOLATE 10 -18.45880 1,442.300 50.00000 1,423.84120"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -12.7556,
+          "necessidade": 12.7556,
+          "saldo_casa": "50.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 603.6,
+          "source_text": "M 101321 - CHOCOLATE 10 -12.75560 1,442.300 50.00000 1,429.54440"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -14.3556,
+          "necessidade": 14.3556,
+          "saldo_casa": "50.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 493.1,
+          "source_text": "M 101321 - CHOCOLATE 10 -14.35560 1,442.300 50.00000 1,427.94440"
+        }
+      ]
+    },
+    {
+      "item_code": "58623",
+      "item_desc": "FORRO MILANO PU 0.7(B O/I 2014)+FIL",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 15.3964,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 38"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -4.6268,
+          "necessidade": 4.6268,
+          "saldo_casa": "24.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 161.3,
+          "source_text": "58623 - FORRO MILANO PU 0.7(B O/I 2014)+FIL M 15745 - PRETO 01 0 -4.62680 340.962 24.00000 336.33520"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -10.7696,
+          "necessidade": 10.7696,
+          "saldo_casa": "24.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 308.8,
+          "source_text": "58623 - FORRO MILANO PU 0.7(B O/I 2014)+FIL M 15745 - PRETO 01 0 -10.76960 340.962 24.00000 330.19240"
+        }
+      ]
+    },
+    {
+      "item_code": "64664",
+      "item_desc": "FORRO FACHETE PVC 0.8 (B O/I 2015)",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 68.392,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 30"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -24.9284,
+          "necessidade": 24.9284,
+          "saldo_casa": "21.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 216.6,
+          "source_text": "64664 - FORRO FACHETE PVC 0.8 (B O/I 2015) M 15745 - PRETO 01 0 -24.92840 28.000 21.00000 3.07160"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -43.4636,
+          "necessidade": 43.4636,
+          "saldo_casa": "21.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 613.6,
+          "source_text": "64664 - FORRO FACHETE PVC 0.8 (B O/I 2015) M 15745 - PRETO 01 0 -43.46360 28.000 21.00000 -15.46360"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "83517",
+      "descricao_cor": "CREME 985",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 50.3567,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 30"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -44.96502,
+          "necessidade": 44.96502,
+          "saldo_casa": "312",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 271.9,
+          "source_text": "M 83517 - CREME 985 0 -44.96502 0.000 0.00000 -44.96502"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -5.39172,
+          "necessidade": 5.39172,
+          "saldo_casa": "312",
+          "saldo_origem": "substituto",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 632.0,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 83517 - CREME 985 0 -5.39172 0.000 0.00000 -5.39172"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "89673",
+      "descricao_cor": "TAN 1080",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 41.1051,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -37.70317,
+          "necessidade": 37.70317,
+          "saldo_casa": "65.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 290.3,
+          "source_text": "M 89673 - TAN 1080 0 -37.70317 80.000 65.00000 42.29683"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -3.40191,
+          "necessidade": 3.40191,
+          "saldo_casa": "65.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 548.3,
+          "source_text": "M 89673 - TAN 1080 0 -3.40191 80.000 65.00000 76.59809"
+        }
+      ]
+    },
+    {
+      "item_code": "67345",
+      "item_desc": "NAPA TURIM PU 1.0 + SARJA 7030/40",
+      "tipo_unidade": "",
+      "codigo_cor": "15758",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 105.8715,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -5.2332,
+          "necessidade": 5.2332,
+          "saldo_casa": "392.80000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 327.2,
+          "source_text": "67345 - NAPA TURIM PU 1.0 + SARJA 7030/40 M 15758 - PRETO 01/PRET0 -5.23320 2,458.600 392.80000 2,453.36680 C1"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -100.6383,
+          "necessidade": 100.6383,
+          "saldo_casa": "392.80000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 152.8,
+          "source_text": "67345 - NAPA TURIM PU 1.0 + SARJA 7030/40 M 15758 - PRETO 01/PRET0 -100.63830 2,458.600 392.80000 2,357.96170 C1"
+        }
+      ]
+    },
+    {
+      "item_code": "74934",
+      "item_desc": "NAPA TURIM PU 1.0 + POLINYLON 11H",
+      "tipo_unidade": "",
+      "codigo_cor": "16143",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 11.7294,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 26"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -10.1782,
+          "necessidade": 10.1782,
+          "saldo_casa": "2.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 364.0,
+          "source_text": "74934 - NAPA TURIM PU 1.0 + POLINYLON 11H M 16143 - PRETO 01/PRET0 -10.17820 394.900 2.00000 384.72180"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -1.5512,
+          "necessidade": 1.5512,
+          "saldo_casa": "2.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 263.4,
+          "source_text": "74934 - NAPA TURIM PU 1.0 + POLINYLON 11H M 16143 - PRETO 01/PRET0 -1.55120 394.900 2.00000 393.34880"
+        }
+      ]
+    },
+    {
+      "item_code": "74934",
+      "item_desc": "NAPA TURIM PU 1.0 + POLINYLON 11H",
+      "tipo_unidade": "",
+      "codigo_cor": "101878",
+      "descricao_cor": "CHOCOLATE",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 26.1604,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 26",
+        "Mini Fabrica - 43"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -10.3792,
+          "necessidade": 10.3792,
+          "saldo_casa": "19.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 400.9,
+          "source_text": "M 101878 - CHOCOLATE 10 -10.37920 10.100 19.00000 -0.27920"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 26",
+          "deve_abast": -5.7912,
+          "necessidade": 5.7912,
+          "saldo_casa": "19.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 300.3,
+          "source_text": "M 101878 - CHOCOLATE 10 -5.79120 10.100 19.00000 4.30880"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 43",
+          "deve_abast": -9.99,
+          "necessidade": 9.99,
+          "saldo_casa": "19.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 235.1,
+          "source_text": "74934 - NAPA TURIM PU 1.0 + POLINYLON 11H M 101878 - CHOCOLATE 10 -9.99000 10.100 19.00000 0.11000"
+        }
+      ]
+    },
+    {
+      "item_code": "76853",
+      "item_desc": "METAL GLAMOUR PU 0.9 (V P/V 16/17)",
+      "tipo_unidade": "",
+      "codigo_cor": "23146",
+      "descricao_cor": "OURO ROSADO",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 226.6199,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 20"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -219.61993,
+          "necessidade": 219.61993,
+          "saldo_casa": "626",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 437.8,
+          "source_text": "M 23146 - OURO ROSADO0 -219.61993 0.000 0.00000 -219.61993"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 20",
+          "deve_abast": -7.0,
+          "necessidade": 7.0,
+          "saldo_casa": "626",
+          "saldo_origem": "substituto",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 732.6,
+          "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 23146 - OURO ROSADO0 -7.00000 0.000 0.00000 -7.00000"
+        }
+      ]
+    },
+    {
+      "item_code": "135523",
+      "item_desc": "NAPA GENEBRA PU 1.2 (B O/I 2020) -",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 26.2158,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -19.146,
+          "necessidade": 19.146,
+          "saldo_casa": "40.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 456.2,
+          "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -19.14600 5,277.000 40.00000 5,257.85400"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -7.0698,
+          "necessidade": 7.0698,
+          "saldo_casa": "40.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 677.4,
+          "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -7.06980 5,277.000 40.00000 5,269.93020"
+        }
+      ]
+    },
+    {
+      "item_code": "183344",
+      "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "103102",
+      "descricao_cor": "CHERRY 1335",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 6.5495,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -5.2155,
+          "necessidade": 5.2155,
+          "saldo_casa": "100.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 511.5,
+          "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 103102 - CHERRY 1335 0 -5.21550 64.710 100.00000 59.49450 0101B015"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -1.334,
+          "necessidade": 1.334,
+          "saldo_casa": "100.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 179.8,
+          "source_text": "M 103102 - CHERRY 1335 0 -1.33400 64.710 100.00000 63.37600 0101B015"
+        }
+      ]
+    },
+    {
+      "item_code": "183344",
+      "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "107613",
+      "descricao_cor": "TERRACOTA",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 34.4278,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -29.93532,
+          "necessidade": 29.93532,
+          "saldo_casa": "67.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 529.9,
+          "source_text": "M 107613 - TERRACOTA 10 -29.93532 151.000 67.00000 121.06468"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -0.42692,
+          "necessidade": 1.0,
+          "saldo_casa": "67.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 779.4,
+          "source_text": "M 107613 - TERRACOTA 10 -0.42692 151.000 67.00000 150.57308"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -3.4925,
+          "necessidade": 3.4925,
+          "saldo_casa": "67.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 751.1,
+          "source_text": "M 107613 - TERRACOTA 10 -3.49250 151.000 67.00000 147.50750"
+        }
+      ]
+    },
+    {
+      "item_code": "196814",
+      "item_desc": "NAPA BERLIM CROCO MILAO PU 1.2",
+      "tipo_unidade": "",
+      "codigo_cor": "15758",
+      "descricao_cor": "PRETO 01/PRET",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 14.7342,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 19",
+        "Mini Fabrica - 68"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 19",
+          "deve_abast": -1.2138,
+          "necessidade": 1.2138,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 4,
+          "source_x": 149.0,
+          "source_y": 640.5,
+          "source_text": "196814 - NAPA BERLIM CROCO MILAO PU 1.2 M 15758 - PRETO 01/PRET0 -1.21380 136.000 25.00000 134.78620"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 68",
+          "deve_abast": -13.5204,
+          "necessidade": 13.5204,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 437.8,
+          "source_text": "196814 - NAPA BERLIM CROCO MILAO PU 1.2 M 15758 - PRETO 01/PRET0 -13.52040 136.000 25.00000 122.47960"
+        }
+      ]
+    },
+    {
+      "item_code": "67244",
+      "item_desc": "NAPA TURIM PU 1.0 (B P/V 15/16)",
+      "tipo_unidade": "",
+      "codigo_cor": "107610",
+      "descricao_cor": "OLIVE 1469",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 33.367,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -12.46622,
+          "necessidade": 12.46622,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 650.4,
+          "source_text": "M 107610 - OLIVE 1469 0 -12.46622 0.400 26.00000 -12.06622"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -0.4788,
+          "necessidade": 1.0,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 345.6,
+          "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 107610 - OLIVE 1469 0 -0.47880 0.400 26.00000 -0.07880"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -19.90082,
+          "necessidade": 19.90082,
+          "saldo_casa": "26.00000",
+          "saldo_origem": "nacional",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 566.8,
+          "source_text": "M 107610 - OLIVE 1469 0 -19.90082 0.400 26.00000 -19.50082"
+        }
+      ]
+    },
+    {
+      "item_code": "183344",
+      "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "15745",
+      "descricao_cor": "PRETO 01",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 14.8549,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -10.06426,
+          "necessidade": 10.06426,
+          "saldo_casa": "47",
+          "saldo_origem": "substituto",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 742.6,
+          "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -10.06426 265.000 0.00000 254.93574"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -4.7906,
+          "necessidade": 4.7906,
+          "saldo_casa": "47",
+          "saldo_origem": "substituto",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 142.9,
+          "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -4.79060 265.000 0.00000 260.20940"
+        }
+      ]
+    },
+    {
+      "item_code": "183344",
+      "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "95373",
+      "descricao_cor": "CAMEL 1165",
+      "tam": "",
+      "qtd_mini_fabricas": 3,
+      "total_necessidade": 23.2611,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -4.92634,
+          "necessidade": 4.92634,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 5,
+          "source_x": 149.0,
+          "source_y": 761.0,
+          "source_text": "M 95373 - CAMEL 1165 0 -4.92634 910.500 25.00000 905.57366"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -5.7195,
+          "necessidade": 5.7195,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 437.8,
+          "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 95373 - CAMEL 1165 0 -5.71950 910.500 25.00000 904.78050"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -12.6153,
+          "necessidade": 12.6153,
+          "saldo_casa": "25.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 161.3,
+          "source_text": "M 95373 - CAMEL 1165 0 -12.61530 910.500 25.00000 897.88470"
+        }
+      ]
+    },
+    {
+      "item_code": "195432",
+      "item_desc": "NAPA LEZARD GRECIA PU 0.9 (B P/V",
+      "tipo_unidade": "",
+      "codigo_cor": "95373",
+      "descricao_cor": "CAMEL 1165",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 14.9652,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 30",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 30",
+          "deve_abast": -10.89,
+          "necessidade": 10.89,
+          "saldo_casa": "35.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 142.9,
+          "source_text": "195432 - NAPA LEZARD GRECIA PU 0.9 (B P/V M 95373 - CAMEL 1165 0 -10.89000 31.500 35.00000 20.61000"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -4.0752,
+          "necessidade": 4.0752,
+          "saldo_casa": "35.00000",
+          "saldo_origem": "nacional",
+          "source_page": 8,
+          "source_x": 149.0,
+          "source_y": 290.3,
+          "source_text": "M 95373 - CAMEL 1165 0 -4.07520 31.500 35.00000 27.42480"
+        }
+      ]
+    },
+    {
+      "item_code": "183344",
+      "item_desc": "NAPA GARDA PU 1.0 (V P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "107610",
+      "descricao_cor": "OLIVE 1469",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 16.5447,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 38",
+        "Mini Fabrica - 40"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 38",
+          "deve_abast": -3.98106,
+          "necessidade": 3.98106,
+          "saldo_casa": "41.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 456.2,
+          "source_text": "M 107610 - OLIVE 1469 0 -3.98106 168.000 41.00000 164.01894"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -12.5636,
+          "necessidade": 12.5636,
+          "saldo_casa": "41.00000",
+          "saldo_origem": "nacional",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 732.6,
+          "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 107610 - OLIVE 1469 0 -12.56360 168.000 41.00000 155.43640"
+        }
+      ]
+    },
+    {
+      "item_code": "168873",
+      "item_desc": "NAPA CALF PU 0.9 ( P/V 24/25)",
+      "tipo_unidade": "",
+      "codigo_cor": "35312",
+      "descricao_cor": "BRANCO OFF",
+      "tam": "",
+      "qtd_mini_fabricas": 2,
+      "total_necessidade": 125.3024,
+      "mini_fabricas_destino": [
+        "Mini Fabrica - 40",
+        "Mini Fabrica - 50"
+      ],
+      "destinos": [
+        {
+          "mini_fabrica": "Mini Fabrica - 40",
+          "deve_abast": -13.88808,
+          "necessidade": 13.88808,
+          "saldo_casa": "156",
+          "saldo_origem": "substituto",
+          "source_page": 6,
+          "source_x": 149.0,
+          "source_y": 714.2,
+          "source_text": "M 35312 - BRANCO OFF 50 -13.88808 30.000 0.00000 16.11192"
+        },
+        {
+          "mini_fabrica": "Mini Fabrica - 50",
+          "deve_abast": -111.4143,
+          "necessidade": 111.4143,
+          "saldo_casa": "156",
+          "saldo_origem": "substituto",
+          "source_page": 7,
+          "source_x": 149.0,
+          "source_y": 732.7,
+          "source_text": "M 35312 - BRANCO OFF 50 -111.41430 30.000 0.00000 -81.41430"
+        }
+      ]
+    }
+  ]
+}

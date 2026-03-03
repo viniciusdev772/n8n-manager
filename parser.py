@@ -2618,6 +2618,29 @@ if FASTAPI_AVAILABLE:
     class HealthResponse(BaseModel):
         status: str = Field(description="Status da API.", examples=["ok"])
 
+    class JsonMiniMeta(BaseModel):
+        mini_fabrica: str = Field(description="Nome da mini fábrica.")
+        destinos: int = Field(description="Quantidade de destinos/linhas consideradas para a mini.")
+        total_necessidade: float = Field(description="Necessidade total acumulada.")
+        total_saldo: float = Field(description="Saldo total acumulado.")
+        total_falta: float = Field(description="Falta total estimada.")
+        cobertura_pct: float = Field(description="Percentual de cobertura estimado.")
+
+    class JsonFileMetadata(BaseModel):
+        json_type: str = Field(description="Tipo do JSON: parsed ou common_items.")
+        total_items: int = Field(default=0, description="Total de itens (somente parsed).")
+        total_colors: int = Field(default=0, description="Total de cores (somente parsed).")
+        total_groups: int = Field(default=0, description="Total de grupos (somente common_items).")
+        total_destinos: int = Field(description="Total de destinos/linhas operacionais consideradas.")
+        total_minis: int = Field(description="Total de mini fábricas com dados de falta.")
+        total_necessidade: float = Field(description="Necessidade total acumulada.")
+        total_saldo: float = Field(description="Saldo total acumulado.")
+        total_falta: float = Field(description="Falta total estimada.")
+        top_minis_falta: List[JsonMiniMeta] = Field(
+            default_factory=list,
+            description="Top mini fábricas por maior falta total."
+        )
+
     class GeneratedFile(BaseModel):
         name: str = Field(description="Nome do arquivo.")
         relative_path: str = Field(description="Caminho relativo dentro da pasta de output.")
@@ -2625,6 +2648,13 @@ if FASTAPI_AVAILABLE:
         updated_at: str = Field(description="Timestamp UTC ISO-8601 de atualizacao.")
         direct_url: str = Field(
             description="Link direto para download/abertura do arquivo via endpoint /files/{filename}."
+        )
+        json_metadata: Optional[JsonFileMetadata] = Field(
+            default=None,
+            description=(
+                "Metadados operacionais de faltas para arquivos JSON do parser "
+                "(_parsed.json e _common_items.json)."
+            ),
         )
 
     class FileListResponse(BaseModel):
@@ -2745,6 +2775,160 @@ if FASTAPI_AVAILABLE:
             raise HTTPException(status_code=404, detail="Arquivo nao encontrado")
         return file_path
 
+    def _to_float_safe(value: Any) -> float:
+        if value is None:
+            return 0.0
+        if isinstance(value, (int, float)):
+            return float(value)
+        text = str(value).strip()
+        if not text:
+            return 0.0
+        text = text.replace(".", "").replace(",", ".")
+        try:
+            return float(text)
+        except ValueError:
+            return 0.0
+
+    def _normalize_need_for_meta(value: float) -> float:
+        if value <= 0.0:
+            return 0.0
+        if 0.0 < value < 1.0:
+            return 1.0
+        return value
+
+    def _build_top_minis(mini_stats: Dict[str, Dict[str, float]], limit: int = 8) -> List[Dict[str, Any]]:
+        rows = []
+        for mini, stats in mini_stats.items():
+            need = float(stats.get("need", 0.0))
+            covered = float(stats.get("covered", 0.0))
+            falta = float(stats.get("gap", 0.0))
+            cobertura_pct = (covered / need * 100.0) if need > 0 else 100.0
+            rows.append(
+                {
+                    "mini_fabrica": mini,
+                    "destinos": int(stats.get("destinos", 0)),
+                    "total_necessidade": round(need, 6),
+                    "total_saldo": round(float(stats.get("saldo", 0.0)), 6),
+                    "total_falta": round(falta, 6),
+                    "cobertura_pct": round(cobertura_pct, 4),
+                }
+            )
+        rows.sort(key=lambda x: (x["total_falta"], x["total_necessidade"], x["mini_fabrica"]), reverse=True)
+        return rows[:limit]
+
+    def _extract_json_metadata(file_path: Path) -> Optional[Dict[str, Any]]:
+        name = file_path.name.lower()
+        is_common = name.endswith("_common_items.json")
+        is_parsed = name.endswith("_parsed.json")
+        if not (is_common or is_parsed):
+            return None
+
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                payload = json.load(f)
+        except Exception:
+            return None
+
+        mini_stats: Dict[str, Dict[str, float]] = defaultdict(
+            lambda: {"destinos": 0, "need": 0.0, "saldo": 0.0, "covered": 0.0, "gap": 0.0}
+        )
+        total_need = 0.0
+        total_saldo = 0.0
+        total_gap = 0.0
+        total_destinos = 0
+
+        if is_common and isinstance(payload, dict):
+            groups = payload.get("grupos_distribuicao", []) or []
+            if not isinstance(groups, list):
+                groups = []
+            for group in groups:
+                destinos = (group or {}).get("destinos", []) if isinstance(group, dict) else []
+                if not isinstance(destinos, list):
+                    continue
+                for destino in destinos:
+                    if not isinstance(destino, dict):
+                        continue
+                    mini = str(destino.get("mini_fabrica") or "Mini Fabrica - N/D")
+                    need_raw = destino.get("necessidade")
+                    if need_raw is None:
+                        need_raw = abs(_to_float_safe(destino.get("deve_abast")))
+                    need = _normalize_need_for_meta(abs(_to_float_safe(need_raw)))
+                    saldo = max(0.0, _to_float_safe(destino.get("saldo_casa")))
+                    covered = min(saldo, need)
+                    gap = max(need - covered, 0.0)
+
+                    s = mini_stats[mini]
+                    s["destinos"] += 1
+                    s["need"] += need
+                    s["saldo"] += saldo
+                    s["covered"] += covered
+                    s["gap"] += gap
+
+                    total_destinos += 1
+                    total_need += need
+                    total_saldo += saldo
+                    total_gap += gap
+
+            return {
+                "json_type": "common_items",
+                "total_items": 0,
+                "total_colors": 0,
+                "total_groups": len(groups),
+                "total_destinos": total_destinos,
+                "total_minis": len(mini_stats),
+                "total_necessidade": round(total_need, 6),
+                "total_saldo": round(total_saldo, 6),
+                "total_falta": round(total_gap, 6),
+                "top_minis_falta": _build_top_minis(mini_stats),
+            }
+
+        if is_parsed and isinstance(payload, list):
+            total_items = 0
+            total_colors = 0
+            for item in payload:
+                if not isinstance(item, dict):
+                    continue
+                total_items += 1
+                mini = str(item.get("mini_fabrica") or "Mini Fabrica - N/D")
+                colors = item.get("colors", [])
+                if not isinstance(colors, list):
+                    colors = []
+                for color in colors:
+                    if not isinstance(color, dict):
+                        continue
+                    total_colors += 1
+                    need = _normalize_need_for_meta(abs(_to_float_safe(color.get("abast"))))
+                    saldo = max(0.0, _to_float_safe(color.get("saldo_casa")))
+                    covered = min(saldo, need)
+                    gap = max(need - covered, 0.0)
+
+                    s = mini_stats[mini]
+                    s["destinos"] += 1
+                    s["need"] += need
+                    s["saldo"] += saldo
+                    s["covered"] += covered
+                    s["gap"] += gap
+
+                    total_destinos += 1
+                    total_need += need
+                    total_saldo += saldo
+                    total_gap += gap
+
+            return {
+                "json_type": "parsed",
+                "total_items": total_items,
+                "total_colors": total_colors,
+                "total_groups": 0,
+                "total_destinos": total_destinos,
+                "total_minis": len(mini_stats),
+                "total_necessidade": round(total_need, 6),
+                "total_saldo": round(total_saldo, 6),
+                "total_falta": round(total_gap, 6),
+                "top_minis_falta": _build_top_minis(mini_stats),
+            }
+
+        return None
+
     @app.get(
         "/health",
         tags=["status"],
@@ -2761,7 +2945,8 @@ if FASTAPI_AVAILABLE:
         summary="Lista arquivos gerados",
         description=(
             "Lista todos os arquivos presentes na pasta de output da parser API. "
-            "Inclui nome, caminho relativo, tamanho e data de atualização."
+            "Inclui nome, caminho relativo, tamanho, data de atualização e metadados "
+            "de falta para JSONs do parser."
         ),
         response_model=FileListResponse,
     )
@@ -2780,6 +2965,7 @@ if FASTAPI_AVAILABLE:
                     "size_bytes": path.stat().st_size,
                     "updated_at": datetime.fromtimestamp(path.stat().st_mtime, UTC).isoformat().replace("+00:00", "Z"),
                     "direct_url": f"{base_url}/files/{quote(rel)}",
+                    "json_metadata": _extract_json_metadata(path),
                 }
             )
         return {"output_dir": str(output_dir), "count": len(files), "files": files}
