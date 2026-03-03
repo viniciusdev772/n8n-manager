@@ -742,6 +742,17 @@ def _safe_table_name(name: str, idx: int) -> str:
     return safe[:80]
 
 
+def _excel_strict_compat_enabled() -> bool:
+    """
+    Modo compatível com Excel 365.
+    Alguns recursos avançados de formatação (tabela estruturada, ícones,
+    barras de dados e validação inline) podem abrir em Calc/Sheets, mas
+    provocar reparo de arquivo em versões do Excel da Microsoft.
+    """
+    raw = os.getenv("PARSER_EXCEL_STRICT_COMPAT", "1").strip().lower()
+    return raw not in {"0", "false", "no", "off"}
+
+
 def _mini_sort_key(mini_name: str):
     text = str(mini_name or "")
     m = re.search(r"(\d+)", text)
@@ -815,6 +826,7 @@ def _render_styled_sheet(
     min_column_width: float = 8.0,
     max_column_width: float = 52.0,
     narrow_margins: bool = False,
+    excel_strict_compat: bool = True,
 ):
     headers = list(df.columns)
     if not headers:
@@ -886,7 +898,7 @@ def _render_styled_sheet(
     if sheet_note:
         ws.oddHeader.left.text = sheet_note[:100]
 
-    if max_row >= 2:
+    if max_row >= 2 and not excel_strict_compat:
         tab = Table(displayName=table_name, ref=f"A1:{get_column_letter(max_col)}{max_row}")
         tab.tableStyleInfo = TableStyleInfo(
             name="TableStyleMedium2",
@@ -926,7 +938,7 @@ def _render_styled_sheet(
             ),
         )
 
-    for col_name in data_bar_columns or []:
+    for col_name in ([] if excel_strict_compat else (data_bar_columns or [])):
         if col_name not in headers or max_row < 2:
             continue
         col_idx = headers.index(col_name) + 1
@@ -936,7 +948,7 @@ def _render_styled_sheet(
             DataBarRule(start_type="min", end_type="max", color="4F81BD"),
         )
 
-    for col_name in icon_set_columns or []:
+    for col_name in ([] if excel_strict_compat else (icon_set_columns or [])):
         if col_name not in headers or max_row < 2:
             continue
         col_idx = headers.index(col_name) + 1
@@ -975,7 +987,7 @@ def _render_styled_sheet(
             ),
         )
 
-    for col_name, values in (list_validations or {}).items():
+    for col_name, values in ({} if excel_strict_compat else (list_validations or {})).items():
         if col_name not in headers or max_row < 2 or not values:
             continue
         col_idx = headers.index(col_name) + 1
@@ -1017,6 +1029,7 @@ def _save_styled_xlsx_from_df(
         return False
 
     wb = Workbook()
+    strict_compat = _excel_strict_compat_enabled()
     ws = wb.active
     ws.title = _safe_sheet_name(sheet_name or "Dados")
     _render_styled_sheet(
@@ -1025,6 +1038,7 @@ def _save_styled_xlsx_from_df(
         table_name=_safe_table_name(table_name, 1),
         numeric_formats=numeric_formats,
         color_scale_columns=color_scale_columns,
+        excel_strict_compat=strict_compat,
     )
 
     wb.save(xlsx_path)
@@ -1037,6 +1051,7 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
         return False
 
     wb = Workbook()
+    strict_compat = _excel_strict_compat_enabled()
     used_sheet_names = set()
     index_ws = wb.active
     index_ws.title = _unique_sheet_name("Indice", used_sheet_names)
@@ -1071,6 +1086,7 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             min_column_width=spec.get("min_column_width", 8.0),
             max_column_width=spec.get("max_column_width", 52.0),
             narrow_margins=spec.get("narrow_margins", False),
+            excel_strict_compat=strict_compat,
         )
         created_sheets.append(
             {
@@ -1117,20 +1133,21 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
         index_ws.page_setup.fitToWidth = 1
         index_ws.print_area = f"A1:C{max(5, row-1)}"
 
-        summary_sheet_names = ["Resumo Minis", "Resumo Minis Comuns"]
-        chart_anchor = ["E4", "E22"]
-        for src_name, anchor in zip(summary_sheet_names, chart_anchor):
-            source = next((e["ws"] for e in created_sheets if e["ws"].title == src_name), None)
-            if source is None:
-                continue
-            _add_index_chart(
-                index_ws,
-                source_ws=source,
-                category_header="Mini Fabrica",
-                value_header="Total Falta",
-                title=f"{src_name} - Total Falta",
-                anchor=anchor,
-            )
+        if not strict_compat:
+            summary_sheet_names = ["Resumo Minis", "Resumo Minis Comuns"]
+            chart_anchor = ["E4", "E22"]
+            for src_name, anchor in zip(summary_sheet_names, chart_anchor):
+                source = next((e["ws"] for e in created_sheets if e["ws"].title == src_name), None)
+                if source is None:
+                    continue
+                _add_index_chart(
+                    index_ws,
+                    source_ws=source,
+                    category_header="Mini Fabrica",
+                    value_header="Total Falta",
+                    title=f"{src_name} - Total Falta",
+                    anchor=anchor,
+                )
 
     wb.save(xlsx_path)
     return True
