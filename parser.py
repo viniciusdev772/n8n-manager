@@ -828,6 +828,7 @@ def _render_styled_sheet(
     column_width_overrides: Optional[Dict[str, float]] = None,
     narrow_margins: bool = False,
     excel_strict_compat: bool = True,
+    monochrome: bool = False,
 ):
     headers = list(df.columns)
     if not headers:
@@ -841,14 +842,21 @@ def _render_styled_sheet(
     max_row = ws.max_row
     max_col = ws.max_column
 
-    header_fill = PatternFill(fill_type="solid", start_color="1F4E78", end_color="1F4E78")
-    header_font = Font(color="FFFFFF", bold=True, size=header_font_size)
-    thin = Side(border_style="thin", color="D9E1F2")
+    if monochrome:
+        header_fill = PatternFill(fill_type="solid", start_color="000000", end_color="000000")
+        header_font = Font(color="FFFFFF", bold=True, size=header_font_size)
+        thin = Side(border_style="thin", color="808080")
+        body_alt_fill = PatternFill(fill_type="solid", start_color="F2F2F2", end_color="F2F2F2")
+        body_font = Font(size=body_font_size, color="000000")
+    else:
+        header_fill = PatternFill(fill_type="solid", start_color="1F4E78", end_color="1F4E78")
+        header_font = Font(color="FFFFFF", bold=True, size=header_font_size)
+        thin = Side(border_style="thin", color="D9E1F2")
+        body_alt_fill = PatternFill(fill_type="solid", start_color="F8FBFF", end_color="F8FBFF")
+        body_font = Font(size=body_font_size, color="1C2733")
     body_border = Border(left=thin, right=thin, top=thin, bottom=thin)
     header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     body_alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-    body_alt_fill = PatternFill(fill_type="solid", start_color="F8FBFF", end_color="F8FBFF")
-    body_font = Font(size=body_font_size, color="1C2733")
 
     for col_idx in range(1, max_col + 1):
         cell = ws.cell(1, col_idx)
@@ -921,7 +929,7 @@ def _render_styled_sheet(
                 cell.number_format = fmt
                 cell.alignment = Alignment(horizontal="right", vertical="top")
 
-    for col_name in color_scale_columns or []:
+    for col_name in ([] if monochrome else (color_scale_columns or [])):
         if col_name not in headers or max_row < 2:
             continue
         col_idx = headers.index(col_name) + 1
@@ -960,7 +968,7 @@ def _render_styled_sheet(
             IconSetRule("3TrafficLights1", "percent", [0, 60, 90], showValue=True),
         )
 
-    if "Falta Estimada" in headers and max_row >= 2:
+    if not monochrome and "Falta Estimada" in headers and max_row >= 2:
         falta_idx = headers.index("Falta Estimada") + 1
         falta_col = get_column_letter(falta_idx)
         ws.conditional_formatting.add(
@@ -974,7 +982,7 @@ def _render_styled_sheet(
             ),
         )
 
-    if "Origem do Saldo" in headers and max_row >= 2:
+    if not monochrome and "Origem do Saldo" in headers and max_row >= 2:
         origem_idx = headers.index("Origem do Saldo") + 1
         origem_col = get_column_letter(origem_idx)
         body_ref = f"A2:{get_column_letter(max_col)}{max_row}"
@@ -1093,6 +1101,7 @@ def _save_styled_multi_sheet_xlsx(sheet_specs: List[Dict[str, Any]], xlsx_path: 
             column_width_overrides=spec.get("column_width_overrides"),
             narrow_margins=spec.get("narrow_margins", False),
             excel_strict_compat=strict_compat,
+            monochrome=spec.get("monochrome", False),
         )
         created_sheets.append(
             {
@@ -1421,6 +1430,7 @@ def save_csv(items, path, xlsx_path=None):
                                 "Origem do Saldo",
                                 "Metragem Separada (anotar)",
                             ],
+                            "monochrome": True,
                         }
                     )
 
