@@ -80,6 +80,7 @@ X_ITEM_DESC_MAX  = 145    # descrição do item termina antes de 145
 X_COLOR_ORIG_MIN = 149    # inclui casos com código de cor "PAR..." em x0~149
 X_COLOR_SUB_MIN  = 153    # cor do substituto começa ~156
 X_COLOR_MAX      = 226    # dados numéricos começam ~230 (ignorar)
+X_COLOR_TRACK_SPLIT = 160 # separa trilha de cor: substituto (~156) vs original (~164)
 
 X_ABAST_MIN      = 240    # coluna Abast começa ~249
 X_ABAST_MAX      = 290    # coluna Abast termina antes de ~290
@@ -178,6 +179,31 @@ def extract_color(color_zone):
             desc = " ".join(clean_color_word(w) for w in color_zone[i + 3:]).strip()
             return code, desc, "PAR"
     return None, None, ""
+
+
+def detect_color_track(color_zone):
+    """
+    Detecta se a linha de cor pertence ao item original ou substituto.
+    Usa a posição x0 do código de cor:
+      - ~156 => substituto
+      - ~164 => original
+    """
+    if not color_zone:
+        return None
+
+    for i in range(len(color_zone) - 1):
+        first = color_zone[i]["text"]
+        second = color_zone[i + 1]["text"]
+        if COLOR_CODE_RE.match(first) and second == "-":
+            return "substituto" if float(color_zone[i].get("x0", 0.0)) < X_COLOR_TRACK_SPLIT else "original"
+        if (
+            first == "PAR"
+            and i + 2 < len(color_zone)
+            and re.fullmatch(r"\d{1,6}", second)
+            and color_zone[i + 2]["text"] == "-"
+        ):
+            return "substituto" if float(color_zone[i + 1].get("x0", 0.0)) < X_COLOR_TRACK_SPLIT else "original"
+    return None
 
 
 def extract_abast(row_words):
@@ -437,7 +463,21 @@ def parse_pdf(pdf_path):
     items        = []
     current_item = None
     current_sub  = None
+    current_sub_item_code = ""
     current_mini_fabrica = None
+
+    def register_substitute_color(item_ref, sub_item_code, row_words, color_zone):
+        """Registra cor/saldo de substituto para fallback do item nacional."""
+        if not item_ref:
+            return
+        sub_code, _sub_desc, _sub_par_tipo = extract_color(color_zone)
+        sub_saldo_casa = extract_saldo_casa(row_words)
+        if sub_code:
+            item_ref["_sub_by_color"][sub_code] = {
+                "sub_item_code": sub_item_code,
+                "sub_color_code": sub_code,
+                "saldo_casa": sub_saldo_casa,
+            }
 
     with pdfplumber.open(pdf_path) as pdf:
         annotations_by_page: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
@@ -496,6 +536,7 @@ def parse_pdf(pdf_path):
                         "_sub_by_color": {},
                     }
                     current_sub = False  # reset: não estamos em substituto
+                    current_sub_item_code = ""
                     items.append(current_item)
                     item_box = row_bbox(row_words)
                     if item_box:
@@ -525,17 +566,15 @@ def parse_pdf(pdf_path):
                 # ── SUBSTITUTO — ignorar, só marcar flag ──────────────────────
                 elif is_new_code and X_ORIGINAL_MAX <= first_x < X_SUBSTITUTO_MAX:
                     current_sub = True  # linhas seguintes de cor pertencem ao sub → ignorar
+                    current_sub_item_code = first_item_word
                     # Guarda metadados do substituto por cor e saldo para fallback
                     # quando o saldo do item nacional estiver zerado.
-                    if current_item:
-                        sub_code, _sub_desc, _sub_par_tipo = extract_color(color_sub)
-                        sub_saldo_casa = extract_saldo_casa(row_words)
-                        if sub_code:
-                            current_item["_sub_by_color"][sub_code] = {
-                                "sub_item_code": first_item_word,
-                                "sub_color_code": sub_code,
-                                "saldo_casa": sub_saldo_casa,
-                            }
+                    register_substitute_color(
+                        item_ref=current_item,
+                        sub_item_code=first_item_word,
+                        row_words=row_words,
+                        color_zone=color_sub,
+                    )
 
                 # ── CONTINUAÇÃO DE DESCRIÇÃO OU COR EXTRA ────────────────────
                 else:
@@ -545,7 +584,18 @@ def parse_pdf(pdf_path):
                     # Cor extra de item original.
                     # Mesmo após linha de substituto, ainda podem existir linhas de cor
                     # do item original (ex.: começam com "M" e cor em x0~164).
-                    if not is_new_code and color_orig and current_item:
+                    color_track = detect_color_track(color_orig)
+                    substitute_continuation = current_sub and not is_new_code and color_track == "substituto"
+
+                    if substitute_continuation:
+                        register_substitute_color(
+                            item_ref=current_item,
+                            sub_item_code=current_sub_item_code,
+                            row_words=row_words,
+                            color_zone=color_sub,
+                        )
+
+                    if not substitute_continuation and not is_new_code and color_orig and current_item:
                         code, desc, par_tipo = extract_color(color_orig)
                         if code:
                             src = make_source_meta(page_number, row_words, row_text, color_orig)
