@@ -493,7 +493,7 @@ def parse_pdf(pdf_path):
                         "item_desc": item_desc,
                         "mini_fabrica": current_mini_fabrica,
                         "colors":    [],
-                        "_sub_saldo_by_color": {},
+                        "_sub_by_color": {},
                     }
                     current_sub = False  # reset: não estamos em substituto
                     items.append(current_item)
@@ -525,13 +525,17 @@ def parse_pdf(pdf_path):
                 # ── SUBSTITUTO — ignorar, só marcar flag ──────────────────────
                 elif is_new_code and X_ORIGINAL_MAX <= first_x < X_SUBSTITUTO_MAX:
                     current_sub = True  # linhas seguintes de cor pertencem ao sub → ignorar
-                    # Guarda saldo do substituto por cor para usar como fallback
+                    # Guarda metadados do substituto por cor e saldo para fallback
                     # quando o saldo do item nacional estiver zerado.
                     if current_item:
                         sub_code, _sub_desc, _sub_par_tipo = extract_color(color_sub)
                         sub_saldo_casa = extract_saldo_casa(row_words)
-                        if sub_code and sub_saldo_casa is not None:
-                            current_item["_sub_saldo_by_color"][sub_code] = sub_saldo_casa
+                        if sub_code:
+                            current_item["_sub_by_color"][sub_code] = {
+                                "sub_item_code": first_item_word,
+                                "sub_color_code": sub_code,
+                                "saldo_casa": sub_saldo_casa,
+                            }
 
                 # ── CONTINUAÇÃO DE DESCRIÇÃO OU COR EXTRA ────────────────────
                 else:
@@ -584,12 +588,16 @@ def parse_pdf(pdf_path):
 
     # Limpa espaços
     for it in items:
-        sub_saldo_map = it.get("_sub_saldo_by_color", {})
+        sub_map = it.get("_sub_by_color", {})
         it["item_desc"] = it["item_desc"].strip()
         for c in it["colors"]:
             c["color_desc"] = c["color_desc"].strip()
-            if is_zero_saldo(c.get("saldo_casa")) and c["color_code"] in sub_saldo_map:
-                c["saldo_casa"] = sub_saldo_map[c["color_code"]]
+            sub_info = sub_map.get(c["color_code"]) if c.get("color_code") else None
+            if sub_info:
+                c["sub_item_code"] = sub_info.get("sub_item_code")
+                c["sub_color_code"] = sub_info.get("sub_color_code")
+            if is_zero_saldo(c.get("saldo_casa")) and sub_info and sub_info.get("saldo_casa") is not None:
+                c["saldo_casa"] = sub_info.get("saldo_casa")
                 c["saldo_origem"] = "substituto"
             elif c.get("saldo_origem") is None:
                 c["saldo_origem"] = "nacional"
@@ -597,8 +605,8 @@ def parse_pdf(pdf_path):
                 c["par_tipo"] = ""
             if c.get("tam") is None:
                 c["tam"] = ""
-        if "_sub_saldo_by_color" in it:
-            del it["_sub_saldo_by_color"]
+        if "_sub_by_color" in it:
+            del it["_sub_by_color"]
 
     return merge_items_for_page_breaks(items)
 
@@ -2670,6 +2678,8 @@ if FASTAPI_AVAILABLE:
         abast: Optional[float] = None
         saldo_casa: Optional[str] = None
         saldo_origem: str = Field(default="nacional")
+        sub_item_code: Optional[str] = Field(default=None, description="Codigo do item substituto relacionado.")
+        sub_color_code: Optional[str] = Field(default=None, description="Codigo da cor do substituto relacionado.")
 
     class ParseItem(BaseModel):
         item_code: str

@@ -15,7 +15,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 134.4,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -24.88765 0.000 0.00000 -24.88765"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -24.88765 0.000 0.00000 -24.88765",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       },
       {
         "color_code": "35313",
@@ -28,7 +30,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 152.8,
-        "source_text": "M 35313 - CREME 516 0 -17.86419 0.000 0.00000 -17.86419"
+        "source_text": "M 35313 - CREME 516 0 -17.86419 0.000 0.00000 -17.86419",
+        "sub_item_code": "135509",
+        "sub_color_code": "35313"
       }
     ]
   },
@@ -101,7 +105,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 226.6,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -19.94960 280.000 25.00000 260.05040 0101C003"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -19.94960 280.000 25.00000 260.05040 0101C003",
+        "sub_item_code": "133429",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "52531",
@@ -114,7 +120,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 245.0,
-        "source_text": "M 52531 - NUDE 658 0 -7.88680 0.000 0.00000 -7.88680"
+        "source_text": "M 52531 - NUDE 658 0 -7.88680 0.000 0.00000 -7.88680",
+        "sub_item_code": "133429",
+        "sub_color_code": "52531"
       },
       {
         "color_code": "103102",
@@ -220,7 +228,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 355.6,
-        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -11.05036 0.000 0.00000 -11.05036"
+        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -11.05036 0.000 0.00000 -11.05036",
+        "sub_item_code": "135529",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -545,7 +555,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 724.2,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -58.18175 0.000 0.00000 -58.18175"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -58.18175 0.000 0.00000 -58.18175",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       },
       {
         "color_code": "23041",
@@ -558,7 +570,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 742.6,
-        "source_text": "M 23041 - CARAMELO 3100 -0.75590 10.500 0.00000 9.74410"
+        "source_text": "M 23041 - CARAMELO 3100 -0.75590 10.500 0.00000 9.74410",
+        "sub_item_code": "135509",
+        "sub_color_code": "23041"
       },
       {
         "color_code": "35313",
@@ -571,7 +585,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 761.0,
-        "source_text": "M 35313 - CREME 516 0 -12.11184 0.000 0.00000 -12.11184"
+        "source_text": "M 35313 - CREME 516 0 -12.11184 0.000 0.00000 -12.11184",
+        "sub_item_code": "135509",
+        "sub_color_code": "35313"
       }
     ]
   },
@@ -591,7 +607,9 @@
         "source_page": 1,
         "source_x": 149.0,
         "source_y": 779.4,
-        "source_text": "32468 - NOBUCK NEW PU 0.8 NOSSA BASE(P M 15745 - PRETO 01 0 -2.10240 29.000 0.00000 26.89760"
+        "source_text": "32468 - NOBUCK NEW PU 0.8 NOSSA BASE(P M 15745 - PRETO 01 0 -2.10240 29.000 0.00000 26.89760",
+        "sub_item_code": "149258",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -644,7 +662,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 142.9,
-        "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -9.08250 0.000 0.00000 -9.08250"
+        "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -9.08250 0.000 0.00000 -9.08250",
+        "sub_item_code": "135518",
+        "sub_color_code": "26926"
       }
     ]
   },
@@ -664,7 +684,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 161.3,
-        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -6.27660 0.000 0.00000 -6.27660"
+        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -6.27660 0.000 0.00000 -6.27660",
+        "sub_item_code": "135461",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "16072",
@@ -677,7 +699,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 179.8,
-        "source_text": "M 16072 - BRANCO 99 0 -4.38000 143.000 0.00000 138.62000"
+        "source_text": "M 16072 - BRANCO 99 0 -4.38000 143.000 0.00000 138.62000",
+        "sub_item_code": "135461",
+        "sub_color_code": "16072"
       },
       {
         "color_code": "29452",
@@ -690,7 +714,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 198.2,
-        "source_text": "M 29452 - BEGE 435 0 -2.12640 0.000 0.00000 -2.12640"
+        "source_text": "M 29452 - BEGE 435 0 -2.12640 0.000 0.00000 -2.12640",
+        "sub_item_code": "135461",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "35312",
@@ -703,7 +729,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 216.6,
-        "source_text": "M 35312 - BRANCO OFF 50 -51.46720 0.000 0.00000 -51.46720"
+        "source_text": "M 35312 - BRANCO OFF 50 -51.46720 0.000 0.00000 -51.46720",
+        "sub_item_code": "135461",
+        "sub_color_code": "35312"
       },
       {
         "color_code": "95373",
@@ -716,7 +744,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 235.0,
-        "source_text": "M 95373 - CAMEL 1165 0 -0.17760 0.000 0.00000 -0.17760"
+        "source_text": "M 95373 - CAMEL 1165 0 -0.17760 0.000 0.00000 -0.17760",
+        "sub_item_code": "135461",
+        "sub_color_code": "95373"
       },
       {
         "color_code": "104068",
@@ -729,7 +759,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 253.5,
-        "source_text": "M 104068 - MOCCA 1398 0 -6.90000 4,016.945 0.00000 4,010.04500"
+        "source_text": "M 104068 - MOCCA 1398 0 -6.90000 4,016.945 0.00000 4,010.04500",
+        "sub_item_code": "135461",
+        "sub_color_code": "104068"
       }
     ]
   },
@@ -749,7 +781,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 271.9,
-        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 16072 - BRANCO 99 0 -4.74750 0.000 0.00000 -4.74750"
+        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 16072 - BRANCO 99 0 -4.74750 0.000 0.00000 -4.74750",
+        "sub_item_code": "135519",
+        "sub_color_code": "16072"
       },
       {
         "color_code": "29452",
@@ -762,7 +796,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 290.3,
-        "source_text": "M 29452 - BEGE 435 0 -25.71260 25.300 0.00000 -0.41260"
+        "source_text": "M 29452 - BEGE 435 0 -25.71260 25.300 0.00000 -0.41260",
+        "sub_item_code": "135519",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "35312",
@@ -854,7 +890,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 400.9,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 15745 - PRETO 01 0 -15.26474 0.000 0.00000 -15.26474 A1"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 15745 - PRETO 01 0 -15.26474 0.000 0.00000 -15.26474 A1",
+        "sub_item_code": "133429",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "52531",
@@ -867,7 +905,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 419.4,
-        "source_text": "M 52531 - NUDE 658 0 -19.19668 0.000 0.00000 -19.19668"
+        "source_text": "M 52531 - NUDE 658 0 -19.19668 0.000 0.00000 -19.19668",
+        "sub_item_code": "133429",
+        "sub_color_code": "52531"
       },
       {
         "color_code": "107613",
@@ -992,7 +1032,9 @@
         "source_page": 2,
         "source_x": 149.0,
         "source_y": 566.8,
-        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -1.37386 3.200 0.00000 1.82614"
+        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -1.37386 3.200 0.00000 1.82614",
+        "sub_item_code": "135530",
+        "sub_color_code": "41"
       }
     ]
   },
@@ -1263,7 +1305,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 179.8,
-        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -110.31400 0.000 0.00000 -110.31400"
+        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -110.31400 0.000 0.00000 -110.31400",
+        "sub_item_code": "193156",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "100983",
@@ -1289,7 +1333,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 216.6,
-        "source_text": "M 102051 - AREIA 1286 0 -100.43440 4.000 0.00000 -96.43440"
+        "source_text": "M 102051 - AREIA 1286 0 -100.43440 4.000 0.00000 -96.43440",
+        "sub_item_code": "193156",
+        "sub_color_code": "102051"
       },
       {
         "color_code": "104068",
@@ -1302,7 +1348,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 235.0,
-        "source_text": "M 104068 - MOCCA 1398 0 -14.50560 0.000 0.00000 -14.50560"
+        "source_text": "M 104068 - MOCCA 1398 0 -14.50560 0.000 0.00000 -14.50560",
+        "sub_item_code": "193156",
+        "sub_color_code": "104068"
       }
     ]
   },
@@ -1342,7 +1390,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 271.9,
-        "source_text": "192622 - METALIZADO MILANO PU 0.9 (V O/I 2 M 41 - PRATA 0 -4.18250 30.000 16.00000 25.81750 0101B016"
+        "source_text": "192622 - METALIZADO MILANO PU 0.9 (V O/I 2 M 41 - PRATA 0 -4.18250 30.000 16.00000 25.81750 0101B016",
+        "sub_item_code": "193880",
+        "sub_color_code": "41"
       },
       {
         "color_code": "66",
@@ -1355,7 +1405,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 290.3,
-        "source_text": "M 66 - DOURADO 0 -20.47110 0.000 0.00000 -20.47110"
+        "source_text": "M 66 - DOURADO 0 -20.47110 0.000 0.00000 -20.47110",
+        "sub_item_code": "193880",
+        "sub_color_code": "66"
       }
     ]
   },
@@ -1375,7 +1427,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 308.8,
-        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -43.40360 0.000 0.00000 -43.40360"
+        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -43.40360 0.000 0.00000 -43.40360",
+        "sub_item_code": "135531",
+        "sub_color_code": "23146"
       }
     ]
   },
@@ -1435,7 +1489,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 364.0,
-        "source_text": "197280 - CAMURCAO LONDON PU 1.2 (V O/I 2 M 101439 - CACAU 1277 0 -9.38720 632.000 0.00000 622.61280"
+        "source_text": "197280 - CAMURCAO LONDON PU 1.2 (V O/I 2 M 101439 - CACAU 1277 0 -9.38720 632.000 0.00000 622.61280",
+        "sub_item_code": "203450",
+        "sub_color_code": "101439"
       }
     ]
   },
@@ -1455,7 +1511,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 419.3,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -22.89240 0.000 0.00000 -22.89240"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -22.89240 0.000 0.00000 -22.89240",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       }
     ]
   },
@@ -1495,7 +1553,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 493.7,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -5.48080 280.000 25.00000 274.51920 0101C003"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -5.48080 280.000 25.00000 274.51920 0101C003",
+        "sub_item_code": "133429",
+        "sub_color_code": "29452"
       }
     ]
   },
@@ -1548,7 +1608,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 605.0,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -3.79110 0.000 0.00000 -3.79110"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -3.79110 0.000 0.00000 -3.79110",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       },
       {
         "color_code": "35313",
@@ -1561,7 +1623,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 623.4,
-        "source_text": "M 35313 - CREME 516 0 -3.69800 0.000 0.00000 -3.69800"
+        "source_text": "M 35313 - CREME 516 0 -3.69800 0.000 0.00000 -3.69800",
+        "sub_item_code": "135509",
+        "sub_color_code": "35313"
       }
     ]
   },
@@ -1601,7 +1665,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 660.3,
-        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.82610 0.000 0.00000 -26.82610"
+        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.82610 0.000 0.00000 -26.82610",
+        "sub_item_code": "135461",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -1621,7 +1687,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 678.7,
-        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -107.84868 39.400 0.00000 -68.44868"
+        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -107.84868 39.400 0.00000 -68.44868",
+        "sub_item_code": "135519",
+        "sub_color_code": "50"
       },
       {
         "color_code": "15745",
@@ -1634,7 +1702,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 697.1,
-        "source_text": "M 15745 - PRETO 01 0 -1.05789 0.000 0.00000 -1.05789"
+        "source_text": "M 15745 - PRETO 01 0 -1.05789 0.000 0.00000 -1.05789",
+        "sub_item_code": "135519",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "29452",
@@ -1647,7 +1717,9 @@
         "source_page": 3,
         "source_x": 149.0,
         "source_y": 715.6,
-        "source_text": "M 29452 - BEGE 435 0 -4.36800 25.300 0.00000 20.93200"
+        "source_text": "M 29452 - BEGE 435 0 -4.36800 25.300 0.00000 20.93200",
+        "sub_item_code": "135519",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "35312",
@@ -1818,7 +1890,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 235.0,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -2.48120 280.000 25.00000 277.51880 0101C003"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -2.48120 280.000 25.00000 277.51880 0101C003",
+        "sub_item_code": "133429",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "52531",
@@ -1831,7 +1905,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 253.5,
-        "source_text": "M 52531 - NUDE 658 0 -17.47780 0.000 0.00000 -17.47780"
+        "source_text": "M 52531 - NUDE 658 0 -17.47780 0.000 0.00000 -17.47780",
+        "sub_item_code": "133429",
+        "sub_color_code": "52531"
       },
       {
         "color_code": "83517",
@@ -1844,7 +1920,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 271.9,
-        "source_text": "M 83517 - CREME 985 0 -44.96502 0.000 0.00000 -44.96502"
+        "source_text": "M 83517 - CREME 985 0 -44.96502 0.000 0.00000 -44.96502",
+        "sub_item_code": "133429",
+        "sub_color_code": "83517"
       },
       {
         "color_code": "89673",
@@ -1969,7 +2047,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 419.4,
-        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -3.51250 3.200 0.00000 -0.31250"
+        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -3.51250 3.200 0.00000 -0.31250",
+        "sub_item_code": "135530",
+        "sub_color_code": "41"
       },
       {
         "color_code": "23146",
@@ -1982,7 +2062,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 437.8,
-        "source_text": "M 23146 - OURO ROSADO0 -219.61993 0.000 0.00000 -219.61993"
+        "source_text": "M 23146 - OURO ROSADO0 -219.61993 0.000 0.00000 -219.61993",
+        "sub_item_code": "135530",
+        "sub_color_code": "23146"
       }
     ]
   },
@@ -2002,7 +2084,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 456.2,
-        "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -19.14600 5,277.000 40.00000 5,257.85400"
+        "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -19.14600 5,277.000 40.00000 5,257.85400",
+        "sub_item_code": "117702",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -2115,7 +2199,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 566.8,
-        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 41 - PRATA 0 -0.03607 0.000 0.00000 -0.03607"
+        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 41 - PRATA 0 -0.03607 0.000 0.00000 -0.03607",
+        "sub_item_code": "135531",
+        "sub_color_code": "41"
       },
       {
         "color_code": "66",
@@ -2128,7 +2214,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 585.2,
-        "source_text": "M 66 - DOURADO 0 -13.88474 0.000 0.00000 -13.88474"
+        "source_text": "M 66 - DOURADO 0 -13.88474 0.000 0.00000 -13.88474",
+        "sub_item_code": "195088",
+        "sub_color_code": "66"
       },
       {
         "color_code": "23146",
@@ -2141,7 +2229,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 603.6,
-        "source_text": "M 23146 - OURO ROSADO0 -1.46508 0.000 0.00000 -1.46508"
+        "source_text": "M 23146 - OURO ROSADO0 -1.46508 0.000 0.00000 -1.46508",
+        "sub_item_code": "135531",
+        "sub_color_code": "23146"
       }
     ]
   },
@@ -2234,7 +2324,9 @@
         "source_page": 4,
         "source_x": 149.0,
         "source_y": 732.6,
-        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 23146 - OURO ROSADO0 -7.00000 0.000 0.00000 -7.00000"
+        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 23146 - OURO ROSADO0 -7.00000 0.000 0.00000 -7.00000",
+        "sub_item_code": "135530",
+        "sub_color_code": "23146"
       }
     ]
   },
@@ -2631,7 +2723,9 @@
         "source_page": 5,
         "source_x": 149.0,
         "source_y": 558.3,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.87000 0.000 0.00000 -13.87000"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.87000 0.000 0.00000 -13.87000",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       },
       {
         "color_code": "23041",
@@ -2644,7 +2738,9 @@
         "source_page": 5,
         "source_x": 149.0,
         "source_y": 576.7,
-        "source_text": "M 23041 - CARAMELO 3100 -19.30670 10.500 0.00000 -8.80670"
+        "source_text": "M 23041 - CARAMELO 3100 -19.30670 10.500 0.00000 -8.80670",
+        "sub_item_code": "135509",
+        "sub_color_code": "23041"
       },
       {
         "color_code": "35313",
@@ -2657,7 +2753,9 @@
         "source_page": 5,
         "source_x": 149.0,
         "source_y": 595.1,
-        "source_text": "M 35313 - CREME 516 0 -30.19940 0.000 0.00000 -30.19940"
+        "source_text": "M 35313 - CREME 516 0 -30.19940 0.000 0.00000 -30.19940",
+        "sub_item_code": "135509",
+        "sub_color_code": "35313"
       }
     ]
   },
@@ -2697,7 +2795,9 @@
         "source_page": 5,
         "source_x": 149.0,
         "source_y": 632.0,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 83517 - CREME 985 0 -5.39172 0.000 0.00000 -5.39172"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 83517 - CREME 985 0 -5.39172 0.000 0.00000 -5.39172",
+        "sub_item_code": "133429",
+        "sub_color_code": "83517"
       },
       {
         "color_code": "107610",
@@ -2803,7 +2903,9 @@
         "source_page": 5,
         "source_x": 149.0,
         "source_y": 742.6,
-        "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -10.06426 265.000 0.00000 254.93574"
+        "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -10.06426 265.000 0.00000 254.93574",
+        "sub_item_code": "186605",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "95373",
@@ -2969,7 +3071,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 253.4,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.41120 0.000 0.00000 -13.41120"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -13.41120 0.000 0.00000 -13.41120",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       },
       {
         "color_code": "23041",
@@ -2982,7 +3086,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 271.9,
-        "source_text": "M 23041 - CARAMELO 3100 -10.99480 10.500 0.00000 -0.49480"
+        "source_text": "M 23041 - CARAMELO 3100 -10.99480 10.500 0.00000 -0.49480",
+        "sub_item_code": "135509",
+        "sub_color_code": "23041"
       }
     ]
   },
@@ -3002,7 +3108,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 290.3,
-        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -2.23200 39.400 0.00000 37.16800"
+        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -2.23200 39.400 0.00000 37.16800",
+        "sub_item_code": "135519",
+        "sub_color_code": "50"
       }
     ]
   },
@@ -3075,7 +3183,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 364.0,
-        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -13.34400 0.000 0.00000 -13.34400"
+        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 15745 - PRETO 01 0 -13.34400 0.000 0.00000 -13.34400",
+        "sub_item_code": "135529",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -3095,7 +3205,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 382.5,
-        "source_text": "149266 - CAMURCA STRECH DUO ( V 22/23)-I M 15745 - PRETO 01 0 -457.62720 9,575.000 593.00000 9,117.37280"
+        "source_text": "149266 - CAMURCA STRECH DUO ( V 22/23)-I M 15745 - PRETO 01 0 -457.62720 9,575.000 593.00000 9,117.37280",
+        "sub_item_code": "149782",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "107509",
@@ -3108,7 +3220,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 400.9,
-        "source_text": "M 107509 - CAMEL 1470 0 -210.52060 1,150.000 0.00000 939.47940"
+        "source_text": "M 107509 - CAMEL 1470 0 -210.52060 1,150.000 0.00000 939.47940",
+        "sub_item_code": "149782",
+        "sub_color_code": "107509"
       }
     ]
   },
@@ -3201,7 +3315,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 529.9,
-        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -0.17160 0.000 0.00000 -0.17160"
+        "source_text": "25567 - AVESSO VELUR M 3 - PRETO 0 -0.17160 0.000 0.00000 -0.17160",
+        "sub_item_code": "135509",
+        "sub_color_code": "3"
       }
     ]
   },
@@ -3221,7 +3337,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 548.3,
-        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -5.60280 39.400 0.00000 33.79720"
+        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -5.60280 39.400 0.00000 33.79720",
+        "sub_item_code": "135519",
+        "sub_color_code": "50"
       },
       {
         "color_code": "35312",
@@ -3313,7 +3431,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 658.9,
-        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -4.29600 3.200 0.00000 -1.09600"
+        "source_text": "76853 - METAL GLAMOUR PU 0.9 (V P/V 16/17) M 41 - PRATA 0 -4.29600 3.200 0.00000 -1.09600",
+        "sub_item_code": "135530",
+        "sub_color_code": "41"
       }
     ]
   },
@@ -3353,7 +3473,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 695.8,
-        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -13.95224 0.000 0.00000 -13.95224"
+        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -13.95224 0.000 0.00000 -13.95224",
+        "sub_item_code": "193156",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "35312",
@@ -3366,7 +3488,9 @@
         "source_page": 6,
         "source_x": 149.0,
         "source_y": 714.2,
-        "source_text": "M 35312 - BRANCO OFF 50 -13.88808 30.000 0.00000 16.11192"
+        "source_text": "M 35312 - BRANCO OFF 50 -13.88808 30.000 0.00000 16.11192",
+        "sub_item_code": "193156",
+        "sub_color_code": "35312"
       }
     ]
   },
@@ -3465,7 +3589,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 142.9,
-        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -19.66000 0.000 0.00000 -19.66000"
+        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -19.66000 0.000 0.00000 -19.66000",
+        "sub_item_code": "135531",
+        "sub_color_code": "23146"
       }
     ]
   },
@@ -3565,7 +3691,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 308.7,
-        "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -29.13350 0.000 0.00000 -29.13350"
+        "source_text": "47527 - FORRO FIORI (V P/V 12/13) M 26926 - CAMEL 408 0 -29.13350 0.000 0.00000 -29.13350",
+        "sub_item_code": "135518",
+        "sub_color_code": "26926"
       }
     ]
   },
@@ -3585,7 +3713,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 327.2,
-        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.89925 0.000 0.00000 -26.89925"
+        "source_text": "56427 - PELICA PU 1.0 (V O/I 2014) M 15745 - PRETO 01 0 -26.89925 0.000 0.00000 -26.89925",
+        "sub_item_code": "135461",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "29452",
@@ -3598,7 +3728,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 345.6,
-        "source_text": "M 29452 - BEGE 435 0 -0.10420 0.000 0.00000 -0.10420"
+        "source_text": "M 29452 - BEGE 435 0 -0.10420 0.000 0.00000 -0.10420",
+        "sub_item_code": "135461",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "83508",
@@ -3631,7 +3763,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 382.5,
-        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -4.55559 39.400 0.00000 34.84441"
+        "source_text": "56577 - FORRO MILANO PU 0.7(B O/I 2014) M 50 - NATURAL 0 -4.55559 39.400 0.00000 34.84441",
+        "sub_item_code": "135519",
+        "sub_color_code": "50"
       },
       {
         "color_code": "29452",
@@ -3644,7 +3778,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 400.9,
-        "source_text": "M 29452 - BEGE 435 0 -48.72970 25.300 0.00000 -23.42970"
+        "source_text": "M 29452 - BEGE 435 0 -48.72970 25.300 0.00000 -23.42970",
+        "sub_item_code": "135519",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "35312",
@@ -3729,7 +3865,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 511.5,
-        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -9.64340 280.000 25.00000 270.35660 0101C003"
+        "source_text": "67244 - NAPA TURIM PU 1.0 (B P/V 15/16) M 29452 - BEGE 435 0 -9.64340 280.000 25.00000 270.35660 0101C003",
+        "sub_item_code": "133429",
+        "sub_color_code": "29452"
       },
       {
         "color_code": "83508",
@@ -3788,7 +3926,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 585.2,
-        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 52531 - NUDE 658 0 -2.98650 468.500 37.50000 465.51350 0101C012"
+        "source_text": "108850 - NAPA PELE STRECH PU 1.0 (MD O/I 2 M 52531 - NUDE 658 0 -2.98650 468.500 37.50000 465.51350 0101C012",
+        "sub_item_code": "135529",
+        "sub_color_code": "52531"
       },
       {
         "color_code": "89673",
@@ -3821,7 +3961,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 622.1,
-        "source_text": "128938 - NAPA FLOATHER NATURE PU 1.0 (M M 15745 - PRETO 01 0 -141.73403 40.000 0.00000 -101.73403"
+        "source_text": "128938 - NAPA FLOATHER NATURE PU 1.0 (M M 15745 - PRETO 01 0 -141.73403 40.000 0.00000 -101.73403",
+        "sub_item_code": "146813",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "35312",
@@ -3834,7 +3976,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 640.5,
-        "source_text": "M 35312 - BRANCO OFF 50 -131.79511 0.000 24.00000 -131.79511"
+        "source_text": "M 35312 - BRANCO OFF 50 -131.79511 0.000 24.00000 -131.79511",
+        "sub_item_code": "146813",
+        "sub_color_code": "35312"
       },
       {
         "color_code": "83517",
@@ -3847,7 +3991,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 658.9,
-        "source_text": "M 83517 - CREME 985 0 -27.14900 0.000 0.00000 -27.14900"
+        "source_text": "M 83517 - CREME 985 0 -27.14900 0.000 0.00000 -27.14900",
+        "sub_item_code": "146813",
+        "sub_color_code": "83517"
       }
     ]
   },
@@ -3867,7 +4013,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 677.4,
-        "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -7.06980 5,277.000 40.00000 5,269.93020"
+        "source_text": "135523 - NAPA GENEBRA PU 1.2 (B O/I 2020) - M 15745 - PRETO 01 0 -7.06980 5,277.000 40.00000 5,269.93020",
+        "sub_item_code": "117702",
+        "sub_color_code": "15745"
       }
     ]
   },
@@ -3907,7 +4055,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 714.2,
-        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -82.30390 0.000 0.00000 -82.30390"
+        "source_text": "168873 - NAPA CALF PU 0.9 ( P/V 24/25) M 15745 - PRETO 01 0 -82.30390 0.000 0.00000 -82.30390",
+        "sub_item_code": "193156",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "35312",
@@ -3920,7 +4070,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 732.7,
-        "source_text": "M 35312 - BRANCO OFF 50 -111.41430 30.000 0.00000 -81.41430"
+        "source_text": "M 35312 - BRANCO OFF 50 -111.41430 30.000 0.00000 -81.41430",
+        "sub_item_code": "193156",
+        "sub_color_code": "35312"
       },
       {
         "color_code": "101321",
@@ -3946,7 +4098,9 @@
         "source_page": 7,
         "source_x": 149.0,
         "source_y": 769.5,
-        "source_text": "M 102051 - AREIA 1286 0 -19.01710 4.000 0.00000 -15.01710"
+        "source_text": "M 102051 - AREIA 1286 0 -19.01710 4.000 0.00000 -15.01710",
+        "sub_item_code": "193156",
+        "sub_color_code": "102051"
       },
       {
         "color_code": "107610",
@@ -3992,7 +4146,9 @@
         "source_page": 8,
         "source_x": 149.0,
         "source_y": 142.9,
-        "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -4.79060 265.000 0.00000 260.20940"
+        "source_text": "183344 - NAPA GARDA PU 1.0 (V P/V 24/25) M 15745 - PRETO 01 0 -4.79060 265.000 0.00000 260.20940",
+        "sub_item_code": "186605",
+        "sub_color_code": "15745"
       },
       {
         "color_code": "95373",
@@ -4071,7 +4227,9 @@
         "source_page": 8,
         "source_x": 149.0,
         "source_y": 235.0,
-        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -24.33096 0.000 0.00000 -24.33096"
+        "source_text": "192801 - BRILHO ITALIA PU 0.9 (P/V 25/26) M 23146 - OURO ROSADO0 -24.33096 0.000 0.00000 -24.33096",
+        "sub_item_code": "135531",
+        "sub_color_code": "23146"
       },
       {
         "color_code": "104337",
@@ -4084,7 +4242,9 @@
         "source_page": 8,
         "source_x": 149.0,
         "source_y": 253.5,
-        "source_text": "M 104337 - BRONZE 1402 0 -15.65470 354.500 96.00000 338.84530 0101C002"
+        "source_text": "M 104337 - BRONZE 1402 0 -15.65470 354.500 96.00000 338.84530 0101C002",
+        "sub_item_code": "89072",
+        "sub_color_code": "104337"
       }
     ]
   },
